@@ -1,0 +1,4 @@
+# Rodar de dentro de simulacao/:  py -m pip install -r requirements.txt
+-e ../dominio
+numpy
+matplotlib

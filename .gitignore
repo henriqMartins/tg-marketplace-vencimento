@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+.venv/
+
+# Segredos e configuração local
+.env
+.claude/settings.local.json
+
+# Arquivos locais / temporários
+spike.tgz
+_tmp/
+CLAUDE_antigo_*.md
+
+# Resultados da simulação: versiona só os gráficos (os CSV são regenerados pela semente)
+simulacao/resultados*/*
+!simulacao/resultados*/*.png

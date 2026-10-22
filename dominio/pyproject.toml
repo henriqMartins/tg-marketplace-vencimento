@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tg-dominio"
+version = "0.1.0"
+description = "Regras da reserva (TG Fatec Rio Preto). Python puro, sem banco, HTTP, tela ou relógio."
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
