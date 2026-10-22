@@ -14,6 +14,9 @@ spike.tgz
 _tmp/
 CLAUDE_antigo_*.md
 
+# Instruções do Claude Code: uso pessoal do Henrique, fica só local
+CLAUDE.md
+
 # Resultados da simulação: versiona gráficos, rodadas.csv e limiar_referencia.csv
 # (rodadas_tempo_chegada.csv fica fora: grande e regenerável pela semente)
 simulacao/resultados*/*
