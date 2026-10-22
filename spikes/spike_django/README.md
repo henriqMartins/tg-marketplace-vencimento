@@ -1,7 +1,8 @@
 # Spike — Django + DRF + PostgreSQL (20/10/2026)
 
 Descartável. Serve só para provar os 3 critérios antes de fechar o framework.
-Usa o `dominio.py` da pasta `Codigo/` sem cópia nem reimplementação.
+Usa o pacote `dominio` (pasta `dominio/` na raiz, instalado com
+`py -m pip install -e dominio`) sem cópia nem reimplementação.
 
 | Arquivo | O que prova |
 |---|---|
