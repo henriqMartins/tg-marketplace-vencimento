@@ -26,6 +26,37 @@ Trabalho de Graduação (Fatec Rio Preto) de Henrique e Yan.
 - Decisão nova que surgir: **não decidir sozinho**. Listar como pergunta. As decisões
   oficiais ficam no Contexto mestre (fora do repositório); avisar o Henrique para registrar.
 
+### Modo aprendizado (vale em toda sessão)
+
+O Henrique quer **entender o que está construindo**, não só receber pronto: ele vai
+defender o sistema na banca e precisa saber explicar cada parte. O prazo é curto,
+então o aprendizado tem de ser **focado**, não lento.
+
+**Ao explicar:**
+- Ordem: **problema → ideia (com analogia do dia a dia) → como fica no código → como
+  verificar**. Um conceito novo por vez; definir o termo técnico na primeira vez que aparece.
+- Ligar ao projeto: dizer qual regra deste arquivo (ou do domínio) aquilo protege e
+  o que quebraria sem ela. Exemplo concreto com valores do próprio TG (oferta, livre,
+  reserva) em vez de exemplo genérico.
+- Depois de cada passo, um bloco curto de **Insight** (2–3 pontos) sobre o que foi feito
+  e por quê; quando útil, uma pergunta de fixação ("o que acontece se...?").
+- Apontar o que vale a pena o Henrique ser capaz de **explicar na banca**.
+
+**Partes de desenvolvimento manual:**
+- Em cada passo que tiver lógica relevante, deixar **um** trecho para o Henrique
+  escrever (5–15 linhas), marcado no código com `TODO(human)`, e parar esperando.
+  Explicar: contexto, o que o trecho deve fazer, restrições e as dicas/trade-offs —
+  sem entregar a resposta.
+- Priorizar como trecho manual o que é **núcleo do TG**: regras do domínio, a transação
+  com `select_for_update()`, cálculo dos indicadores, Haversine, lógica da fita colorida,
+  e os testes que provam essas regras.
+- **Não** passar como manual código repetitivo ou de configuração (settings, Dockerfile,
+  boilerplate do DRF, CSS): esse o Claude escreve e só explica o essencial.
+- Depois que o Henrique escrever: rodar os testes, revisar com sinceridade (apontar erro
+  ou caso esquecido, explicando o porquê) e só então seguir.
+- Se o Henrique disser "faz você" ou "sem parte manual" num passo, respeitar naquele
+  passo (prazo manda); voltar ao modo aprendizado no seguinte.
+
 ## Estrutura do repositório
 
 ```
@@ -156,8 +187,11 @@ endpoint `/health`; `.dockerignore` excluindo frontend, simulação, resultados,
 
 ## Testes e verificação
 
-- Domínio e simulação: `py -m unittest -v` dentro de cada pasta (ou o comando
-  equivalente após a reorganização). Nenhum teste existente pode quebrar.
+- Pré-requisito (uma vez): `py -m pip install -r simulacao/requirements.txt`
+  (instala o `dominio/` em modo editável + NumPy e Matplotlib).
+- Domínio: `py -m unittest discover -s tests -v` dentro de `dominio/`.
+- Simulação e limiar: `py -m unittest -v` dentro de `simulacao/`.
+- Nenhum teste existente pode quebrar.
 - Backend: testes Django contra PostgreSQL (o do docker-compose).
 - Teste obrigatório do backend: N requisições simultâneas pela última unidade →
   exatamente 1 sucesso; livre nunca negativo; conservação fechando (o spike em

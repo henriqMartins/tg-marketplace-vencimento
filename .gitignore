@@ -14,6 +14,9 @@ spike.tgz
 _tmp/
 CLAUDE_antigo_*.md
 
-# Resultados da simulação: versiona só os gráficos (os CSV são regenerados pela semente)
+# Resultados da simulação: versiona gráficos, rodadas.csv e limiar_referencia.csv
+# (rodadas_tempo_chegada.csv fica fora: grande e regenerável pela semente)
 simulacao/resultados*/*
 !simulacao/resultados*/*.png
+!simulacao/resultados*/rodadas.csv
+!simulacao/resultados*/limiar_referencia.csv
