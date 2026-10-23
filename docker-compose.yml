@@ -1,0 +1,26 @@
+# SÓ desenvolvimento local — não vira produção (produção = Neon).
+# Roda no Docker nativo do WSL 2. Na raiz do projeto, pelo Windows:
+#   wsl docker compose up -d      liga o banco em segundo plano
+#   wsl docker compose ps         mostra se está "healthy"
+#   wsl docker compose stop       desliga (os dados ficam guardados no volume)
+# Usuário, senha e nome do banco vêm do .env (mesma pasta), nunca daqui.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:?defina POSTGRES_DB no .env}
+    ports:
+      - "5432:5432"            # o WSL 2 repassa para localhost:5432 do Windows
+    volumes:
+      - dados_pg:/var/lib/postgresql/data
+    healthcheck:               # "o banco já aceita conexão?"
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  dados_pg:                    # a "gaveta" que guarda os dados entre religadas

@@ -1,0 +1,8 @@
+# Rodar de dentro de backend/:  ..\.venv\Scripts\python -m pip install -r requirements.txt
+-e ../dominio                 # as regras: instaladas, nunca copiadas (regra 1)
+Django>=5.2,<5.3              # 5.2 = versão com suporte longo (LTS), a mesma do spike
+djangorestframework
+psycopg[binary]               # "tradutor" Python <-> PostgreSQL
+dj-database-url               # traduz DATABASE_URL para o formato do Django
+python-dotenv                 # lê o .env em desenvolvimento (em produção não há .env)
+gunicorn                      # servidor de produção (Render)
