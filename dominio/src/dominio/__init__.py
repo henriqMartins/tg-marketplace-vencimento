@@ -110,6 +110,78 @@ class Oferta:
         self._gerar_codigo = gerador_codigo or _codigo_sequencial()
         self.verificar_invariantes()
 
+    @classmethod
+    def reconstituir(cls, *, separado: int, livre: int, retirado: int,
+                     ajustado: int, perda: int, inicio: float,
+                     fim_da_oferta: float, janela_reserva: float,
+                     estado: EstadoOferta, reservas_ativas: List[Reserva],
+                     proximo_id: int,
+                     gerador_codigo: Optional[Callable[[int], str]] = None
+                     ) -> "Oferta":
+        """
+        Remonta uma oferta que já existia a partir dos números guardados
+        (no backend: as linhas do banco). É o "carregar jogo salvo".
+
+        Recebe só as reservas ATIVAS; as encerradas não mexem mais em conta
+        nenhuma. `proximo_id` é o número que a próxima reserva vai receber
+        (maior número já usado + 1), para não repetir número de reserva antiga.
+
+        Não recebe `agora` e não expira nada: carregar não é operar. As
+        vencidas voltam ao livre na próxima operação, como sempre.
+
+        Estado impossível (conta que não fecha, número negativo...) levanta
+        ErroDominio: o domínio não aceita seguir com dado corrompido.
+        """
+        # Valida a base (separado > 0, janela > 0, fim depois do início)
+        # reaproveitando o construtor normal.
+        oferta = cls(separado, fim_da_oferta, janela_reserva, inicio=inicio,
+                     gerador_codigo=gerador_codigo)
+
+        # Confere se o estado salvo é possível antes de aceitar.
+        # 1) Nenhum contador negativo (a soma pode "fechar" mesmo com um -1).
+        contadores = {"livre": livre, "retirado": retirado,
+                      "ajustado": ajustado, "perda": perda}
+        for nome, valor in contadores.items():
+            if valor < 0:
+                raise ErroDominio(f"{nome} negativo no estado salvo: {valor}")
+
+        # 2) Cada reserva da lista está ativa, tem quantidade e número válidos.
+        for r in reservas_ativas:
+            if r.estado is not EstadoReserva.RESERVADA:
+                raise ErroDominio(
+                    f"reserva {r.id} não está ativa (estado: {r.estado.value})")
+            if r.quantidade < 1:
+                raise ErroDominio(f"reserva {r.id} com quantidade {r.quantidade}")
+            if r.id >= proximo_id:
+                raise ErroDominio(
+                    f"reserva {r.id} não é menor que o próximo número ({proximo_id})")
+
+        # 3) Nenhum número de reserva repetido (o dicionário lá embaixo
+        #    apagaria a repetida em silêncio).
+        ids = [r.id for r in reservas_ativas]
+        if len(set(ids)) != len(ids):
+            raise ErroDominio(f"número de reserva repetido: {ids}")
+
+        # 4) Oferta encerrada não tem reserva ativa (encerrar() expira tudo antes).
+        if estado is EstadoOferta.ENCERRADA and reservas_ativas:
+            raise ErroDominio("oferta encerrada com reserva ativa")
+
+        # 5) Conservação: nenhuma unidade sumiu nem apareceu.
+        reservado = sum(r.quantidade for r in reservas_ativas)
+        total = livre + reservado + retirado + ajustado + perda
+        if total != separado:
+            raise ErroDominio(
+                f"conservação quebrada: separado={separado}, soma={total}")
+
+        oferta.livre = livre
+        oferta.retirado = retirado
+        oferta.ajustado = ajustado
+        oferta.perda = perda
+        oferta.estado = estado
+        oferta.reservas = {r.id: r for r in reservas_ativas}
+        oferta._proximo_id = proximo_id
+        return oferta
+
     # ------------------------------------------------------------ consultas
 
     @property
