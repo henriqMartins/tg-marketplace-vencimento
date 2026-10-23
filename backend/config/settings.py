@@ -54,7 +54,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'contas',
+    'ofertas',
 ]
+
+# Usuário próprio desde o início: trocar depois que as tabelas existem é uma das
+# reformas mais difíceis do Django. Login único; papéis vêm do Vinculo (ofertas).
+AUTH_USER_MODEL = 'contas.Usuario'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
