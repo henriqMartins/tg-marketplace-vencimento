@@ -53,9 +53,18 @@ Legenda: ✅ existe · 🚧 planejado (ainda não existe)
 │   ├── resultados/              gráficos e CSV (N = 1000)
 │   └── resultados_n5000/        mesma rodada com N = 5000 (convergência)
 ├── spikes/spike_django/      ✅ prova dos 3 critérios do framework (referência, não é produção)
-├── backend/                  🚧 API Django + DRF (vira a imagem Docker)
-├── frontend/                 🚧 React PWA (Vercel)
-└── docker-compose.yml        🚧 só desenvolvimento local (Postgres + API)
+├── backend/                  ✅ API Django + DRF (vira a imagem Docker) — em construção
+│   ├── config/                  configuração (só por variável de ambiente) e /health
+│   ├── contas/                  usuário próprio (login único)
+│   └── ofertas/                 Loja, Vínculo, Produto, Oferta, Reserva, Ajuste, Recusa
+│       ├── models.py               tabelas e travas do banco
+│       ├── servico.py              os 5 passos: transação → trava → reconstitui → regra → grava
+│       ├── tests.py                testes das travas do banco
+│       ├── test_servico.py         testes do serviço
+│       └── test_concorrencia.py    N pessoas ao mesmo tempo pela última unidade
+├── docs/colinha-python.md    ✅ colinha de Python com exemplos do projeto
+├── frontend/                 🚧 React + TypeScript + Vite, PWA (Vercel)
+└── docker-compose.yml        ✅ só desenvolvimento local (PostgreSQL no Docker do WSL 2)
 ```
 
 ## 2. Arquitetura
@@ -162,6 +171,23 @@ O **lojista digita** o código na tela dele; o backend localiza a reserva ativa
   converte em coordenada, ordena por distância e descarta.
 - Distância calculada pela **fórmula de Haversine em SQL**. Sem PostGIS, sem mapa, sem rotas.
 
+### Papéis (login único)
+Uma tabela de usuários e **um login só**; o que cada pessoa pode fazer vem do seu
+**vínculo** com a loja:
+
+| Quem | Vínculo | Exemplo |
+|---|---|---|
+| Consumidor | nenhum — todo usuário pode reservar | Ana, que só compra |
+| Responsável | loja X, papel responsável (lojista e gestor numa pessoa só) | o dono do mercadinho |
+| Funcionário | loja X, papel funcionário | quem confere a gôndola |
+
+Uma pessoa tem no máximo um vínculo por loja, mas pode ter vínculo com várias lojas.
+
+### Margem do fim da oferta
+A loja tem uma margem padrão (inicial: **1 dia**) e o produto pode ter a sua (opcional).
+Ao publicar, o fim da oferta é **calculado e gravado** (validade − margem); mudar a
+margem depois vale só para ofertas novas.
+
 ### Painéis do gestor
 Indicadores de **negócio**, lidos direto do PostgreSQL, por período:
 reservas criadas, taxa de retirada, taxa de expiração, compradores bloqueados
@@ -180,9 +206,9 @@ cada um com sua procedência declarada em [simulacao/parametros.md](simulacao/pa
 | Domínio | Python puro (só biblioteca padrão), pacote `dominio` |
 | Backend | Django + Django REST Framework, gunicorn, psycopg |
 | Banco | PostgreSQL |
-| Frontend | React, PWA |
+| Frontend | React + TypeScript, Vite, PWA |
 | Simulação | Python + NumPy + Matplotlib |
-| Ambiente local | Docker Compose (Postgres + API com recarga automática) |
+| Ambiente local | Docker Engine nativo no WSL 2 + Compose (só o PostgreSQL); o Django roda no Windows |
 
 Hospedagem, toda em plano gratuito:
 
@@ -200,43 +226,63 @@ O `docker-compose.yml` é só para desenvolvimento local.
 
 ## 6. Como rodar e testar
 
-No Windows, o Python é chamado por `py`.
+Tudo roda num **ambiente virtual** (`.venv/`, na raiz), não no Python geral.
+Comandos para PowerShell, no Windows.
 
-**Pré-requisito (uma vez):** instala o `dominio/` em modo editável, mais NumPy e Matplotlib.
+**Pré-requisitos (uma vez):**
 
-```bash
-cd simulacao
-py -m pip install -r requirements.txt
+```powershell
+py -m venv .venv                         # na raiz: cria o ambiente virtual
+.venv\Scripts\Activate.ps1               # ativa (o prompt passa a mostrar "(.venv)")
+cd backend;   python -m pip install -r requirements.txt; cd ..   # domínio + Django/DRF/psycopg
+cd simulacao; python -m pip install -r requirements.txt; cd ..   # domínio + NumPy/Matplotlib
+copy .env.example .env                   # e preencha os valores (senhas só suas)
 ```
 
-**Testes do domínio:**
+**Banco local (PostgreSQL 16 no Docker nativo do WSL 2):**
 
-```bash
-cd dominio
-py -m unittest discover -s tests -v
+```powershell
+wsl docker compose up -d --wait          # na raiz: liga o banco e espera ficar pronto
+wsl docker compose stop                  # desliga (os dados ficam guardados)
 ```
 
-**Testes da simulação e do limiar:**
+O WSL desliga o Ubuntu sozinho quando nenhum programa do Windows o usa, e o banco cai
+junto (sintoma: a conexão **trava** em vez de dar erro). Deixe um terminal do Ubuntu
+aberto enquanto desenvolve.
 
-```bash
-cd simulacao
-py -m unittest -v
+**Testes** (com o `.venv` ativo; cada comando de dentro da pasta indicada):
+
+```powershell
+cd dominio;   python -m unittest discover -s tests -v   # regras da reserva
+cd simulacao; python -m unittest -v                     # simulação e limiar
+cd backend;   python manage.py test                     # backend (precisa do banco ligado)
 ```
+
+O backend nunca usa SQLite: sem `DATABASE_URL` apontando para um PostgreSQL, ele
+recusa ligar. Os testes criam e apagam sozinhos um banco temporário (`test_tg`).
+
+**Teste de concorrência** (obrigatório): 20 pessoas ao mesmo tempo pela última
+unidade → exatamente 1 reserva, 19 recusas, livre nunca negativo e conservação
+fechando (5 rodadas). Também com 5 unidades e com reservas parciais.
+
+```powershell
+cd backend
+python manage.py test ofertas.test_concorrencia
+# controle negativo (tira a trava de propósito, para provar que o teste enxerga o erro):
+$env:CONTROLE_NEGATIVO="1"; python manage.py test ofertas.test_concorrencia.TestControleNegativo; Remove-Item Env:CONTROLE_NEGATIVO
+```
+
+**Servidor local:** `python manage.py runserver` (em `backend/`) → `http://localhost:8000/health`
+responde `{"status": "ok", "banco": "ok"}` (ou HTTP 503 se o banco estiver fora).
 
 **Rodar a simulação:**
 
-```bash
+```powershell
 cd simulacao
-py simulacao.py              # N = 1000, semente 2026, gráficos em resultados/
-py simulacao.py --n 5000     # mais repetições
-py limiar_referencia.py      # lê resultados/rodadas.csv e calcula o limiar
+python simulacao.py              # N = 1000, semente 2026, gráficos em resultados/
+python simulacao.py --n 5000     # mais repetições
+python limiar_referencia.py      # lê resultados/rodadas.csv e calcula o limiar
 ```
-
-**Backend (quando existir):** testes Django contra o PostgreSQL do docker-compose.
-Teste obrigatório: N requisições simultâneas pela última unidade → exatamente 1
-sucesso, livre nunca negativo e conservação fechando (o spike em
-[spikes/spike_django/spike_concorrencia.py](spikes/spike_django/spike_concorrencia.py)
-mostra como).
 
 Regra da casa: **nenhum teste existente pode quebrar.**
 
@@ -251,10 +297,9 @@ Regra da casa: **nenhum teste existente pode quebrar.**
 
 **Decisões ainda em aberto:**
 - Login do consumidor e tipo de token da API (recomendação até aqui: token do próprio DRF).
-- Ferramenta do frontend (recomendação: Vite + React) e uso ou não de TypeScript.
+- Permissões de cada papel (responsável, funcionário) — etapa 6.
 - Serviço de push para a notificação de oferta nova.
 - Serviço que converte CEP/endereço em coordenada.
-- Valor padrão da margem de segurança do fim da oferta (sugestão registrada: 1 dia).
 
 ---
 
@@ -275,17 +320,21 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 21/10/2026 | Repositório organizado; domínio vira pacote instalável (`tg-dominio`) | Domínio: 21 testes ok · Simulação: 16 testes ok |
 | 21/10/2026 | Resultados da simulação versionados (gráficos, `rodadas.csv`, `limiar_referencia.csv`) | Arquivos em [simulacao/resultados/](simulacao/resultados/) |
 | 21/10/2026 | README como documentação oficial | — |
+| 22/10/2026 | Domínio: `Oferta.reconstituir()` — remonta a oferta a partir do banco e recusa estado impossível | Domínio: 34 testes ok (13 novos, escritos antes do código) |
+| 22/10/2026 | Ambiente: PostgreSQL 16 no Docker nativo do WSL 2; `.venv` na raiz | Banco `healthy`; porta 5432 acessível pelo Windows |
+| 22/10/2026 | Backend (etapa 1): projeto Django, configuração só por ambiente, `/health` | 4 testes; `/health` dá 200 com banco ligado e 503 com banco desligado |
+| 23/10/2026 | Backend (etapa 2): modelos e travas do banco; papéis por vínculo; margem por loja/produto | 26 testes; migrações aplicadas, desfeitas e reaplicadas |
+| 23/10/2026 | Backend (etapa 3): serviço de reserva (5 passos com `select_for_update()`), código de retirada único por loja entre ativas | 41 testes |
+| 26/10/2026 | Backend (etapa 4): teste de concorrência + controle negativo | 20 clientes × 5 rodadas: 1 reserva e 19 recusas em todas; **sem a trava, 20 de 20 receberam "reservado" pela mesma unidade** em todas as rodadas · backend: 44 testes ok |
 
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Fechar decisões em aberto (login/token, ferramenta do frontend, push, geocodificação, margem) |
-| ⏳ | `docker-compose.yml` local (Postgres + API) |
-| ⏳ | Backend: projeto Django, modelos e migrações |
-| ⏳ | Backend: serviço de reserva com transação + `select_for_update()` e teste de concorrência |
-| ⏳ | Backend: código de retirada (6 dígitos, único por loja entre reservas ativas) |
-| ⏳ | Backend: expiração preguiçosa + endpoint de varredura protegido por token |
+| ⏳ | Fechar decisões em aberto (login/token, permissões, push, geocodificação) |
+| ⏳ | Backend (etapa 5): varredura idempotente — endpoint protegido por `CRON_TOKEN` |
+| ⏳ | Backend (etapa 6): login e papéis |
+| ⏳ | Backend (etapa 7): endpoints da reserva (publicar, vitrine, reservar, cancelar, retirar) |
 | ⏳ | Backend: fitas coloridas e aviso de colisão de ciclo |
 | ⏳ | Backend: proximidade por Haversine em SQL |
 | ⏳ | Backend: indicadores dos painéis |
