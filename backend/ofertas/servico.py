@@ -200,6 +200,45 @@ def ajustar(oferta_id: int, autor, quantidade: int, motivo: str,
                                      motivo=motivo.strip(), criado_em=data(h))
 
 
+def varrer(agora: Optional[datetime] = None) -> dict:
+    """
+    A "ronda do vigia" (regra 6): devolve ao livre as reservas vencidas e
+    encerra as ofertas que passaram do fim (sobra vira perda), em TODAS as
+    ofertas. Chamada pelo agendamento diário e, depois, antes dos painéis.
+
+    Idempotente: o que já foi expirado/encerrado fica gravado assim, então
+    uma segunda ronda não encontra nada para fazer (o domínio garante que
+    cada reserva devolve uma única vez).
+
+    Oferta travada por outra operação naquele instante é PULADA (skip_locked):
+    a ronda não espera. A operação em andamento já expira o que precisar, e a
+    próxima ronda pega o resto.
+    """
+    agora_dt = agora or datetime.now(timezone.utc)
+    h = horas(agora_dt)
+    com_vencidas = Reserva.objects.filter(
+        estado=ATIVA, expira_em__lte=agora_dt).values_list("oferta_id", flat=True)
+    passaram_do_fim = Oferta.objects.filter(
+        estado=dominio.EstadoOferta.ATIVA.value, fim__lte=agora_dt).values_list("id", flat=True)
+
+    resumo = {"expiradas": 0, "encerradas": 0, "perda": 0, "puladas": 0}
+    for oferta_id in sorted(set(com_vencidas) | set(passaram_do_fim)):
+        with transaction.atomic():
+            linha = (Oferta.objects.select_for_update(skip_locked=True)
+                     .filter(pk=oferta_id).first())
+            if linha is None:                     # alguém está mexendo nela agora
+                resumo["puladas"] += 1
+                continue
+            oferta = _carregar(linha)
+            resumo["expiradas"] += len(oferta.expirar_vencidas(h))
+            if (oferta.estado is dominio.EstadoOferta.ATIVA
+                    and h >= oferta.fim_da_oferta):
+                resumo["perda"] += oferta.encerrar(h)
+                resumo["encerradas"] += 1
+            _salvar(linha, oferta)
+    return resumo
+
+
 def encerrar(oferta_id: int, agora: Optional[datetime] = None) -> int:
     """Fim da oferta: o que sobra no livre vira perda. Devolve a perda."""
     h = _horas_agora(agora)

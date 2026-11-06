@@ -43,6 +43,9 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 ALLOWED_HOSTS = [h.strip() for h in
                  os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h.strip()]
 
+# Token do endpoint de varredura (/tarefas/varrer). Vazio = endpoint recusa sempre.
+CRON_TOKEN = os.environ.get("CRON_TOKEN", "")
+
 
 # Application definition
 

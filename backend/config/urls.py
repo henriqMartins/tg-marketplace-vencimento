@@ -17,9 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from ofertas import views as ofertas_views
+
 from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health', views.health, name='health'),
+    path('tarefas/varrer', ofertas_views.varrer, name='varrer'),
 ]

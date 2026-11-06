@@ -58,10 +58,12 @@ Legenda: ✅ existe · 🚧 planejado (ainda não existe)
 │   ├── contas/                  usuário próprio (login único)
 │   └── ofertas/                 Loja, Vínculo, Produto, Oferta, Reserva, Ajuste, Recusa
 │       ├── models.py               tabelas e travas do banco
-│       ├── servico.py              os 5 passos: transação → trava → reconstitui → regra → grava
+│       ├── servico.py              os 5 passos: transação → trava → reconstitui → regra → grava; varredura
+│       ├── views.py                endpoint da varredura (POST /tarefas/varrer, com token)
 │       ├── tests.py                testes das travas do banco
 │       ├── test_servico.py         testes do serviço
-│       └── test_concorrencia.py    N pessoas ao mesmo tempo pela última unidade
+│       ├── test_concorrencia.py    N pessoas ao mesmo tempo pela última unidade
+│       └── test_varredura.py       varredura idempotente e endpoint protegido
 ├── docs/colinha-python.md    ✅ colinha de Python com exemplos do projeto
 ├── frontend/                 🚧 React + TypeScript + Vite, PWA (Vercel)
 └── docker-compose.yml        ✅ só desenvolvimento local (PostgreSQL no Docker do WSL 2)
@@ -275,6 +277,18 @@ $env:CONTROLE_NEGATIVO="1"; python manage.py test ofertas.test_concorrencia.Test
 **Servidor local:** `python manage.py runserver` (em `backend/`) → `http://localhost:8000/health`
 responde `{"status": "ok", "banco": "ok"}` (ou HTTP 503 se o banco estiver fora).
 
+**Varredura** (a "ronda" diária: devolve reservas vencidas e encerra ofertas que passaram
+do fim). Exige `CRON_TOKEN` no `.env`; sem ele, o endpoint responde 503 sempre.
+
+```powershell
+curl.exe -X POST http://localhost:8000/tarefas/varrer -H "Authorization: Bearer SEU_CRON_TOKEN"
+# → {"expiradas": 0, "encerradas": 0, "perda": 0, "puladas": 0}
+```
+
+Sem token → 401 · token errado → 403 · GET → 405. Rodar duas vezes seguidas não devolve
+nada em dobro (idempotente). Oferta sendo usada por outra operação naquele instante é
+pulada e entra na próxima ronda.
+
 **Rodar a simulação:**
 
 ```powershell
@@ -327,12 +341,13 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 23/10/2026 | Backend (etapa 3): serviço de reserva (5 passos com `select_for_update()`), código de retirada único por loja entre ativas | 41 testes |
 | 26/10/2026 | Backend (etapa 4): teste de concorrência + controle negativo | 20 clientes × 5 rodadas: 1 reserva e 19 recusas em todas; **sem a trava, 20 de 20 receberam "reservado" pela mesma unidade** em todas as rodadas · backend: 44 testes ok |
 
+| 05/11/2026 | Backend (etapa 5): varredura idempotente + endpoint `POST /tarefas/varrer` protegido por `CRON_TOKEN` | 11 testes (rodar 2× não devolve em dobro; oferta travada é pulada; 401/403/405/503) · backend: 55 testes ok |
+
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
 | ⏳ | Fechar decisões em aberto (login/token, permissões, push, geocodificação) |
-| ⏳ | Backend (etapa 5): varredura idempotente — endpoint protegido por `CRON_TOKEN` |
 | ⏳ | Backend (etapa 6): login e papéis |
 | ⏳ | Backend (etapa 7): endpoints da reserva (publicar, vitrine, reservar, cancelar, retirar) |
 | ⏳ | Backend: fitas coloridas e aviso de colisão de ciclo |
