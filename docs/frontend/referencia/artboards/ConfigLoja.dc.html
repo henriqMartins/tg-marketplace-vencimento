@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Configurações da loja</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 1300px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 16px 16px 12px; background: #FFFFFF; border-bottom: 1px solid #E3E1DA;">
+    <a href="InicioLoja.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="display: flex; flex-direction: column;">
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Configurações da loja</h1>
+      <span style="font-size: 13px; color: #5B635D;">Só o responsável vê esta tela</span>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; display: flex; flex-direction: column; gap: 22px; padding: 18px 16px;">
+    <section style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5B635D;">Dados da loja</h2>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="nl" style="font-size: 14px; font-weight: 600;">Nome</label>
+        <input id="nl" value="Mercadinho Vila Nova" style="height: 50px; padding: 0 14px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 16px; color: #1B1F1C;">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="end" style="font-size: 14px; font-weight: 600;">Endereço</label>
+        <input id="end" value="Rua das Palmeiras, 410 · Boa Vista · São José do Rio Preto" style="height: 50px; padding: 0 14px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; color: #1B1F1C;">
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #1F5B2A;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+          Localização encontrada · usada para calcular a distância</span>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 14px;">
+      <h2 style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5B635D;">Regras das ofertas</h2>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <span style="font-size: 15px; font-weight: 700;">Janela de reserva padrão</span>
+        <div role="group" aria-label="Janela de reserva" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px;">
+          <span style="height: 42px; border-radius: 10px; border: 1.5px solid #C9C6BC; box-sizing: border-box; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">1 h</span>
+          <span style="height: 42px; border-radius: 10px; border: 1.5px solid #C9C6BC; box-sizing: border-box; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">2 h</span>
+          <span style="height: 42px; border-radius: 10px; background: #1E6A48; color: #FFFFFF; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">4 h</span>
+          <span style="height: 42px; border-radius: 10px; border: 1.5px solid #C9C6BC; box-sizing: border-box; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">8 h</span>
+          <span style="height: 42px; border-radius: 10px; border: 1.5px solid #C9C6BC; box-sizing: border-box; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">12 h</span>
+          <span style="height: 42px; border-radius: 10px; border: 1.5px solid #C9C6BC; box-sizing: border-box; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">24 h</span>
+        </div>
+        <span style="font-size: 13px; color: #5B635D; line-height: 1.45;">Vem marcada em cada oferta nova; dá para mudar na publicação. <a href="Projecao.dc.html" style="color: #1E6A48; font-weight: 700;">Ver projeção</a></span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 15px; font-weight: 700;">Margem antes da validade</span><span style="font-size: 13px; color: #5B635D; line-height: 1.4;">A oferta sai da vitrine esses dias antes de vencer</span></span>
+        <button aria-label="Diminuir margem" style="width: 44px; height: 44px; border: none; border-radius: 12px; background: #E3F0E8; color: #1E6A48; font: inherit; font-size: 22px; font-weight: 800;">−</button>
+        <span style="min-width: 52px; text-align: center; font-size: 18px; font-weight: 800;">1 dia</span>
+        <button aria-label="Aumentar margem" style="width: 44px; height: 44px; border: none; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 22px; font-weight: 800;">+</button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 15px; font-weight: 700;">Antecedência do aviso</span><span style="font-size: 13px; color: #5B635D; line-height: 1.4;">Quantos dias antes da validade avisar</span></span>
+        <button aria-label="Diminuir antecedência" style="width: 44px; height: 44px; border: none; border-radius: 12px; background: #E3F0E8; color: #1E6A48; font: inherit; font-size: 22px; font-weight: 800;">−</button>
+        <span style="min-width: 52px; text-align: center; font-size: 18px; font-weight: 800;">10 dias</span>
+        <button aria-label="Aumentar antecedência" style="width: 44px; height: 44px; border: none; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 22px; font-weight: 800;">+</button>
+      </div>
+      <span style="font-size: 13px; color: #5B635D; line-height: 1.45;">Mudanças valem para lotes e ofertas novos. As ofertas já publicadas mantêm o fim calculado na publicação.</span>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 10px;">
+      <h2 style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5B635D;">Equipe</h2>
+      <div style="background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px; overflow: hidden;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #E3E1DA;">
+          <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 20px; background: #E3F0E8; color: #14503A; font-weight: 800; display: flex; align-items: center; justify-content: center;">AS</span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column;"><span style="font-size: 15px; font-weight: 700;">Ana Souza (você)</span><span style="font-size: 13px; color: #5B635D;">Responsável</span></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px;">
+          <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 20px; background: #ECEBE5; color: #4A4F4B; font-weight: 800; display: flex; align-items: center; justify-content: center;">CL</span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column;"><span style="font-size: 15px; font-weight: 700;">Carlos Lima</span><span style="font-size: 13px; color: #5B635D;">Funcionário</span></span>
+          <button style="height: 40px; padding: 0 12px; border: 1.5px solid #E7B4AE; border-radius: 10px; background: #FFFFFF; color: #A3261B; font: inherit; font-size: 14px; font-weight: 700;">Remover</button>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; background: #FFFFFF; border: 1.5px dashed #C9C6BC; border-radius: 16px;">
+        <label for="conv" style="font-size: 14px; font-weight: 600;">Adicionar pessoa pelo e-mail da conta</label>
+        <input id="conv" type="email" placeholder="email@exemplo.com" style="height: 48px; padding: 0 14px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; color: #1B1F1C;">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+          <span style="height: 44px; border-radius: 10px; background: #1E6A48; color: #FFFFFF; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">Funcionário</span>
+          <span style="height: 44px; border-radius: 10px; border: 1.5px solid #C9C6BC; box-sizing: border-box; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">Responsável</span>
+        </div>
+        <button style="height: 48px; border: none; border-radius: 12px; background: #14503A; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700;">Adicionar à equipe</button>
+      </div>
+    </section>
+
+    <button style="height: 56px; border: none; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 17px; font-weight: 700;">Salvar alterações</button>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

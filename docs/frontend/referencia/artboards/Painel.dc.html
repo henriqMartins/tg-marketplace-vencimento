@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Painel de acompanhamento</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Bricolage+Grotesque:wght@400;600;700;800&amp;family=Nunito:wght@400;600;700;800;900&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none}
+th{font-weight:600}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 1060px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: {{t.font}}; display: flex; flex-wrap: wrap;">
+  <nav aria-label="Menu do gestor" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; padding: 24px 16px; background: {{t.surface}}; border-right: 1px solid {{t.line}}; display: flex; flex-direction: column; gap: 4px;">
+    <div style="padding: 0 12px 20px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Gestor</span>
+      <span style="font-size: 16px; font-weight: 800;">Mercadinho Vila Nova</span>
+    </div>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; background: {{t.primarySoft}}; color: {{t.primaryDark}}; font-size: 15px; font-weight: 700;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Painel</a>
+    <a href="Projecao.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: {{t.muted}};">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"></path><path d="M14 7h7v7"></path></svg>Projeção</a>
+    <a href="OfertasGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: {{t.muted}};">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12l-8 8-9-9V3h8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>Ofertas</a>
+    <a href="LotesGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: {{t.muted}};">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path></svg>Lotes e fitas</a>
+    <a href="Historico.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: {{t.muted}};">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"></path></svg>Reservas</a>
+    <a href="ConfigGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: {{t.muted}};">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>Configurações</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 24px; max-width: 1240px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Painel de acompanhamento</h1>
+        <span style="font-size: 14px; color: {{t.muted}};">Indicadores lidos do banco · 01/10/2026 a 22/10/2026</span>
+      </div>
+      <div role="group" aria-label="Período" style="display: flex; padding: 4px; gap: 4px; background: {{t.surface}}; border: 1.5px solid {{t.line}}; border-radius: 12px;">
+        <sc-for list="{{periodos}}" as="p" hint-placeholder-count="3">
+          <button onClick="{{p.pick}}" aria-pressed="{{p.on}}" style="{{p.style}}">{{p.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <section aria-label="Indicadores" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+      <sc-for list="{{kpis}}" as="k" hint-placeholder-count="5">
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 18px; background: {{t.surface}}; border: 1.5px solid {{t.line}}; border-radius: 16px;">
+          <span style="font-size: 14px; font-weight: 600; color: {{t.muted}};">{{k.rotulo}}</span>
+          <span style="{{k.vStyle}}">{{k.valor}}</span>
+          <span style="font-size: 13px; color: {{t.muted}};">{{k.nota}}</span>
+        </div>
+      </sc-for>
+    </section>
+
+    <section aria-label="Reservas por semana" style="display: flex; flex-direction: column; gap: 16px; padding: 20px; background: {{t.surface}}; border: 1.5px solid {{t.line}}; border-radius: 16px;">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700;">Desfecho das reservas por semana</h2>
+        <div style="display: flex; gap: 16px; font-size: 13px;">
+          <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 3px; background: {{t.primary}};"></span>Retiradas</span>
+          <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 3px; background: #E8913A;"></span>Expiradas</span>
+          <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 3px; background: {{t.lineStrong}};"></span>Canceladas</span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; align-items: end; height: 220px; padding: 0 8px; border-bottom: 1px solid {{t.lineStrong}};">
+        <sc-for list="{{semanas}}" as="s" hint-placeholder-count="4">
+          <div role="img" aria-label="{{s.aria}}" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%;">
+            <span style="font-size: 13px; font-weight: 700;">{{s.total}}</span>
+            <div style="width: 56px; display: flex; flex-direction: column; gap: 2px;">
+              <div style="{{s.canc}}"></div>
+              <div style="{{s.exp}}"></div>
+              <div style="{{s.ret}}"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; padding: 0 8px; font-size: 13px; color: {{t.muted}}; text-align: center;">
+        <span>01–07/10</span><span>08–14/10</span><span>15–21/10</span><span>22/10</span>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+      <section aria-label="Ofertas ativas" style="flex: 3 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 20px; background: {{t.surface}}; border: 1.5px solid {{t.line}}; border-radius: 16px;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700;">Ofertas ativas</h2>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 520px;">
+            <thead>
+              <tr style="text-align: left; color: {{t.muted}}; border-bottom: 1px solid {{t.line}};">
+                <th style="padding: 8px 6px;">Produto</th>
+                <th style="padding: 8px 6px;">Fita</th>
+                <th style="padding: 8px 6px; text-align: right;">Livre</th>
+                <th style="padding: 8px 6px; text-align: right;">Reservado</th>
+                <th style="padding: 8px 6px; text-align: right;">Retirado</th>
+                <th style="padding: 8px 6px;">Fim da oferta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ofertas}}" as="o" hint-placeholder-count="4">
+                <tr style="border-bottom: 1px solid {{t.line}};">
+                  <td style="padding: 10px 6px; font-weight: 600;">{{o.produto}}</td>
+                  <td style="padding: 10px 6px;"><span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="{{o.sw}}"></span>{{o.cor}}</span></td>
+                  <td style="padding: 10px 6px; text-align: right; font-variant-numeric: tabular-nums;">{{o.livre}}</td>
+                  <td style="padding: 10px 6px; text-align: right; font-variant-numeric: tabular-nums;">{{o.res}}</td>
+                  <td style="padding: 10px 6px; text-align: right; font-variant-numeric: tabular-nums;">{{o.ret}}</td>
+                  <td style="padding: 10px 6px;">{{o.fim}}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-label="Reservas em andamento" style="flex: 2 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 20px; background: {{t.surface}}; border: 1.5px solid {{t.line}}; border-radius: 16px;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700;">Reservas em andamento</h2>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 320px;">
+            <thead>
+              <tr style="text-align: left; color: {{t.muted}}; border-bottom: 1px solid {{t.line}};">
+                <th style="padding: 8px 6px;">Código</th>
+                <th style="padding: 8px 6px;">Produto</th>
+                <th style="padding: 8px 6px; text-align: right;">Qtd</th>
+                <th style="padding: 8px 6px; text-align: right;">Expira em</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{reservas}}" as="r" hint-placeholder-count="4">
+                <tr style="border-bottom: 1px solid {{t.line}};">
+                  <td style="padding: 10px 6px; font-variant-numeric: tabular-nums; color: {{t.muted}};">{{r.cod}}</td>
+                  <td style="padding: 10px 6px; font-weight: 600;">{{r.produto}}</td>
+                  <td style="padding: 10px 6px; text-align: right; font-variant-numeric: tabular-nums;">{{r.qtd}}</td>
+                  <td style="{{r.tStyle}}">{{r.tempo}}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;identidade&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Prazo Certo&quot;,&quot;Vale Hoje&quot;,&quot;Bairro Bom&quot;,&quot;Resgate&quot;,&quot;Original (verde)&quot;],&quot;default&quot;:&quot;Original (verde)&quot;},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1060}}">
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { per: 'Mês atual' }; }
+  renderVals() {
+    const TH = {
+      'Prazo Certo': { font: "'Manrope', system-ui, sans-serif", bg: '#F2F6F5', surface: '#FFFFFF', ink: '#0F1E20', muted: '#51666A', line: '#DCE6E5', lineStrong: '#B9CCCB', primary: '#0E5C63', primaryDark: '#0A464C', primarySoft: '#DDF0EE', onPrimary: '#FFFFFF', accent: '#D9F35B', onAccent: '#1A2B0A', phBg: '#E3ECEB', phFg: '#7C9396' },
+      'Vale Hoje': { font: "'Bricolage Grotesque', system-ui, sans-serif", bg: '#FFF8F3', surface: '#FFFFFF', ink: '#231A17', muted: '#6B5D57', line: '#F0E2DA', lineStrong: '#D9C4B8', primary: '#C8372D', primaryDark: '#9E2A22', primarySoft: '#FCE9E4', onPrimary: '#FFFFFF', accent: '#1F2A44', onAccent: '#FFFFFF', phBg: '#F6E8DF', phFg: '#A88E80' },
+      'Bairro Bom': { font: "'Nunito', system-ui, sans-serif", bg: '#FBF5EC', surface: '#FFFDF9', ink: '#2A1E16', muted: '#6E5E52', line: '#EBDFD0', lineStrong: '#D4C3AF', primary: '#A6411F', primaryDark: '#7F3016', primarySoft: '#F7E6DC', onPrimary: '#FFFFFF', accent: '#E9B23A', onAccent: '#2A1B0F', phBg: '#F1E6D6', phFg: '#A08C76' },
+      'Resgate': { font: "'Space Grotesk', system-ui, sans-serif", bg: '#F5F5FA', surface: '#FFFFFF', ink: '#16152B', muted: '#5A5975', line: '#E2E1EE', lineStrong: '#C4C3D8', primary: '#3730A3', primaryDark: '#28237A', primarySoft: '#E7E6FB', onPrimary: '#FFFFFF', accent: '#F59E0B', onAccent: '#2A1A00', phBg: '#E8E7F3', phFg: '#8A89A6' },
+      'Original (verde)': { font: "'Plus Jakarta Sans', system-ui, sans-serif", bg: '#F6F5F1', surface: '#FFFFFF', ink: '#1B1F1C', muted: '#5B635D', line: '#E3E1DA', lineStrong: '#C9C6BC', primary: '#1E6A48', primaryDark: '#14503A', primarySoft: '#E3F0E8', onPrimary: '#FFFFFF', accent: '#C2410C', onAccent: '#FFFFFF', phBg: '#EDEBE4', phFg: '#8A8678' }
+    };
+    const t = TH[this.props.identidade] || TH['Original (verde)'];
+    const base = 'height: 36px; padding: 0 14px; border: none; border-radius: 8px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ';
+    const k = 4.2;
+    const bar = (v, c) => 'height: ' + Math.round(v * k) + 'px; background: ' + c + '; border-radius: 4px;';
+    const sem = [[22, 6, 3], [27, 7, 4], [30, 8, 4], [24, 5, 4]];
+    const sw = (bg, b) => 'width: 14px; height: 14px; border-radius: 4px; box-sizing: border-box; background: ' + bg + '; border: 1.5px solid ' + b + ';';
+    const branco = sw('#FFFFFF', '#9A968A');
+    const preto = sw('#1B1B1B', '#1B1B1B');
+    const tBase = 'padding: 10px 6px; text-align: right; font-variant-numeric: tabular-nums; ';
+    const v = (c) => 'font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; color: ' + c + ';';
+    return {
+      t: t,
+      periodos: ['7 dias', '30 dias', 'Mês atual'].map((p) => ({
+        label: p, on: this.state.per === p,
+        style: base + (this.state.per === p ? 'background: ' + t.primary + '; color: ' + t.onPrimary + ';' : 'background: transparent; color: ' + t.ink + ';'),
+        pick: () => this.setState({ per: p })
+      })),
+      kpis: [
+        { rotulo: 'Reservas criadas', valor: '148', nota: '144 encerradas · 4 em andamento', vStyle: v(t.ink) },
+        { rotulo: 'Taxa de retirada', valor: '72%', nota: '103 de 144 encerradas', vStyle: v(t.primary) },
+        { rotulo: 'Taxa de expiração', valor: '18%', nota: '26 de 144 encerradas', vStyle: v('#B4530C') },
+        { rotulo: 'Compradores bloqueados', valor: '23', nota: '17 sem nada · 6 levaram menos do que pediram', vStyle: v(t.ink) },
+        { rotulo: 'Perda no encerramento', valor: '37 un.', nota: 'sobra livre ao fim das ofertas', vStyle: v(t.ink) }
+      ],
+      semanas: sem.map((s) => ({
+        total: s[0] + s[1] + s[2],
+        aria: s[0] + ' retiradas, ' + s[1] + ' expiradas, ' + s[2] + ' canceladas',
+        ret: bar(s[0], t.primary), exp: bar(s[1], '#E8913A'), canc: bar(s[2], t.lineStrong)
+      })),
+      ofertas: [
+        { produto: 'Iogurte natural 170 g', cor: 'Branco', sw: branco, livre: 6, res: 4, ret: 2, fim: '27/10/2026' },
+        { produto: 'Biscoito recheado 140 g', cor: 'Branco', sw: branco, livre: 11, res: 5, ret: 2, fim: '28/10/2026' },
+        { produto: 'Presunto fatiado 200 g', cor: 'Branco', sw: branco, livre: 3, res: 2, ret: 1, fim: '29/10/2026' },
+        { produto: 'Molho de tomate 300 g', cor: 'Preto', sw: preto, livre: 9, res: 0, ret: 3, fim: '04/11/2026' }
+      ],
+      reservas: [
+        { cod: '••• 917', produto: 'Iogurte natural 170 g', qtd: 2, tempo: '3 h 42 min', tStyle: tBase },
+        { cod: '••• 204', produto: 'Biscoito recheado 140 g', qtd: 3, tempo: '2 h 10 min', tStyle: tBase },
+        { cod: '••• 556', produto: 'Presunto fatiado 200 g', qtd: 2, tempo: '48 min', tStyle: tBase + 'color: #B4530C; font-weight: 700;' },
+        { cod: '••• 381', produto: 'Iogurte natural 170 g', qtd: 2, tempo: '15 min', tStyle: tBase + 'color: #B42318; font-weight: 700;' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

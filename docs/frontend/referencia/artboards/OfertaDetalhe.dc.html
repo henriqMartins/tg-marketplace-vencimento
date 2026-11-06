@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Detalhe da oferta</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 16px 16px 12px; background: #FFFFFF; border-bottom: 1px solid #E3E1DA;">
+    <a href="OfertasLoja.dc.html" aria-label="Voltar às ofertas" style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex-grow: 1; display: flex; flex-direction: column;">
+      <h1 style="margin: 0; font-size: 18px; font-weight: 700;">Iogurte natural 170 g</h1>
+      <span style="font-size: 13px; color: #5B635D;">Fita Branco · R$ 3,14 (−30%) · janela 4 h</span>
+    </div>
+    <span style="{{selo}}">{{seloTxt}}</span>
+  </header>
+
+  <main style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px; padding: 14px 16px; overflow: hidden;">
+    <sc-if value="{{encerrada}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: #FDE8E7; color: #8A1C13; font-size: 14px; line-height: 1.45;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>
+        <span><strong>Encerrada em 27/10, 23:59.</strong> 3 unidades livres foram registradas como perda. Tire-as da área de reservas e dê o destino (descarte, doação ou devolução).</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ativa}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #E3E1DA; font-size: 14px; line-height: 1.45;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E6A48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <span>Sai da vitrine em <strong>27/10, 23:59</strong> (validade 28/10 − 1 dia).</span>
+      </div>
+    </sc-if>
+
+    <section aria-label="Estoque" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span style="font-size: 14px; font-weight: 700;">Unidades separadas</span>
+        <span style="font-size: 26px; font-weight: 800;">12</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px;">
+        <sc-for list="{{numeros}}" as="n" hint-placeholder-count="5">
+          <div style="{{n.box}}">
+            <span style="font-size: 22px; font-weight: 800;">{{n.v}}</span>
+            <span style="font-size: 11px; font-weight: 600;">{{n.r}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; color: #5B635D;">Separado = livre + reservado + retirado + ajustado + perda</span>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px;">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 700;">{{tituloReservas}}</h2>
+      <sc-for list="{{reservas}}" as="r" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 14px; font-size: 14px;">
+          <span style="font-weight: 700; letter-spacing: 0.06em;">{{r.cod}}</span>
+          <span style="flex-grow: 1; color: #5B635D;">{{r.qtd}}</span>
+          <span style="{{r.st}}">{{r.info}}</span>
+        </div>
+      </sc-for>
+    </section>
+  </main>
+
+  <sc-if value="{{ativa}}" hint-placeholder-val="{{ true }}">
+    <footer style="display: flex; gap: 10px; padding: 10px 16px 24px;">
+      <a href="Ajuste.dc.html" style="flex: 1; display: flex; align-items: center; justify-content: center; height: 56px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 14px; background: #FFFFFF; font-size: 16px; font-weight: 700;">Ajustar estoque</a>
+      <a href="ValidarRetirada.dc.html" style="flex: 1; display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font-size: 16px; font-weight: 700;">Validar retirada</a>
+    </footer>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"estado":{"editor":"enum","options":["ativa","encerrada"],"default":"ativa"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const enc = (this.props.estado ?? 'ativa') === 'encerrada';
+    const box = (bg, c) => 'display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 2px; border-radius: 12px; background: ' + bg + '; color: ' + c + ';';
+    const v = enc ? [0, 0, 9, 0, 3] : [6, 4, 2, 0, 0];
+    const st = (c) => 'font-weight: 700; color: ' + c + ';';
+    return {
+      encerrada: enc, ativa: !enc,
+      selo: 'padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; ' + (enc ? 'background: #ECEBE5; color: #4A4F4B;' : 'background: #E4F1E4; color: #1F5B2A;'),
+      seloTxt: enc ? 'Encerrada' : 'Ativa',
+      numeros: [
+        { v: v[0], r: 'livre', box: box('#E4F1E4', '#1F5B2A') },
+        { v: v[1], r: 'reserv.', box: box('#FBEFD0', '#6B4A00') },
+        { v: v[2], r: 'retirado', box: box('#E3F0E8', '#14503A') },
+        { v: v[3], r: 'ajustado', box: box('#ECEBE5', '#4A4F4B') },
+        { v: v[4], r: 'perda', box: box('#FDE8E7', '#8A1C13') }
+      ],
+      tituloReservas: enc ? 'Reservas desta oferta' : 'Reservas aguardando retirada (2)',
+      reservas: enc ? [
+        { cod: '••• 917', qtd: '2 un.', info: 'Retirada', st: st('#1F5B2A') },
+        { cod: '••• 381', qtd: '2 un.', info: 'Expirada', st: st('#4A4F4B') },
+        { cod: '••• 640', qtd: '1 un.', info: 'Cancelada', st: st('#8A1C13') }
+      ] : [
+        { cod: '••• 917', qtd: '2 un.', info: 'expira em 3 h 42 min', st: st('#1E6A48') },
+        { cod: '••• 381', qtd: '2 un.', info: 'expira em 15 min', st: st('#B42318') }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

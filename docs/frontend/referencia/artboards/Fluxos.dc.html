@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Fluxos de navegação e estados</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1600px; min-height: 1640px; box-sizing: border-box; padding: 56px; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; gap: 28px;">
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <h1 style="margin: 0; font-size: 34px; font-weight: 800;">Fluxos de navegação</h1>
+    <span style="font-size: 16px; color: #5B635D;">Códigos das telas (A, C, L, G) iguais aos títulos dos artboards. Seta = navegação; caixa tracejada = ação física fora do app.</span>
+  </div>
+
+  <sc-for list="{{fluxos}}" as="f" hint-placeholder-count="7">
+    <section style="display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 18px;">
+      <div style="display: flex; align-items: baseline; gap: 12px;">
+        <h2 style="margin: 0; font-size: 19px; font-weight: 800;">{{f.titulo}}</h2>
+        <span style="font-size: 14px; color: #5B635D;">{{f.quem}}</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+        <sc-for list="{{f.passos}}" as="p" hint-placeholder-count="6">
+          <span style="{{p.style}}"><strong style="color: #1E6A48;">{{p.cod}}</strong> {{p.nome}}</span>
+          <sc-if value="{{p.seta}}" hint-placeholder-val="{{ true }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8678" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+          </sc-if>
+        </sc-for>
+      </div>
+      <span style="font-size: 14px; color: #4A4F4B; line-height: 1.45;">{{f.nota}}</span>
+    </section>
+  </sc-for>
+
+  <h2 style="margin: 8px 0 0; font-size: 24px; font-weight: 800;">Estados da reserva e da oferta</h2>
+  <div style="position: relative; width: 1488px; height: 540px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 18px;">
+    <svg width="128" height="8" viewBox="0 0 128 8" preserveAspectRatio="none" style="position: absolute; left: 264px; top: 200px; width: 128px; height: 8px; overflow: visible; fill: none; stroke: #8A8678; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M 0 4 L 128 4"></path></svg>
+    <svg width="8" height="240" viewBox="0 0 8 240" preserveAspectRatio="none" style="position: absolute; left: 388px; top: 84px; width: 8px; height: 240px; overflow: visible; fill: none; stroke: #8A8678; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M 4 0 L 4 240"></path></svg>
+    <svg width="127" height="8" viewBox="0 0 127 8" preserveAspectRatio="none" style="position: absolute; left: 392px; top: 80px; width: 127px; height: 8px; overflow: visible; fill: none; stroke: #8A8678; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-1" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#8A8678" stroke="none" style="stroke: none; fill: #8A8678; fill: context-stroke"/></marker></defs><path d="M 0 4 L 123 4" marker-end="url(#dc-arrow-head-filled-1)"></path></svg>
+    <svg width="127" height="8" viewBox="0 0 127 8" preserveAspectRatio="none" style="position: absolute; left: 392px; top: 200px; width: 127px; height: 8px; overflow: visible; fill: none; stroke: #8A8678; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-2" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#8A8678" stroke="none" style="stroke: none; fill: #8A8678; fill: context-stroke"/></marker></defs><path d="M 0 4 L 123 4" marker-end="url(#dc-arrow-head-filled-2)"></path></svg>
+    <svg width="127" height="8" viewBox="0 0 127 8" preserveAspectRatio="none" style="position: absolute; left: 392px; top: 320px; width: 127px; height: 8px; overflow: visible; fill: none; stroke: #8A8678; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-3" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#8A8678" stroke="none" style="stroke: none; fill: #8A8678; fill: context-stroke"/></marker></defs><path d="M 0 4 L 123 4" marker-end="url(#dc-arrow-head-filled-3)"></path></svg>
+    <svg width="255" height="8" viewBox="0 0 255 8" preserveAspectRatio="none" style="position: absolute; left: 264px; top: 452px; width: 255px; height: 8px; overflow: visible; fill: none; stroke: #8A8678; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><defs><marker id="dc-arrow-head-filled-4" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#8A8678" stroke="none" style="stroke: none; fill: #8A8678; fill: context-stroke"/></marker></defs><path d="M 0 4 L 251 4" marker-end="url(#dc-arrow-head-filled-4)"></path></svg>
+
+    <div style="position: absolute; left: 64px; top: 24px; font-size: 14px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #5B635D;">Reserva</div>
+    <div style="position: absolute; left: 64px; top: 160px; width: 200px; height: 88px; box-sizing: border-box; padding: 8px; display: flex; align-items: center; justify-content: center; text-align: center; background: #FBEFD0; border: 1.5px solid #E9B23A; border-radius: 14px; color: #6B4A00;"><span><b>Reservada</b><br>livre − quantidade</span></div>
+    <div style="position: absolute; left: 520px; top: 40px; width: 360px; height: 88px; box-sizing: border-box; padding: 8px 14px; display: flex; align-items: center; background: #E4F1E4; border: 1.5px solid #9CC9A0; border-radius: 14px; color: #1F5B2A;"><span><b>Retirada</b><br>lojista digitou o código; tudo ou nada; paga na loja</span></div>
+    <div style="position: absolute; left: 520px; top: 160px; width: 360px; height: 88px; box-sizing: border-box; padding: 8px 14px; display: flex; align-items: center; background: #ECEBE5; border: 1.5px solid #C9C6BC; border-radius: 14px; color: #4A4F4B;"><span><b>Expirada</b><br>janela acabou sem retirada; devolve ao livre uma vez</span></div>
+    <div style="position: absolute; left: 520px; top: 280px; width: 360px; height: 88px; box-sizing: border-box; padding: 8px 14px; display: flex; align-items: center; background: #FDE8E7; border: 1.5px solid #E7B4AE; border-radius: 14px; color: #8A1C13;"><span><b>Cancelada</b><br>consumidor desistiu; devolve ao livre uma vez</span></div>
+    <div style="position: absolute; left: 960px; top: 40px; width: 464px; height: 328px; box-sizing: border-box; padding: 20px; display: flex; align-items: flex-start; background: #F6F5F1; border: 1.5px dashed #C9C6BC; border-radius: 14px; font-size: 15px; line-height: 1.5;"><span><b>Regras que a interface precisa refletir</b><br>• Pedido maior que o livre: reserva parcial min(pedido, livre).<br>• Livre = 0: reserva recusada (conta como comprador bloqueado).<br>• expira_em = mín(agora + janela, fim da oferta).<br>• Expiração é conferida em toda leitura: a tela sempre recarrega o estado ao abrir.<br>• Invariante: separado = livre + reservado + retirado + ajustado + perda.</span></div>
+
+    <div style="position: absolute; left: 64px; top: 392px; font-size: 14px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #5B635D;">Oferta</div>
+    <div style="position: absolute; left: 64px; top: 420px; width: 200px; height: 72px; box-sizing: border-box; padding: 8px; display: flex; align-items: center; justify-content: center; text-align: center; background: #E4F1E4; border: 1.5px solid #9CC9A0; border-radius: 14px; color: #1F5B2A;"><span><b>Ativa</b><br>aparece na vitrine</span></div>
+    <div style="position: absolute; left: 332px; top: 424px; width: 120px; text-align: center; font-size: 13px; line-height: 16px; color: #5B635D;">chega o fim</div>
+    <div style="position: absolute; left: 520px; top: 420px; width: 904px; height: 72px; box-sizing: border-box; padding: 8px 14px; display: flex; align-items: center; background: #ECEBE5; border: 1.5px solid #C9C6BC; border-radius: 14px; color: #4A4F4B;"><span><b>Encerrada</b> · fim = validade − margem (do produto ou da loja, padrão 1 dia). Sobra livre vira perda; o lojista dá o destino físico.</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tela = 'padding: 8px 12px; border-radius: 10px; background: #F6F5F1; border: 1.5px solid #C9C6BC; font-size: 14px; font-weight: 700; white-space: nowrap;';
+    const fisico = 'padding: 8px 12px; border-radius: 10px; background: #FFFFFF; border: 1.5px dashed #8A8678; font-size: 14px; font-weight: 700; color: #4A4F4B; white-space: nowrap;';
+    const mk = (arr) => arr.map((p, i) => ({ cod: p[0], nome: p[1], style: p[0] === '' ? fisico : tela, seta: i < arr.length - 1 }));
+    return {
+      fluxos: [
+        { titulo: '1. Acesso', quem: 'todos', passos: mk([['A1', 'Abertura'], ['A2', 'Entrar'], ['A3', 'Criar conta (se novo)'], ['A4', 'Escolher como entrar (só quem tem vínculo)'], ['C2 / L1', 'Vitrine ou Início da loja']]), nota: 'Sem vínculo com loja: vai direto para a vitrine. Com vínculo: escolhe "Comprar" ou a loja. A escolha fica salva no aparelho e pode ser trocada no Perfil.' },
+        { titulo: '2. Descobrir e reservar', quem: 'consumidor', passos: mk([['C1', 'Localização (e avisos)'], ['C2', 'Vitrine'], ['C4', 'Reserva da quantidade'], ['C5', 'Resultado'], ['C6', 'Código de retirada'], ['', 'Vai à loja, informa o código e paga']]), nota: 'C1 só na primeira vez. C5 mostra confirmada, parcial (manter ou cancelar) ou recusada. Depois, o código fica em C8 Minhas reservas.' },
+        { titulo: '3. Desfechos da reserva', quem: 'consumidor', passos: mk([['C6', 'Código'], ['C7', 'Cancelar (confirmação)'], ['C7', 'Expirada'], ['C7', 'Retirada']]), nota: 'Cancelar e expirar devolvem a quantidade à vitrine. A tela C6 recarrega o estado ao abrir e a cada 30 s enquanto aberta.' },
+        { titulo: '4. Recebimento do lote', quem: 'lojista (funcionário ou responsável)', passos: mk([['L1', 'Início da loja'], ['L2', 'Novo produto (se não existe)'], ['L3', 'Cadastro do lote'], ['', 'Cola a fita na caixa e a divisória na zona'], ['L4', 'Lotes e fitas']]), nota: 'O sistema dá a cor pelo bimestre de vencimento, agrupa com o grupo ativo da mesma cor (referência = data mais próxima) e avisa colisão de ciclo. O aviso é agendado pela antecedência da loja.' },
+        { titulo: '5. Do aviso à oferta', quem: 'lojista', passos: mk([['L5', 'Avisos'], ['L6', 'Conferência na zona'], ['L7', 'Revisar e publicar'], ['L8', 'Oferta publicada'], ['L10', 'Detalhe da oferta']]), nota: 'Alternativa em L6: adiar o aviso (L8, folha de adiar). Publicar exige confirmar que as unidades foram separadas e não serão vendidas no balcão.' },
+        { titulo: '6. Oferta ativa e retirada', quem: 'lojista', passos: mk([['L9', 'Ofertas'], ['L10', 'Detalhe'], ['L11', 'Ajuste de estoque'], ['L12', 'Validar retirada'], ['L13', 'Confirmar retirada']]), nota: 'Ajuste só reduz o livre e exige motivo. Retirada: o lojista digita os 6 dígitos; o sistema acha a reserva ativa daquela loja; confirma tudo ou nada.' },
+        { titulo: '7. Acompanhamento', quem: 'responsável (no computador)', passos: mk([['G1', 'Painel'], ['G2', 'Projeção'], ['G3', 'Histórico'], ['L14', 'Configurações da loja']]), nota: 'O painel varre as reservas vencidas antes de calcular. A Projeção chama o mesmo motor da simulação e mostra cenário projetado, nunca previsão.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

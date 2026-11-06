@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Gestor — painel da loja</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E6A48}a:hover{color:#14503A}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #9CC9A0;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 1180px; background: #F6F5F1; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #1B1F1C; font-variant-numeric: tabular-nums; box-sizing: border-box">
+
+<sc-if value="{{isLogin}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-wrap: wrap; min-height: 1180px">
+    <div style="flex: 1 1 480px; background: #1E6A48; color: #FFFFFF; padding: 64px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 48px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="width: 48px; height: 48px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1E6A48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path><path d="M10 21v-6h4v6"></path></svg>
+        </div>
+        <span style="font-size: 22px; font-weight: 800">[Nome do app]</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 32px; max-width: 560px">
+        <h1 style="margin: 0; font-size: 40px; font-weight: 800; line-height: 1.15">Produtos perto da validade, com desconto, no mercadinho do bairro.</h1>
+        <div style="display: flex; flex-direction: column; gap: 18px; font-size: 16px; line-height: 1.45; color: #E3F0E8">
+          <div style="display: flex; gap: 14px; align-items: flex-start">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2 3h3l2.5 12h12L22 7H6.2"></path></svg>
+            <span><strong style="color: #FFFFFF">Para quem compra:</strong> reserve pelo celular e pague na retirada.</span>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: flex-start">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M3 9h18l-1.5-5h-15z"></path><path d="M4 9v11h16V9"></path><path d="M9 20v-6h6v6"></path></svg>
+            <span><strong style="color: #FFFFFF">Para a loja:</strong> fitas por bimestre, avisos de validade e retirada com código.</span>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: flex-start">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M4 20V10"></path><path d="M10 20V4"></path><path d="M16 20v-7"></path><path d="M22 20H2"></path></svg>
+            <span><strong style="color: #FFFFFF">Para o responsável:</strong> painel, projeção da janela e configurações.</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 14px; color: #CFE6DA">Uma conta só: as telas da loja aparecem para quem tem vínculo com ela.</p>
+    </div>
+    <div style="flex: 1 1 480px; display: flex; align-items: center; justify-content: center; padding: 48px 16px; box-sizing: border-box">
+      <form onSubmit="{{entrar}}" style="width: 100%; max-width: 420px; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 20px; padding: 36px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h2 style="margin: 0; font-size: 28px; font-weight: 800">Entrar</h2>
+          <p style="margin: 0; font-size: 15px; color: #5B635D">Use o e-mail e a senha da sua conta</p>
+        </div>
+        <sc-if value="{{conectando}}" hint-placeholder-val="{{ false }}">
+          <div role="status" style="display: flex; gap: 10px; align-items: center; background: #FBEFD0; color: #6B4A00; border-radius: 12px; padding: 12px 14px; font-size: 13px; font-weight: 600">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9"></path></svg>
+            <span>Conectando ao servidor… pode levar até 1 minuto</span>
+          </div>
+        </sc-if>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="g-email" style="font-size: 14px; font-weight: 600">E-mail</label>
+          <input id="g-email" type="email" autocomplete="email" value="{{email}}" onChange="{{onEmail}}" style="height: 52px; border-radius: 12px; border: 1.5px solid #C9C6BC; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C; background: #FFFFFF">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline">
+            <label for="g-senha" style="font-size: 14px; font-weight: 600">Senha</label>
+            <a href="#esqueci" style="font-size: 13px; font-weight: 600">Esqueci minha senha</a>
+          </div>
+          <input id="g-senha" type="password" autocomplete="current-password" value="{{senha}}" onChange="{{onSenha}}" style="height: 52px; border-radius: 12px; border: 1.5px solid #C9C6BC; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C; background: #FFFFFF">
+        </div>
+        <label style="display: flex; gap: 10px; align-items: center; font-size: 14px; min-height: 44px; cursor: pointer">
+          <input type="checkbox" checked="{{manter}}" onChange="{{toggleManter}}" style="width: 20px; height: 20px; accent-color: #1E6A48">
+          <span>Manter conectado neste computador</span>
+        </label>
+        <button type="submit" style="height: 56px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Entrar</button>
+        <p style="margin: 0; text-align: center; font-size: 14px; color: #5B635D">Não tem conta? <a href="#criar" style="font-weight: 700">Criar conta</a></p>
+      </form>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{isApp}}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; flex-wrap: wrap; align-items: stretch; min-height: 1180px">
+    <nav aria-label="Menu do gestor" style="flex: 1 1 232px; max-width: 100%; background: #FFFFFF; border-right: 1px solid #E3E1DA; padding: 24px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: #1E6A48; display: flex; align-items: center; justify-content: center; flex: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path><path d="M10 21v-6h4v6"></path></svg>
+        </div>
+        <span style="font-size: 16px; font-weight: 800">[Nome do app]</span>
+      </div>
+      <div style="padding: 12px; border-radius: 14px; background: #F6F5F1; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 14px; font-weight: 700">Mercadinho Vila Nova</span>
+        <span style="font-size: 13px; color: #5B635D">Carlos Lima · Responsável</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <button type="button" onClick="{{go.painel}}" aria-current="{{cur.painel}}" style="{{menu.painel}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"></path><path d="M10 20V4"></path><path d="M16 20v-7"></path><path d="M22 20H2"></path></svg>
+          <span>Painel</span>
+        </button>
+        <button type="button" onClick="{{go.projecao}}" aria-current="{{cur.projecao}}" style="{{menu.projecao}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+          <span>Projeção</span>
+        </button>
+        <button type="button" onClick="{{go.ofertas}}" aria-current="{{cur.ofertas}}" style="{{menu.ofertas}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>
+          <span>Ofertas</span>
+        </button>
+        <button type="button" onClick="{{go.lotes}}" aria-current="{{cur.lotes}}" style="{{menu.lotes}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8l9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path><path d="M12 13v8"></path></svg>
+          <span>Lotes e fitas</span>
+        </button>
+        <button type="button" onClick="{{go.reservas}}" aria-current="{{cur.reservas}}" style="{{menu.reservas}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8"></path><path d="M8 12h8"></path><path d="M8 16h5"></path></svg>
+          <span>Reservas</span>
+        </button>
+        <button type="button" onClick="{{go.config}}" aria-current="{{cur.config}}" style="{{menu.config}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+          <span>Configurações</span>
+        </button>
+      </div>
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #E3E1DA; padding-top: 16px">
+        <button type="button" onClick="{{sair}}" style="height: 44px; border-radius: 12px; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 600; color: #8A1C13; text-align: left; padding: 0 12px; cursor: pointer; display: flex; align-items: center; gap: 10px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+          <span>Sair</span>
+        </button>
+      </div>
+    </nav>
+
+    <main style="flex: 999 1 560px; min-width: 0; padding: 32px; box-sizing: border-box">
+      <div style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px">
+
+<!-- ============ G1 PAINEL ============ -->
+<sc-if value="{{is.painel}}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800">Painel de acompanhamento</h1>
+        <p style="margin: 0; font-size: 15px; color: #5B635D">Indicadores lidos do banco · {{periodoTexto}}</p>
+      </div>
+      <div role="group" aria-label="Período" style="display: flex; gap: 4px; padding: 4px; background: #ECEBE5; border-radius: 14px">
+        <sc-for list="{{periodos}}" as="p" hint-placeholder-count="3">
+          <button type="button" onClick="{{p.pick}}" aria-pressed="{{p.active}}" style="{{p.style}}">{{p.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Reservas criadas</span>
+        <span style="font-size: 40px; font-weight: 800; line-height: 1.1">{{kpi.criadas}}</span>
+        <span style="font-size: 13px; color: #5B635D">{{kpi.recusas}} recusas no período</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Taxa de retirada</span>
+        <span style="font-size: 40px; font-weight: 800; line-height: 1.1; color: #1E6A48">{{kpi.retirada}}</span>
+        <span style="font-size: 13px; color: #5B635D">das reservas encerradas</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Taxa de expiração</span>
+        <span style="font-size: 40px; font-weight: 800; line-height: 1.1; color: #B4530C">{{kpi.expiracao}}</span>
+        <span style="font-size: 13px; color: #5B635D">prazo terminou sem retirada</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Compradores bloqueados</span>
+        <span style="font-size: 40px; font-weight: 800; line-height: 1.1">{{kpi.bloqueados}}</span>
+        <span style="font-size: 13px; color: #5B635D">{{kpi.recusas}} sem nada · {{kpi.parciais}} levaram menos do que pediram</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Perda no encerramento</span>
+        <span style="font-size: 40px; font-weight: 800; line-height: 1.1">{{kpi.perda}}</span>
+        <span style="font-size: 13px; color: #5B635D">unidades livres no fim da oferta</span>
+      </div>
+    </div>
+    <section aria-label="Reservas por desfecho" style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700">Reservas por desfecho · {{chartUnidade}}</h2>
+        <div style="display: flex; gap: 16px; font-size: 13px; color: #4A4F4B; flex-wrap: wrap">
+          <span style="display: flex; gap: 6px; align-items: center"><span style="width: 12px; height: 12px; border-radius: 3px; background: #1E6A48"></span>Retiradas</span>
+          <span style="display: flex; gap: 6px; align-items: center"><span style="width: 12px; height: 12px; border-radius: 3px; background: #E8913A"></span>Expiradas</span>
+          <span style="display: flex; gap: 6px; align-items: center"><span style="width: 12px; height: 12px; border-radius: 3px; background: #C9C6BC"></span>Canceladas</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 12px">
+        <div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 200px; font-size: 12px; color: #5B635D; text-align: right; min-width: 28px">
+          <span>{{eixo.max}}</span>
+          <span>{{eixo.meio}}</span>
+          <span>0</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0">
+          <div style="height: 200px; display: flex; align-items: flex-end; justify-content: space-around; gap: 12px; border-bottom: 1px solid #C9C6BC; background-image: linear-gradient(#E3E1DA 1px, transparent 1px); background-size: 100% 100px">
+            <sc-for list="{{barras}}" as="b" hint-placeholder-count="5">
+              <div role="img" aria-label="{{b.aria}}" style="flex: 1; max-width: 64px; display: flex; flex-direction: column-reverse; gap: 2px">
+                <div style="{{b.hR}}"></div>
+                <div style="{{b.hE}}"></div>
+                <div style="{{b.hC}}"></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; justify-content: space-around; gap: 12px">
+            <sc-for list="{{barras}}" as="b" hint-placeholder-count="5">
+              <span style="flex: 1; max-width: 64px; text-align: center; font-size: 12px; color: #5B635D">{{b.label}}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div style="display: flex; flex-wrap: wrap; gap: 16px">
+      <section style="flex: 3 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 20px 0 8px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; padding: 0 20px; font-size: 16px; font-weight: 700">Ofertas ativas</h2>
+        <div style="overflow-x: auto">
+          <div role="table" aria-label="Ofertas ativas" style="min-width: 560px">
+            <div role="row" style="display: grid; grid-template-columns: minmax(180px, 2fr) 100px 56px 84px 72px 96px; gap: 12px; padding: 8px 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">
+              <span role="columnheader">Produto</span><span role="columnheader">Fita</span><span role="columnheader" style="text-align: right">Livre</span><span role="columnheader" style="text-align: right">Reservado</span><span role="columnheader" style="text-align: right">Retirado</span><span role="columnheader">Fim</span>
+            </div>
+            <sc-for list="{{ofertasAtivas}}" as="o" hint-placeholder-count="4">
+              <div role="row" style="display: grid; grid-template-columns: minmax(180px, 2fr) 100px 56px 84px 72px 96px; gap: 12px; padding: 12px 20px; border-top: 1px solid #E3E1DA; font-size: 14px; align-items: center">
+                <span role="cell" style="font-weight: 600">{{o.produto}}</span>
+                <span role="cell" style="display: flex; align-items: center; gap: 8px"><span style="{{o.dot}}"></span>{{o.fita}}</span>
+                <span role="cell" style="text-align: right">{{o.livre}}</span>
+                <span role="cell" style="text-align: right">{{o.reservado}}</span>
+                <span role="cell" style="text-align: right">{{o.retirado}}</span>
+                <span role="cell" style="{{o.fimStyle}}">{{o.fimCurto}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+      <section style="flex: 2 1 380px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 20px 0 8px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; padding: 0 20px; font-size: 16px; font-weight: 700">Reservas em andamento</h2>
+        <div style="overflow-x: auto">
+          <div role="table" aria-label="Reservas em andamento" style="min-width: 380px">
+            <div role="row" style="display: grid; grid-template-columns: 80px minmax(130px, 1fr) 44px 100px; gap: 12px; padding: 8px 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">
+              <span role="columnheader">Código</span><span role="columnheader">Produto</span><span role="columnheader" style="text-align: right">Qtd</span><span role="columnheader">Expira em</span>
+            </div>
+            <sc-for list="{{andamento}}" as="r" hint-placeholder-count="4">
+              <div role="row" style="display: grid; grid-template-columns: 80px minmax(130px, 1fr) 44px 100px; gap: 12px; padding: 12px 20px; border-top: 1px solid #E3E1DA; font-size: 14px; align-items: center">
+                <span role="cell" style="font-weight: 700">{{r.cod}}</span>
+                <span role="cell">{{r.produto}}</span>
+                <span role="cell" style="text-align: right">{{r.qtd}}</span>
+                <span role="cell" style="{{r.expStyle}}">{{r.expira}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ============ G2 PROJEÇÃO ============ -->
+<sc-if value="{{is.projecao}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800">Projeção da janela de reserva</h1>
+      <p style="margin: 0; font-size: 15px; color: #5B635D">Compare perda e compradores bloqueados para cada janela</p>
+    </div>
+    <div role="note" style="display: flex; gap: 12px; align-items: flex-start; background: #FEF3C7; color: #6B3F00; border-radius: 16px; padding: 16px 18px; font-size: 14px; line-height: 1.45">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+      <span><strong>Cenário projetado, não previsão.</strong> Os números vêm de milhares de ofertas simuladas pelo mesmo motor de regras do sistema, com as faixas do estudo. Servem para comparar janelas, não para prometer resultado.</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+      <section style="flex: 1 1 320px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 20px">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700">Parâmetros do cenário</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline">
+            <label for="p-lote" style="font-size: 14px; font-weight: 600">Tamanho do lote</label>
+            <span style="font-size: 16px; font-weight: 800">{{lote}} un.</span>
+          </div>
+          <input id="p-lote" type="range" min="5" max="60" step="1" value="{{lote}}" onChange="{{onLote}}" style="width: 100%; accent-color: #1E6A48; height: 28px">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #5B635D"><span>5</span><span>60</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline">
+            <label for="p-procura" style="font-size: 14px; font-weight: 600">Procura esperada</label>
+            <span style="font-size: 16px; font-weight: 800">{{procuraTxt}}</span>
+          </div>
+          <input id="p-procura" type="range" min="0.3" max="3" step="0.1" value="{{procura}}" onChange="{{onProcura}}" style="width: 100%; accent-color: #1E6A48; height: 28px">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #5B635D"><span>0,3 × o lote</span><span>3,0 × o lote</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span id="p-chegada" style="font-size: 14px; font-weight: 600">Tempo típico até o cliente chegar</span>
+          <div role="group" aria-labelledby="p-chegada" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{chegadas}}" as="c" hint-placeholder-count="3">
+              <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.active}}" style="{{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <button type="button" onClick="{{recalcular}}" disabled="{{calculando}}" style="height: 52px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">{{recalcLabel}}</button>
+        <p style="margin: 0; font-size: 13px; color: #5B635D; line-height: 1.45">Os demais valores (janela da loja, margem, horários de chegada) seguem as faixas do estudo. Neste protótipo, os resultados mostram as médias do cenário base (lote 24, procura 1,0×, chegada 2 h).</p>
+      </section>
+      <section style="flex: 2 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 700">Resultado</h2>
+          <div role="group" aria-label="Janela de reserva" style="display: flex; gap: 4px; padding: 4px; background: #ECEBE5; border-radius: 14px; flex-wrap: wrap">
+            <sc-for list="{{janelas}}" as="j" hint-placeholder-count="7">
+              <button type="button" onClick="{{j.pick}}" aria-pressed="{{j.active}}" style="{{j.segStyle}}">{{j.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px">
+          <div style="background: #E3F0E8; color: #14503A; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 4px">
+            <span style="font-size: 13px; font-weight: 600">Perda projetada</span>
+            <span style="font-size: 36px; font-weight: 800; line-height: 1.1">{{res.perda}}</span>
+            <span style="font-size: 13px">do lote separado</span>
+          </div>
+          <div style="background: #FBE9DE; color: #8A3108; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 4px">
+            <span style="font-size: 13px; font-weight: 600">Compradores bloqueados</span>
+            <span style="font-size: 36px; font-weight: 800; line-height: 1.1">{{res.bloq}}</span>
+            <span style="font-size: 13px">não levaram tudo o que pediram</span>
+          </div>
+          <div style="background: #ECEBE5; color: #1B1F1C; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 4px">
+            <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Taxa de retirada</span>
+            <span style="font-size: 36px; font-weight: 800; line-height: 1.1">{{res.ret}}</span>
+            <span style="font-size: 13px; color: #4A4F4B">das reservas</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; gap: 16px; font-size: 13px; color: #4A4F4B; flex-wrap: wrap">
+            <span style="display: flex; gap: 6px; align-items: center"><span style="width: 12px; height: 12px; border-radius: 3px; background: #1E6A48"></span>Perda (%)</span>
+            <span style="display: flex; gap: 6px; align-items: center"><span style="width: 12px; height: 12px; border-radius: 3px; background: #C2410C"></span>Compradores bloqueados (%)</span>
+          </div>
+          <div style="display: flex; gap: 12px">
+            <div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 200px; font-size: 12px; color: #5B635D; text-align: right; min-width: 32px">
+              <span>100%</span><span>50%</span><span>0</span>
+            </div>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+              <div style="height: 200px; display: flex; align-items: flex-end; justify-content: space-around; gap: 8px; border-bottom: 1px solid #C9C6BC; background-image: linear-gradient(#E3E1DA 1px, transparent 1px); background-size: 100% 100px">
+                <sc-for list="{{janelas}}" as="j" hint-placeholder-count="7">
+                  <button type="button" onClick="{{j.pick}}" aria-label="{{j.aria}}" style="{{j.barBtn}}">
+                    <span style="{{j.perdaH}}"></span>
+                    <span style="{{j.bloqH}}"></span>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="display: flex; justify-content: space-around; gap: 8px">
+                <sc-for list="{{janelas}}" as="j" hint-placeholder-count="7">
+                  <span style="{{j.lblStyle}}">{{j.label}}</span>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="background: #F6F5F1; border-radius: 14px; padding: 14px 16px; font-size: 14px; line-height: 1.5; color: #1B1F1C">
+          <strong>Como ler:</strong> janela curta demais: o cliente não chega a tempo e a reserva expira, então a perda sobe. Janela longa: unidades ficam presas em reservas que não vão ser retiradas, e quem chega depois encontra o estoque livre zerado.
+        </div>
+      </section>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ============ G4 OFERTAS ============ -->
+<sc-if value="{{is.ofertas}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800">Ofertas</h1>
+        <p style="margin: 0; font-size: 15px; color: #5B635D">Ofertas nascem da conferência de um aviso, no celular. Aqui você acompanha e ajusta.</p>
+      </div>
+      <div role="group" aria-label="Estado das ofertas" style="display: flex; gap: 4px; padding: 4px; background: #ECEBE5; border-radius: 14px">
+        <button type="button" onClick="{{abaAtivas}}" aria-pressed="{{ofAba.ativa}}" style="{{ofAba.ativaStyle}}">Ativas ({{ofAba.nAtivas}})</button>
+        <button type="button" onClick="{{abaEncerradas}}" aria-pressed="{{ofAba.encerrada}}" style="{{ofAba.encerradaStyle}}">Encerradas ({{ofAba.nEncerradas}})</button>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px">
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Livres agora</span>
+        <span style="font-size: 32px; font-weight: 800">{{ofKpi.livres}} <span style="font-size: 15px; font-weight: 600; color: #5B635D">un.</span></span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Reservadas aguardando</span>
+        <span style="font-size: 32px; font-weight: 800">{{ofKpi.reservadas}} <span style="font-size: 15px; font-weight: 600; color: #5B635D">un.</span></span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Encerram em 48 h</span>
+        <span style="font-size: 32px; font-weight: 800; color: #B42318">{{ofKpi.encerram}}</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 13px; font-weight: 600; color: #4A4F4B">Perda no mês</span>
+        <span style="font-size: 32px; font-weight: 800">{{ofKpi.perda}} <span style="font-size: 15px; font-weight: 600; color: #5B635D">un.</span></span>
+      </div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+      <section style="flex: 3 1 560px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 8px 0; display: flex; flex-direction: column; gap: 8px">
+        <div style="overflow-x: auto">
+          <div role="table" aria-label="Ofertas" style="min-width: 760px">
+            <div role="row" style="display: grid; grid-template-columns: minmax(200px, 2fr) 110px minmax(140px, 1.2fr) 52px 80px 52px 90px; gap: 12px; padding: 10px 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">
+              <span role="columnheader">Produto</span><span role="columnheader">Preço</span><span role="columnheader">Estoque</span><span role="columnheader" style="text-align: right">Livre</span><span role="columnheader" style="text-align: right">Reservado</span><span role="columnheader" style="text-align: right">Perda</span><span role="columnheader">Fim</span>
+            </div>
+            <sc-for list="{{ofLista}}" as="o" hint-placeholder-count="4">
+              <div role="row" style="{{o.rowStyle}}">
+                <span role="cell"><button type="button" onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="display: flex; align-items: center; gap: 10px; min-height: 44px; border: 0; background: transparent; padding: 0; font: inherit; font-size: 14px; font-weight: 700; color: #1B1F1C; text-align: left; cursor: pointer; width: 100%"><span style="{{o.dot}}"></span>{{o.produto}}</button></span>
+                <span role="cell" style="display: flex; flex-direction: column"><span style="font-weight: 800; color: #1E6A48">{{o.precoTxt}}</span><span style="font-size: 12px; color: #5B635D; text-decoration: line-through">{{o.originalTxt}}</span></span>
+                <span role="cell" style="display: flex; flex-direction: column; gap: 4px">
+                  <span style="display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: #ECEBE5">
+                    <span style="{{o.wRet}}"></span><span style="{{o.wRes}}"></span><span style="{{o.wLiv}}"></span><span style="{{o.wPer}}"></span>
+                  </span>
+                  <span style="font-size: 12px; color: #5B635D">{{o.separado}} un.</span>
+                </span>
+                <span role="cell" style="text-align: right">{{o.livre}}</span>
+                <span role="cell" style="text-align: right">{{o.reservado}}</span>
+                <span role="cell" style="text-align: right">{{o.perdaTot}}</span>
+                <span role="cell" style="{{o.fimStyle}}">{{o.fimCurto}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; padding: 8px 20px 8px; font-size: 12px; color: #4A4F4B">
+          <span style="display: flex; gap: 6px; align-items: center"><span style="width: 12px; height: 12px; border-radius: 3px; background: #14503A"></span>Retirado</span>
+          <span style="display: flex; gap: 6px; align-items: center"><span style="width: 12px; height: 12px; border-radius: 3px; background: #E9B23A"></span>Reservado</span>
+          <span style="display: flex; gap: 6px; align-items: center"><span style="width: 12px; height: 12px; border-radius: 3px; background: #9CC9A0"></span>Livre</span>
+          <span style="display: flex; gap: 6px; align-items: center"><span style="width: 12px; height: 12px; border-radius: 3px; background: #A3261B"></span>Perda / ajuste</span>
+        </div>
+      </section>
+      <sc-if value="{{temSel}}" hint-placeholder-val="{{ true }}">
+        <section aria-label="Detalhe da oferta" style="flex: 2 1 360px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <h2 style="margin: 0; font-size: 20px; font-weight: 700">{{sel.produto}}</h2>
+              <span style="font-size: 13px; color: #5B635D">Fita {{sel.fita}} · validade {{sel.validade}} · janela {{sel.janela}} h</span>
+            </div>
+            <span style="{{sel.badgeStyle}}">{{sel.badge}}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
+            <div style="border-radius: 12px; background: #F6F5F1; padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; border-top: 4px solid #9CC9A0"><span style="font-size: 12px; color: #4A4F4B">Livre</span><span style="font-size: 22px; font-weight: 800">{{sel.livre}}</span></div>
+            <div style="border-radius: 12px; background: #F6F5F1; padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; border-top: 4px solid #E9B23A"><span style="font-size: 12px; color: #4A4F4B">Reservado</span><span style="font-size: 22px; font-weight: 800">{{sel.reservado}}</span></div>
+            <div style="border-radius: 12px; background: #F6F5F1; padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; border-top: 4px solid #14503A"><span style="font-size: 12px; color: #4A4F4B">Retirado</span><span style="font-size: 22px; font-weight: 800">{{sel.retirado}}</span></div>
+            <div style="border-radius: 12px; background: #F6F5F1; padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; border-top: 4px solid #C9C6BC"><span style="font-size: 12px; color: #4A4F4B">Ajustado</span><span style="font-size: 22px; font-weight: 800">{{sel.ajustado}}</span></div>
+            <div style="border-radius: 12px; background: #F6F5F1; padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; border-top: 4px solid #A3261B"><span style="font-size: 12px; color: #4A4F4B">Perda</span><span style="font-size: 22px; font-weight: 800">{{sel.perda}}</span></div>
+          </div>
+          <p style="margin: 0; font-size: 13px; color: #5B635D">Separado {{sel.separado}} = livre + reservado + retirado + ajustado + perda</p>
+          <div style="{{sel.fimBox}}">{{sel.fimTexto}}</div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h3 style="margin: 0; font-size: 14px; font-weight: 700">Reservas aguardando retirada</h3>
+            <sc-if value="{{sel.semReservas}}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 0; font-size: 14px; color: #5B635D">Nenhuma reserva aguardando.</p>
+            </sc-if>
+            <sc-for list="{{sel.reservas}}" as="r" hint-placeholder-count="2">
+              <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid #E3E1DA; border-radius: 12px; font-size: 14px">
+                <span style="font-weight: 700">{{r.cod}}</span>
+                <span>{{r.qtd}} un. · {{r.cliente}}</span>
+                <span style="{{r.expStyle}}">expira em {{r.expira}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap">
+            <button type="button" onClick="{{abrirAjuste}}" disabled="{{sel.semLivre}}" style="{{sel.ajusteBtn}}">Ajustar estoque</button>
+            <button type="button" onClick="{{verReservas}}" style="flex: 1 1 160px; height: 52px; border-radius: 14px; border: 1.5px solid #C9C6BC; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700; color: #1B1F1C; cursor: pointer">Ver reservas</button>
+          </div>
+        </section>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ============ G5 LOTES ============ -->
+<sc-if value="{{is.lotes}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800">Lotes e fitas</h1>
+        <p style="margin: 0; font-size: 15px; color: #5B635D">Grupos por produto e cor. A referência do grupo é a validade mais próxima.</p>
+      </div>
+      <button type="button" onClick="{{cadastrarLote}}" style="height: 52px; padding: 0 22px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+        <span>Cadastrar lote</span>
+      </button>
+    </div>
+    <section aria-label="Calendário de fitas" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">Calendário de fitas</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px">
+        <sc-for list="{{calendario}}" as="f" hint-placeholder-count="6">
+          <div style="{{f.card}}">
+            <span style="{{f.sw}}"></span>
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 15px; font-weight: 700">{{f.nome}}</span>
+              <span style="font-size: 13px; color: #5B635D">{{f.bim}}</span>
+              <span style="font-size: 13px; font-weight: 600; color: #1B1F1C">{{f.grupos}}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 13px; color: #5B635D">A cor depende da data de validade, não do tempo que falta. Bimestre atual: set–out.</p>
+    </section>
+    <div role="group" aria-label="Filtrar por situação" style="display: flex; gap: 8px; flex-wrap: wrap">
+      <sc-for list="{{chipsGr}}" as="c" hint-placeholder-count="5">
+        <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.active}}" style="{{c.style}}">{{c.label}}</button>
+      </sc-for>
+    </div>
+    <section style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 8px 0">
+      <div style="overflow-x: auto">
+        <div role="table" aria-label="Grupos de lotes" style="min-width: 1000px">
+          <div role="row" style="display: grid; grid-template-columns: minmax(200px, 2fr) 120px 110px 60px 96px 160px minmax(220px, 1.6fr) 44px; gap: 12px; padding: 10px 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">
+            <span role="columnheader">Produto</span><span role="columnheader">Fita</span><span role="columnheader">Referência</span><span role="columnheader" style="text-align: right">Lotes</span><span role="columnheader" style="text-align: right">Recebido</span><span role="columnheader">Aviso</span><span role="columnheader">Situação</span><span role="columnheader"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Expandir</span></span>
+          </div>
+          <sc-for list="{{gruposLista}}" as="g" hint-placeholder-count="6">
+            <div style="border-top: 1px solid #E3E1DA">
+              <div role="row" style="{{g.rowStyle}}">
+                <span role="cell"><button type="button" onClick="{{g.toggle}}" aria-expanded="{{g.aberto}}" style="min-height: 44px; border: 0; background: transparent; padding: 0; font: inherit; font-size: 14px; font-weight: 700; color: #1B1F1C; text-align: left; cursor: pointer; width: 100%">{{g.produto}}</button></span>
+                <span role="cell" style="display: flex; align-items: center; gap: 8px"><span style="{{g.dot}}"></span>{{g.fita}}</span>
+                <span role="cell">{{g.validade}}</span>
+                <span role="cell" style="text-align: right">{{g.nLotes}}</span>
+                <span role="cell" style="text-align: right">{{g.recebido}} un.</span>
+                <span role="cell" style="font-size: 13px; color: #4A4F4B">{{g.aviso}}</span>
+                <span role="cell" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center">
+                  <span style="{{g.badgeStyle}}">{{g.badge}}</span>
+                  <sc-if value="{{g.colisao}}" hint-placeholder-val="{{ false }}">
+                    <span style="padding: 4px 10px; border-radius: 999px; background: #FEF3C7; color: #6B3F00; font-size: 12px; font-weight: 700">Colisão de ciclo</span>
+                  </sc-if>
+                </span>
+                <span role="cell"><button type="button" onClick="{{g.toggle}}" aria-label="{{g.toggleLabel}}" aria-expanded="{{g.aberto}}" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #4A4F4B"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="{{g.chev}}"><path d="M9 6l6 6-6 6"></path></svg></button></span>
+              </div>
+              <sc-if value="{{g.aberto}}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 4px 20px 16px 20px; display: flex; flex-direction: column; gap: 8px; background: #FAFAF7">
+                  <sc-for list="{{g.lotes}}" as="l" hint-placeholder-count="2">
+                    <div style="display: flex; gap: 10px; align-items: center; font-size: 14px; padding: 10px 12px; border: 1px solid #E3E1DA; border-radius: 12px; background: #FFFFFF">
+                      <span style="{{g.dot}}"></span>
+                      <span>Recebido em {{l.rec}} · Validade {{l.val}} · {{l.qtd}} un.</span>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{g.colisao}}" hint-placeholder-val="{{ false }}">
+                    <div role="alert" style="display: flex; gap: 10px; align-items: flex-start; background: #FEF3C7; color: #6B3F00; border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.45">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+                      <span>{{g.colisaoTexto}}</span>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <p style="margin: 0; padding: 12px 20px 8px; font-size: 13px; color: #5B635D">Todos os lotes de um grupo têm a mesma cor, ou seja, validade no mesmo bimestre.</p>
+    </section>
+  </div>
+</sc-if>
+
+<!-- ============ G3 RESERVAS ============ -->
+<sc-if value="{{is.reservas}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800">Reservas</h1>
+      <p style="margin: 0; font-size: 15px; color: #5B635D">Últimos 30 dias · 148 reservas · 17 recusas</p>
+    </div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center">
+      <div style="flex: 1 1 280px; max-width: 420px; position: relative">
+        <label for="r-busca" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar reservas</label>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B635D" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 14px; top: 14px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <input id="r-busca" type="search" placeholder="Produto ou final do código" value="{{busca}}" onChange="{{onBusca}}" style="width: 100%; box-sizing: border-box; height: 46px; border-radius: 12px; border: 1.5px solid #C9C6BC; padding: 0 14px 0 42px; font: inherit; font-size: 15px; color: #1B1F1C; background: #FFFFFF">
+      </div>
+      <div role="group" aria-label="Filtrar por estado" style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{chipsRes}}" as="c" hint-placeholder-count="6">
+          <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.active}}" style="{{c.style}}">{{c.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <section style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 8px 0">
+      <div style="overflow-x: auto">
+        <div role="table" aria-label="Histórico de reservas" style="min-width: 920px">
+          <div role="row" style="display: grid; grid-template-columns: 110px 90px minmax(200px, 2fr) 130px 120px 110px 110px; gap: 12px; padding: 10px 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">
+            <span role="columnheader">Criada em</span><span role="columnheader">Código</span><span role="columnheader">Produto</span><span role="columnheader">Reservado / pedido</span><span role="columnheader">Cliente</span><span role="columnheader">Estado</span><span role="columnheader">Encerrada em</span>
+          </div>
+          <sc-for list="{{resLista}}" as="r" hint-placeholder-count="8">
+            <div role="row" style="display: grid; grid-template-columns: 110px 90px minmax(200px, 2fr) 130px 120px 110px 110px; gap: 12px; padding: 12px 20px; border-top: 1px solid #E3E1DA; font-size: 14px; align-items: center">
+              <span role="cell">{{r.criada}}</span>
+              <span role="cell" style="font-weight: 700">{{r.cod}}</span>
+              <span role="cell">{{r.produto}}</span>
+              <span role="cell" style="{{r.qtdStyle}}">{{r.qtd}}</span>
+              <span role="cell">{{r.cliente}}</span>
+              <span role="cell"><span style="{{r.badgeStyle}}">{{r.estado}}</span></span>
+              <span role="cell" style="color: #4A4F4B">{{r.encerrada}}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{resVazio}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 32px 20px; text-align: center; font-size: 15px; color: #5B635D; border-top: 1px solid #E3E1DA">Nenhuma reserva com esses filtros. <button type="button" onClick="{{limparRes}}" style="border: 0; background: transparent; font: inherit; font-weight: 700; color: #1E6A48; cursor: pointer; min-height: 44px">Limpar filtros</button></div>
+          </sc-if>
+        </div>
+      </div>
+      <p style="margin: 0; padding: 12px 20px 8px; font-size: 13px; color: #5B635D">Recusa = tentativa com estoque livre zero. Compradores bloqueados = recusas + reservas parciais (ex.: "2 / 3").</p>
+    </section>
+  </div>
+</sc-if>
+
+<!-- ============ G6 CONFIGURAÇÕES ============ -->
+<sc-if value="{{is.config}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 24px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800">Configurações da loja</h1>
+      <p style="margin: 0; font-size: 15px; color: #5B635D">Mudanças valem para lotes e ofertas novos.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; align-items: start">
+      <section style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 700">Dados da loja</h2>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="c-nome" style="font-size: 14px; font-weight: 600">Nome</label>
+          <input id="c-nome" type="text" value="{{cfg.nome}}" onChange="{{onNome}}" style="height: 52px; border-radius: 12px; border: 1.5px solid #C9C6BC; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C; background: #FFFFFF">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="c-end" style="font-size: 14px; font-weight: 600">Endereço</label>
+          <input id="c-end" type="text" value="{{cfg.endereco}}" onChange="{{onEndereco}}" style="height: 52px; border-radius: 12px; border: 1.5px solid #C9C6BC; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C; background: #FFFFFF">
+          <span style="display: flex; gap: 6px; align-items: center; font-size: 13px; color: #1F5B2A; font-weight: 600">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+            Localização encontrada · usada para calcular a distância
+          </span>
+        </div>
+      </section>
+      <section style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 700">Regras das ofertas</h2>
+          <button type="button" onClick="{{go.projecao}}" style="border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: #1E6A48; cursor: pointer; min-height: 44px">Ver projeção</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span id="c-janela" style="font-size: 14px; font-weight: 600">Janela de reserva padrão</span>
+          <div role="group" aria-labelledby="c-janela" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{cfgJanelas}}" as="j" hint-placeholder-count="6">
+              <button type="button" onClick="{{j.pick}}" aria-pressed="{{j.active}}" style="{{j.style}}">{{j.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 14px; font-weight: 600">Margem antes da validade</span>
+            <span style="font-size: 13px; color: #5B635D">A oferta sai da vitrine esse tempo antes</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <button type="button" aria-label="Diminuir margem" onClick="{{margemMenos}}" style="{{cnt.margemMenos}}">−</button>
+            <span style="min-width: 64px; text-align: center; font-size: 18px; font-weight: 800">{{cfg.margem}} {{cnt.margemUn}}</span>
+            <button type="button" aria-label="Aumentar margem" onClick="{{margemMais}}" style="{{cnt.margemMais}}">+</button>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 14px; font-weight: 600">Antecedência do aviso</span>
+            <span style="font-size: 13px; color: #5B635D">Dias antes da validade para conferir</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <button type="button" aria-label="Diminuir antecedência" onClick="{{antMenos}}" style="{{cnt.antMenos}}">−</button>
+            <span style="min-width: 64px; text-align: center; font-size: 18px; font-weight: 800">{{cfg.antecedencia}} dias</span>
+            <button type="button" aria-label="Aumentar antecedência" onClick="{{antMais}}" style="{{cnt.antMais}}">+</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <section style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 22px 0 12px; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; padding: 0 22px; font-size: 16px; font-weight: 700">Equipe</h2>
+      <div style="overflow-x: auto">
+        <div role="table" aria-label="Equipe" style="min-width: 680px">
+          <div role="row" style="display: grid; grid-template-columns: minmax(180px, 1.4fr) minmax(200px, 1.6fr) 180px 110px; gap: 12px; padding: 8px 22px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">
+            <span role="columnheader">Pessoa</span><span role="columnheader">E-mail da conta</span><span role="columnheader">Papel</span><span role="columnheader"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Ações</span></span>
+          </div>
+          <sc-for list="{{equipe}}" as="p" hint-placeholder-count="2">
+            <div role="row" style="display: grid; grid-template-columns: minmax(180px, 1.4fr) minmax(200px, 1.6fr) 180px 110px; gap: 12px; padding: 10px 22px; border-top: 1px solid #E3E1DA; font-size: 14px; align-items: center">
+              <span role="cell" style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 999px; background: #E3F0E8; color: #14503A; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex: none">{{p.iniciais}}</span><span style="font-weight: 600">{{p.nome}}</span></span>
+              <span role="cell" style="color: #4A4F4B">{{p.email}}</span>
+              <span role="cell">
+                <sc-if value="{{p.eu}}" hint-placeholder-val="{{ false }}">
+                  <span style="padding: 6px 12px; border-radius: 999px; background: #E3F0E8; color: #14503A; font-size: 12px; font-weight: 700">Responsável · você</span>
+                </sc-if>
+                <sc-if value="{{p.outro}}" hint-placeholder-val="{{ true }}">
+                  <select aria-label="{{p.papelLabel}}" value="{{p.papel}}" onChange="{{p.setPapel}}" style="height: 44px; border-radius: 12px; border: 1.5px solid #C9C6BC; padding: 0 10px; font: inherit; font-size: 14px; background: #FFFFFF; color: #1B1F1C">
+                    <option value="Funcionário">Funcionário</option>
+                    <option value="Responsável">Responsável</option>
+                  </select>
+                </sc-if>
+              </span>
+              <span role="cell">
+                <sc-if value="{{p.outro}}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{p.remover}}" style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #E7B4AE; background: #FFFFFF; color: #A3261B; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer">Remover</button>
+                </sc-if>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="margin: 4px 22px 0; border: 1.5px dashed #C9C6BC; border-radius: 14px; padding: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+        <label for="c-novo" style="font-size: 14px; font-weight: 600; flex: 1 1 100%">Adicionar pessoa pelo e-mail da conta</label>
+        <input id="c-novo" type="email" placeholder="nome@email.com" value="{{novoEmail}}" onChange="{{onNovoEmail}}" style="flex: 1 1 240px; height: 48px; border-radius: 12px; border: 1.5px solid #C9C6BC; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C; background: #FFFFFF">
+        <select aria-label="Papel da nova pessoa" value="{{novoPapel}}" onChange="{{onNovoPapel}}" style="height: 48px; border-radius: 12px; border: 1.5px solid #C9C6BC; padding: 0 10px; font: inherit; font-size: 14px; background: #FFFFFF; color: #1B1F1C">
+          <option value="Funcionário">Funcionário</option>
+          <option value="Responsável">Responsável</option>
+        </select>
+        <button type="button" onClick="{{adicionar}}" disabled="{{semEmail}}" style="{{addBtn}}">Adicionar</button>
+      </div>
+      <p style="margin: 0; padding: 0 22px; font-size: 13px; color: #5B635D">A pessoa precisa ter criado a conta antes. Uma pessoa tem no máximo um vínculo por loja.</p>
+    </section>
+    <sc-if value="{{dirty}}" hint-placeholder-val="{{ false }}">
+      <div role="region" aria-label="Alterações não salvas" style="position: sticky; bottom: 16px; background: #1B1F1C; color: #FFFFFF; border-radius: 16px; padding: 12px 12px 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: 0 12px 32px rgba(27,31,28,.25)">
+        <span style="font-size: 15px; font-weight: 700">Alterações não salvas</span>
+        <div style="display: flex; gap: 8px">
+          <button type="button" onClick="{{descartar}}" style="height: 48px; padding: 0 18px; border-radius: 12px; border: 1.5px solid #5B635D; background: transparent; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Descartar</button>
+          <button type="button" onClick="{{salvar}}" style="height: 48px; padding: 0 18px; border-radius: 12px; border: 0; background: #FFFFFF; color: #14503A; font: inherit; font-size: 15px; font-weight: 800; cursor: pointer">Salvar alterações</button>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+
+      </div>
+    </main>
+  </div>
+
+  <sc-if value="{{ajusteAberto}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(27,31,28,.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20">
+      <div role="dialog" aria-modal="true" aria-labelledby="aj-titulo" style="width: 100%; max-width: 460px; background: #FFFFFF; border-radius: 20px; padding: 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h2 id="aj-titulo" style="margin: 0; font-size: 20px; font-weight: 700">Ajustar estoque</h2>
+            <span style="font-size: 13px; color: #5B635D">{{sel.produto}}</span>
+          </div>
+          <button type="button" aria-label="Fechar" onClick="{{fecharAjuste}}" style="width: 44px; height: 44px; border-radius: 12px; border: 0; background: #F6F5F1; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1F1C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg></button>
+        </div>
+        <div style="background: #E3F0E8; color: #14503A; border-radius: 14px; padding: 12px 14px; font-size: 14px; line-height: 1.45">Só dá para tirar do estoque livre ({{sel.livre}} un.). As {{sel.reservado}} unidades reservadas estão prometidas a clientes e não entram no ajuste.</div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 16px">
+          <button type="button" aria-label="Diminuir quantidade" onClick="{{ajMenos}}" style="{{aj.menosStyle}}">−</button>
+          <span aria-live="polite" style="min-width: 80px; text-align: center; font-size: 44px; font-weight: 800">{{aj.qtd}}</span>
+          <button type="button" aria-label="Aumentar quantidade" onClick="{{ajMais}}" style="{{aj.maisStyle}}">+</button>
+        </div>
+        <sc-if value="{{aj.noMax}}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin: 0; text-align: center; font-size: 13px; font-weight: 600; color: #8A1C13">Máximo: {{sel.livre}}, o estoque livre agora</p>
+        </sc-if>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span id="aj-motivo" style="font-size: 14px; font-weight: 600">Motivo (obrigatório)</span>
+          <div role="group" aria-labelledby="aj-motivo" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{aj.motivos}}" as="m" hint-placeholder-count="4">
+              <button type="button" onClick="{{m.pick}}" aria-pressed="{{m.active}}" style="{{m.style}}">{{m.label}}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{aj.isOutro}}" hint-placeholder-val="{{ false }}">
+            <label for="aj-outro" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Descreva o motivo</label>
+            <input id="aj-outro" type="text" placeholder="Descreva o motivo" value="{{aj.outro}}" onChange="{{onOutro}}" style="height: 48px; border-radius: 12px; border: 1.5px solid #C9C6BC; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C">
+          </sc-if>
+        </div>
+        <div style="border-top: 1px solid #E3E1DA; padding-top: 14px; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 14px; color: #4A4F4B">Depois do ajuste: livre <strong>{{aj.livreDepois}}</strong> · ajustado <strong>{{aj.ajustadoDepois}}</strong></span>
+          <button type="button" onClick="{{registrarAjuste}}" disabled="{{aj.invalido}}" style="{{aj.btnStyle}}">{{aj.btnLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{temToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #1B1F1C; color: #FFFFFF; border-radius: 14px; padding: 14px 20px; font-size: 15px; font-weight: 600; z-index: 30; box-shadow: 0 12px 32px rgba(27,31,28,.25)">{{toast}}</div>
+  </sc-if>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+var FITAS = [
+  { nome: 'Vermelho', hex: '#D7263D', bim: 'jan–fev' },
+  { nome: 'Amarelo', hex: '#F4C430', bim: 'mar–abr' },
+  { nome: 'Verde', hex: '#2E9E4F', bim: 'mai–jun' },
+  { nome: 'Azul', hex: '#1F5FBF', bim: 'jul–ago' },
+  { nome: 'Branco', hex: '#FFFFFF', bim: 'set–out' },
+  { nome: 'Preto', hex: '#1B1B1B', bim: 'nov–dez' }
+];
+function fitaDe(v) { var m = parseInt(String(v).split('/')[1], 10); return FITAS[Math.floor((m - 1) / 2)]; }
+function brl(n) { return 'R$ ' + n.toFixed(2).replace('.', ','); }
+function dot(hex, size) {
+  var s = size || 14;
+  return 'width: ' + s + 'px; height: ' + s + 'px; border-radius: 999px; flex: none; background: ' + hex + '; border: 1px solid ' + (hex === '#FFFFFF' ? '#9A968A' : 'rgba(0,0,0,.15)') + ';';
+}
+function chip(a) {
+  return 'height: 38px; padding: 0 16px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid ' + (a ? '#1E6A48' : '#C9C6BC') + '; background: ' + (a ? '#1E6A48' : '#FFFFFF') + '; color: ' + (a ? '#FFFFFF' : '#1B1F1C') + ';';
+}
+function seg(a) {
+  return 'height: 40px; padding: 0 14px; border-radius: 10px; border: 0; font: inherit; font-size: 14px; font-weight: ' + (a ? '700' : '600') + '; cursor: pointer; background: ' + (a ? '#FFFFFF' : 'transparent') + '; color: ' + (a ? '#14503A' : '#4A4F4B') + '; box-shadow: ' + (a ? '0 1px 3px rgba(27,31,28,.15)' : 'none') + ';';
+}
+function tile(a) {
+  return 'height: 48px; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; border: 1.5px solid ' + (a ? '#1E6A48' : '#C9C6BC') + '; background: ' + (a ? '#E3F0E8' : '#FFFFFF') + '; color: ' + (a ? '#14503A' : '#1B1F1C') + ';';
+}
+function pill(bg, fg) { return 'display: inline-block; padding: 4px 10px; border-radius: 999px; background: ' + bg + '; color: ' + fg + '; font-size: 12px; font-weight: 700; white-space: nowrap;'; }
+function cntBtn(disabled) {
+  return 'width: 44px; height: 44px; border-radius: 12px; border: 0; background: #E3F0E8; color: #14503A; font: inherit; font-size: 22px; font-weight: 800; cursor: pointer; opacity: ' + (disabled ? '0.4' : '1') + ';';
+}
+function expStyle(min) {
+  var c = min < 30 ? '#B42318' : (min < 60 ? '#B4530C' : '#1B1F1C');
+  return 'color: ' + c + '; font-weight: ' + (min < 60 ? '700' : '500') + ';';
+}
+
+var PERIODOS = {
+  '7': { label: '7 dias', texto: 'últimos 7 dias (16 a 22/10)', unidade: 'por dia', kpi: { criadas: 38, recusas: 4, parciais: 2, retirada: '71%', expiracao: '18%', bloqueados: 6, perda: '4 un.' },
+    barras: [['16/10', 4, 1, 0], ['17/10', 5, 1, 1], ['18/10', 3, 2, 0], ['19/10', 6, 1, 1], ['20/10', 4, 1, 0], ['21/10', 3, 1, 0], ['22/10', 2, 1, 1]] },
+  '30': { label: '30 dias', texto: 'últimos 30 dias (23/09 a 22/10)', unidade: 'por semana', kpi: { criadas: 148, recusas: 17, parciais: 6, retirada: '68%', expiracao: '21%', bloqueados: 23, perda: '17 un.' },
+    barras: [['23/09', 24, 7, 3], ['30/09', 26, 8, 3], ['07/10', 25, 7, 4], ['14/10', 23, 8, 2], ['21/10', 3, 1, 4]] },
+  'mes': { label: 'Mês atual', texto: 'outubro (01 a 22/10)', unidade: 'por semana', kpi: { criadas: 112, recusas: 12, parciais: 5, retirada: '69%', expiracao: '20%', bloqueados: 17, perda: '13 un.' },
+    barras: [['01/10', 20, 6, 2], ['05/10', 24, 7, 3], ['12/10', 23, 8, 2], ['19/10', 10, 3, 4]] }
+};
+var PROJ = [
+  // Tabela 5 do artigo (resultados_n5000)
+  { k: '0.5', label: '30 min', perda: 92.6, bloq: 0.6, ret: 4.6 },
+  { k: '1', label: '1 h', perda: 74.2, bloq: 1.3, ret: 16.1 },
+  { k: '2', label: '2 h', perda: 48.4, bloq: 5.4, ret: 34.7 },
+  { k: '4', label: '4 h', perda: 31.3, bloq: 13.8, ret: 53.3 },
+  { k: '8', label: '8 h', perda: 24.9, bloq: 19.5, ret: 64.5 },
+  { k: '12', label: '12 h', perda: 23.7, bloq: 21.2, ret: 67.4 },
+  { k: '24', label: '24 h', perda: 24.4, bloq: 21.8, ret: 67.4 }
+];
+function pct(n) { return n.toFixed(1).replace('.', ',') + '%'; }
+
+function ofertasSeed() {
+  return [
+    { id: 'o1', produto: 'Iogurte natural 170 g', validade: '28/10/2026', fim: '27/10, 23:59', fimCurto: 'até 27/10', urgente: false, preco: 3.14, original: 4.49, janela: 4, separado: 12, livre: 6, reservado: 4, retirado: 2, ajustado: 0, perda: 0, estado: 'ativa' },
+    { id: 'o2', produto: 'Presunto fatiado 200 g', validade: '30/10/2026', fim: '29/10, 23:59', fimCurto: 'até 29/10', urgente: false, preco: 4.74, original: 7.9, janela: 4, separado: 8, livre: 5, reservado: 2, retirado: 1, ajustado: 0, perda: 0, estado: 'ativa' },
+    { id: 'o5', produto: 'Queijo minas frescal 250 g', validade: '24/10/2026', fim: '23/10, 23:59', fimCurto: 'amanhã', urgente: true, preco: 8.39, original: 13.99, janela: 2, separado: 8, livre: 3, reservado: 0, retirado: 5, ajustado: 0, perda: 0, estado: 'ativa' },
+    { id: 'o7', produto: 'Creme de leite 200 g', validade: '30/10/2026', fim: '29/10, 23:59', fimCurto: 'até 29/10', urgente: false, preco: 2.44, original: 3.49, janela: 4, separado: 10, livre: 7, reservado: 2, retirado: 1, ajustado: 0, perda: 0, estado: 'ativa' },
+    { id: 'o6', produto: 'Requeijão cremoso 200 g', validade: '21/10/2026', fim: '20/10, 23:59', fimCurto: '20/10', urgente: false, preco: 4.19, original: 6.99, janela: 4, separado: 10, livre: 0, reservado: 0, retirado: 6, ajustado: 1, perda: 3, estado: 'encerrada' },
+    { id: 'o8', produto: 'Leite fermentado 6 un.', validade: '16/10/2026', fim: '15/10, 23:59', fimCurto: '15/10', urgente: false, preco: 5.59, original: 7.99, janela: 4, separado: 6, livre: 0, reservado: 0, retirado: 6, ajustado: 0, perda: 0, estado: 'encerrada' }
+  ];
+}
+var ESPERA = [
+  { ofertaId: 'o1', cod: '••• 917', produto: 'Iogurte natural 170 g', qtd: 2, cliente: 'Ana S.', expira: '3 h 42 min', min: 222 },
+  { ofertaId: 'o1', cod: '••• 118', produto: 'Iogurte natural 170 g', qtd: 1, cliente: 'Bruno M.', expira: '52 min', min: 52 },
+  { ofertaId: 'o1', cod: '••• 204', produto: 'Iogurte natural 170 g', qtd: 1, cliente: 'Carla R.', expira: '4 h 52 min', min: 292 },
+  { ofertaId: 'o2', cod: '••• 033', produto: 'Presunto fatiado 200 g', qtd: 2, cliente: 'Diego P.', expira: '22 min', min: 22 },
+  { ofertaId: 'o7', cod: '••• 640', produto: 'Creme de leite 200 g', qtd: 2, cliente: 'Renata O.', expira: '1 h 35 min', min: 95 }
+];
+var HIST = [
+  { criada: '22/10 14:18', cod: '••• 917', produto: 'Iogurte natural 170 g', qtd: '2 / 2', cliente: 'Ana S.', estado: 'Reservada', encerrada: '—' },
+  { criada: '22/10 13:50', cod: '••• 118', produto: 'Iogurte natural 170 g', qtd: '1 / 1', cliente: 'Bruno M.', estado: 'Reservada', encerrada: '—' },
+  { criada: '22/10 13:02', cod: '••• 204', produto: 'Iogurte natural 170 g', qtd: '1 / 1', cliente: 'Carla R.', estado: 'Reservada', encerrada: '—' },
+  { criada: '22/10 12:10', cod: '••• 033', produto: 'Presunto fatiado 200 g', qtd: '2 / 2', cliente: 'Diego P.', estado: 'Reservada', encerrada: '—' },
+  { criada: '22/10 11:40', cod: '••• 552', produto: 'Queijo minas frescal 250 g', qtd: '2 / 3', cliente: 'Fábio L.', estado: 'Retirada', encerrada: '22/10 15:02' },
+  { criada: '22/10 10:15', cod: '—', produto: 'Queijo minas frescal 250 g', qtd: '0 / 1', cliente: 'Gabriela N.', estado: 'Recusa', encerrada: '22/10 10:15' },
+  { criada: '21/10 16:44', cod: '••• 781', produto: 'Presunto fatiado 200 g', qtd: '1 / 1', cliente: 'Helena C.', estado: 'Expirada', encerrada: '21/10 20:44' },
+  { criada: '21/10 15:30', cod: '••• 096', produto: 'Creme de leite 200 g', qtd: '2 / 2', cliente: 'Igor F.', estado: 'Cancelada', encerrada: '21/10 16:02' },
+  { criada: '21/10 09:12', cod: '••• 457', produto: 'Queijo minas frescal 250 g', qtd: '1 / 1', cliente: 'João V.', estado: 'Retirada', encerrada: '21/10 11:30' },
+  { criada: '20/10 19:55', cod: '—', produto: 'Requeijão cremoso 200 g', qtd: '0 / 2', cliente: 'Karina D.', estado: 'Recusa', encerrada: '20/10 19:55' },
+  { criada: '20/10 14:05', cod: '••• 340', produto: 'Requeijão cremoso 200 g', qtd: '1 / 1', cliente: 'Ana S.', estado: 'Retirada', encerrada: '20/10 17:40' },
+  { criada: '20/10 10:20', cod: '••• 263', produto: 'Requeijão cremoso 200 g', qtd: '3 / 3', cliente: 'Lucas A.', estado: 'Retirada', encerrada: '20/10 16:40' },
+  { criada: '19/10 11:22', cod: '••• 812', produto: 'Requeijão cremoso 200 g', qtd: '1 / 2', cliente: 'Marina S.', estado: 'Expirada', encerrada: '19/10 15:22' }
+];
+var BADGE = {
+  'Reservada': ['#FBEFD0', '#6B4A00'], 'Retirada': ['#E4F1E4', '#1F5B2A'], 'Expirada': ['#ECEBE5', '#4A4F4B'],
+  'Cancelada': ['#FDE8E7', '#8A1C13'], 'Recusa': ['#FDE8E7', '#8A1C13']
+};
+var CHIPS_RES = [['Todas', null], ['Reservadas', 'Reservada'], ['Retiradas', 'Retirada'], ['Expiradas', 'Expirada'], ['Canceladas', 'Cancelada'], ['Recusas', 'Recusa']];
+var GRUPOS = [
+  { id: 'g1', produto: 'Leite condensado 395 g', validade: '28/10/2026', recebido: 36, aviso: 'disparado 18/10', situacao: 'Conferir', lotes: [{ rec: '05/09', val: '28/10/2026', qtd: 24 }, { rec: '19/09', val: '30/10/2026', qtd: 12 }] },
+  { id: 'g10', produto: 'Salsicha hot dog 500 g', validade: '01/11/2026', recebido: 20, aviso: 'disparado 22/10', situacao: 'Conferir', lotes: [{ rec: '10/10', val: '01/11/2026', qtd: 20 }] },
+  { id: 'g6', produto: 'Chocolate ao leite 90 g', validade: '05/11/2026', recebido: 20, aviso: 'em 26/10', situacao: 'Aguardando', lotes: [{ rec: '01/10', val: '05/11/2026', qtd: 20 }] },
+  { id: 'g2', produto: 'Achocolatado em pó 400 g', validade: '09/12/2026', recebido: 48, aviso: 'adiado para 23/10', situacao: 'Adiado', colisao: true, colisaoTexto: 'Ainda há um lote Preto do ciclo anterior (validade 22/12/2025) para este produto. Separe as zonas antes de colar a fita.', lotes: [{ rec: '08/10', val: '09/12/2026', qtd: 24 }, { rec: '22/10', val: '18/12/2026', qtd: 24 }] },
+  { id: 'g3', produto: 'Iogurte natural 170 g', validade: '28/10/2026', recebido: 18, aviso: 'disparado 18/10', situacao: 'Em oferta', lotes: [{ rec: '12/10', val: '28/10/2026', qtd: 18 }] },
+  { id: 'g7', produto: 'Creme de leite 200 g', validade: '30/10/2026', recebido: 12, aviso: 'disparado 20/10', situacao: 'Em oferta', lotes: [{ rec: '15/09', val: '30/10/2026', qtd: 12 }] },
+  { id: 'g4', produto: 'Feijão carioca 1 kg', validade: '15/02/2027', recebido: 40, aviso: 'em 05/02', situacao: 'Aguardando', lotes: [{ rec: '02/10', val: '15/02/2027', qtd: 20 }, { rec: '16/10', val: '27/02/2027', qtd: 20 }] },
+  { id: 'g5', produto: 'Macarrão espaguete 500 g', validade: '20/03/2027', recebido: 30, aviso: 'em 10/03', situacao: 'Aguardando', lotes: [{ rec: '09/10', val: '20/03/2027', qtd: 30 }] },
+  { id: 'g8', produto: 'Molho de tomate sachê 300 g', validade: '12/05/2027', recebido: 24, aviso: 'em 02/05', situacao: 'Aguardando', lotes: [{ rec: '18/10', val: '12/05/2027', qtd: 24 }] },
+  { id: 'g9', produto: 'Atum em lata 170 g', validade: '30/07/2027', recebido: 16, aviso: 'em 20/07', situacao: 'Aguardando', lotes: [{ rec: '20/10', val: '30/07/2027', qtd: 16 }] }
+];
+var SIT = { 'Conferir': ['#FDE8E7', '#8A1C13', 'Conferir'], 'Adiado': ['#FEF3C7', '#6B3F00', 'Aviso adiado'], 'Em oferta': ['#E4F1E4', '#1F5B2A', 'Em oferta'], 'Aguardando': ['#E3F0E8', '#14503A', 'Aguardando aviso'] };
+var CHIPS_GR = [['Todos', null], ['Conferir', 'Conferir'], ['Adiado', 'Adiado'], ['Em oferta', 'Em oferta'], ['Aguardando aviso', 'Aguardando']];
+function cfgSeed() {
+  return {
+    nome: 'Mercadinho Vila Nova', endereco: 'Rua das Palmeiras, 410 · Boa Vista', janela: 4, margem: 1, antecedencia: 10,
+    equipe: [
+      { id: 'e1', nome: 'Carlos Lima', email: 'carlos@vilanova.com.br', papel: 'Responsável', eu: true },
+      { id: 'e2', nome: 'Juliana Prado', email: 'juliana.prado@email.com', papel: 'Funcionário', eu: false },
+      { id: 'e3', nome: 'Rafael Souza', email: 'rafa.souza@email.com', papel: 'Funcionário', eu: false }
+    ]
+  };
+}
+function clone(x) { return JSON.parse(JSON.stringify(x)); }
+function iniciais(n) { var p = n.trim().split(/\s+/); return ((p[0] || '')[0] || '').toUpperCase() + ((p[1] || '')[0] || '').toUpperCase(); }
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var c = cfgSeed();
+    this.state = {
+      tela: 'painel', login: false, conectando: false,
+      email: 'carlos@vilanova.com.br', senha: '', manter: true,
+      periodo: '30',
+      janela: '4', lote: 24, procura: 1, chegada: 2, calculando: false,
+      busca: '', filtroRes: null,
+      abaOf: 'ativa', ofSel: 'o1', ofertas: ofertasSeed(), ajuste: null, toast: '',
+      filtroGr: null, expandido: 'g2',
+      cfg: c, saved: clone(c), novoEmail: '', novoPapel: 'Funcionário'
+    };
+    this.timers = [];
+  }
+  componentWillUnmount() { this.timers.forEach(function (t) { clearTimeout(t); }); }
+  later(fn, ms) { this.timers.push(setTimeout(fn, ms)); }
+  showToast(msg) {
+    var self = this;
+    this.setState({ toast: msg });
+    this.later(function () { if (self.state.toast === msg) self.setState({ toast: '' }); }, 4000);
+  }
+  setCfg(patch) { this.setState({ cfg: Object.assign({}, this.state.cfg, patch) }); }
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var telas = ['painel', 'projecao', 'ofertas', 'lotes', 'reservas', 'config'];
+    var go = {}, is = {}, menu = {}, cur = {};
+    telas.forEach(function (t) {
+      var a = s.tela === t;
+      go[t] = function () { self.setState({ tela: t }); };
+      is[t] = a;
+      cur[t] = a ? 'page' : 'false';
+      menu[t] = 'height: 44px; border-radius: 12px; border: 0; padding: 0 12px; display: flex; align-items: center; gap: 12px; font: inherit; font-size: 15px; text-align: left; cursor: pointer; background: ' + (a ? '#E3F0E8' : 'transparent') + '; color: ' + (a ? '#14503A' : '#1B1F1C') + '; font-weight: ' + (a ? '700' : '500') + ';';
+    });
+
+    // G1
+    var P = PERIODOS[s.periodo];
+    var max = 0;
+    P.barras.forEach(function (b) { max = Math.max(max, b[1] + b[2] + b[3]); });
+    var top = Math.ceil(max / 10) * 10;
+    var h = function (v, c) { return 'height: ' + Math.round(v / top * 200) + 'px; background: ' + c + '; border-radius: 3px;' + (v === 0 ? ' display: none;' : ''); };
+    var barras = P.barras.map(function (b) {
+      return { label: b[0], hR: h(b[1], '#1E6A48'), hE: h(b[2], '#E8913A'), hC: h(b[3], '#C9C6BC'), aria: b[0] + ': ' + b[1] + ' retiradas, ' + b[2] + ' expiradas, ' + b[3] + ' canceladas' };
+    });
+    var periodos = ['7', '30', 'mes'].map(function (k) {
+      return { label: PERIODOS[k].label, active: s.periodo === k, style: seg(s.periodo === k), pick: function () { self.setState({ periodo: k }); } };
+    });
+
+    var ativas = s.ofertas.filter(function (o) { return o.estado === 'ativa'; });
+    var fimSt = function (o) { return 'font-size: 14px; font-weight: ' + (o.urgente ? '700' : '500') + '; color: ' + (o.urgente ? '#B42318' : '#1B1F1C') + ';'; };
+    var ofertasAtivas = ativas.map(function (o) {
+      var f = fitaDe(o.validade);
+      return Object.assign({}, o, { fita: f.nome, dot: dot(f.hex), fimStyle: fimSt(o) });
+    });
+    var andamento = ESPERA.map(function (r) { return Object.assign({}, r, { expStyle: expStyle(r.min) }); });
+
+    // G2
+    var j = PROJ.find(function (x) { return x.k === s.janela; }) || PROJ[3];
+    var janelas = PROJ.map(function (p) {
+      var a = p.k === s.janela;
+      return {
+        label: p.label, active: a, segStyle: seg(a),
+        pick: function () { self.setState({ janela: p.k }); },
+        aria: 'Janela ' + p.label + ': perda ' + pct(p.perda) + ', bloqueados ' + pct(p.bloq),
+        barBtn: 'flex: 1; max-width: 72px; height: 200px; display: flex; align-items: flex-end; justify-content: center; gap: 4px; border: 0; padding: 0; background: transparent; cursor: pointer; opacity: ' + (a ? '1' : '0.55') + ';',
+        perdaH: 'width: 40%; max-width: 22px; height: ' + Math.max(2, Math.round(p.perda * 2)) + 'px; background: #1E6A48; border-radius: 3px 3px 0 0;' + (a ? ' box-shadow: 0 0 0 2px #14503A;' : ''),
+        bloqH: 'width: 40%; max-width: 22px; height: ' + Math.max(2, Math.round(p.bloq * 2)) + 'px; background: #C2410C; border-radius: 3px 3px 0 0;' + (a ? ' box-shadow: 0 0 0 2px #8A3108;' : ''),
+        lblStyle: 'flex: 1; max-width: 72px; text-align: center; font-size: 12px; font-weight: ' + (a ? '800' : '500') + '; color: ' + (a ? '#1B1F1C' : '#5B635D') + ';'
+      };
+    });
+    var chegadas = [1, 2, 4].map(function (c) {
+      return { label: c + ' h', active: s.chegada === c, style: tile(s.chegada === c), pick: function () { self.setState({ chegada: c }); } };
+    });
+
+    // G4
+    var lista = s.ofertas.filter(function (o) { return o.estado === s.abaOf; });
+    var selO = lista.find(function (o) { return o.id === s.ofSel; }) || lista[0] || null;
+    var ofLista = lista.map(function (o) {
+      var f = fitaDe(o.validade);
+      var w = function (v, c) { return 'width: ' + (o.separado ? (v / o.separado * 100) : 0) + '%; background: ' + c + ';'; };
+      var sel = selO && selO.id === o.id;
+      return Object.assign({}, o, {
+        dot: dot(f.hex, 12), sel: sel, pick: function () { self.setState({ ofSel: o.id }); },
+        precoTxt: brl(o.preco), originalTxt: brl(o.original), perdaTot: o.perda + o.ajustado,
+        wRet: w(o.retirado, '#14503A'), wRes: w(o.reservado, '#E9B23A'), wLiv: w(o.livre, '#9CC9A0'), wPer: w(o.perda + o.ajustado, '#A3261B'),
+        fimStyle: fimSt(o),
+        rowStyle: 'display: grid; grid-template-columns: minmax(200px, 2fr) 110px minmax(140px, 1.2fr) 52px 80px 52px 90px; gap: 12px; padding: 6px 20px; border-top: 1px solid #E3E1DA; font-size: 14px; align-items: center; background: ' + (sel ? '#E3F0E8' : 'transparent') + ';'
+      });
+    });
+    var nAtivas = s.ofertas.filter(function (o) { return o.estado === 'ativa'; }).length;
+    var ofKpi = { livres: 0, reservadas: 0, encerram: 0, perda: 9 };
+    s.ofertas.forEach(function (o) {
+      if (o.estado === 'ativa') { ofKpi.livres += o.livre; ofKpi.reservadas += o.reservado; if (o.urgente) ofKpi.encerram += 1; }
+      ofKpi.perda += o.perda + o.ajustado;
+    });
+    var sel = {};
+    if (selO) {
+      var f2 = fitaDe(selO.validade);
+      var ativa = selO.estado === 'ativa';
+      var resv = ESPERA.filter(function (r) { return r.ofertaId === selO.id; }).map(function (r) { return Object.assign({}, r, { expStyle: expStyle(r.min) }); });
+      if (!ativa) resv = [];
+      sel = Object.assign({}, selO, {
+        fita: f2.nome,
+        badge: ativa ? 'Ativa' : 'Encerrada',
+        badgeStyle: ativa ? pill('#E4F1E4', '#1F5B2A') : pill('#ECEBE5', '#4A4F4B'),
+        fimTexto: ativa ? ('Sai da vitrine em ' + selO.fim + ' (validade − 1 dia). Nenhuma reserva passa desse horário.') : ('Encerrada em ' + selO.fim + '. ' + selO.perda + (selO.perda === 1 ? ' unidade registrada' : ' unidades registradas') + ' como perda.'),
+        fimBox: 'border-radius: 14px; padding: 12px 14px; font-size: 14px; line-height: 1.45; background: ' + (ativa ? '#F6F5F1' : '#FDE8E7') + '; color: ' + (ativa ? '#1B1F1C' : '#8A1C13') + ';',
+        reservas: resv, semReservas: resv.length === 0,
+        semLivre: !ativa || selO.livre === 0,
+        ajusteBtn: 'flex: 1 1 160px; height: 52px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; opacity: ' + ((!ativa || selO.livre === 0) ? '0.4' : '1') + ';'
+      });
+    }
+    var aj = {};
+    if (s.ajuste && selO) {
+      var q = s.ajuste.qtd;
+      var maxL = selO.livre;
+      var motivoOk = !!s.ajuste.motivo && (s.ajuste.motivo !== 'Outro' || s.ajuste.outro.trim().length > 0);
+      aj = {
+        qtd: q, noMax: s.ajuste.tentouMais, isOutro: s.ajuste.motivo === 'Outro', outro: s.ajuste.outro,
+        menosStyle: cntBtn(q <= 1).replace('width: 44px; height: 44px', 'width: 72px; height: 72px').replace('font-size: 22px', 'font-size: 30px'),
+        maisStyle: cntBtn(q >= maxL).replace('width: 44px; height: 44px', 'width: 72px; height: 72px').replace('font-size: 22px', 'font-size: 30px'),
+        motivos: ['Danificada', 'Extraviada', 'Vendida no balcão', 'Outro'].map(function (m) {
+          return { label: m, active: s.ajuste.motivo === m, style: tile(s.ajuste.motivo === m), pick: function () { self.setState({ ajuste: Object.assign({}, self.state.ajuste, { motivo: m }) }); } };
+        }),
+        livreDepois: maxL - q, ajustadoDepois: selO.ajustado + q,
+        invalido: !motivoOk,
+        btnLabel: motivoOk ? ('Registrar ajuste de ' + q + ' un.') : 'Escolha o motivo',
+        btnStyle: 'height: 56px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; opacity: ' + (motivoOk ? '1' : '0.4') + ';'
+      };
+    }
+
+    // G5
+    var calendario = FITAS.map(function (f) {
+      var n = GRUPOS.filter(function (g) { return fitaDe(g.validade).nome === f.nome; }).length;
+      var atual = f.bim === 'set–out';
+      return {
+        nome: f.nome, bim: f.bim, grupos: n + (n === 1 ? ' grupo ativo' : ' grupos ativos'),
+        sw: 'width: 28px; height: 28px; border-radius: 8px; flex: none; background: ' + f.hex + '; border: 1px solid ' + (f.hex === '#FFFFFF' ? '#9A968A' : 'rgba(0,0,0,.15)') + ';',
+        card: 'background: #FFFFFF; border-radius: 16px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; border: ' + (atual ? '2px solid #1E6A48; box-shadow: 0 0 0 4px #E3F0E8' : '1px solid #E3E1DA') + ';'
+      };
+    });
+    var chipsGr = CHIPS_GR.map(function (c) {
+      var a = s.filtroGr === c[1];
+      return { label: c[0], active: a, style: chip(a), pick: function () { self.setState({ filtroGr: c[1] }); } };
+    });
+    var gruposLista = GRUPOS.filter(function (g) { return !s.filtroGr || g.situacao === s.filtroGr; }).map(function (g) {
+      var f = fitaDe(g.validade);
+      var aberto = s.expandido === g.id;
+      var b = SIT[g.situacao];
+      return Object.assign({}, g, {
+        fita: f.nome, dot: dot(f.hex), aberto: aberto, colisao: !!g.colisao, nLotes: g.lotes.length,
+        badge: b[2], badgeStyle: pill(b[0], b[1]),
+        aviso: (g.aviso.indexOf('em ') === 0 ? 'Aviso ' : 'Aviso ') + g.aviso,
+        toggle: function () { self.setState({ expandido: self.state.expandido === g.id ? null : g.id }); },
+        toggleLabel: (aberto ? 'Recolher lotes de ' : 'Ver lotes de ') + g.produto,
+        chev: 'transform: rotate(' + (aberto ? '90' : '0') + 'deg);',
+        rowStyle: 'display: grid; grid-template-columns: minmax(200px, 2fr) 120px 110px 60px 96px 160px minmax(220px, 1.6fr) 44px; gap: 12px; padding: 4px 20px; font-size: 14px; align-items: center; background: ' + (aberto ? '#FAFAF7' : 'transparent') + ';'
+      });
+    });
+
+    // G3
+    var q2 = s.busca.trim().toLowerCase();
+    var resLista = HIST.filter(function (r) {
+      if (s.filtroRes && r.estado !== s.filtroRes) return false;
+      if (!q2) return true;
+      var digits = r.cod.replace(/\D/g, '');
+      return r.produto.toLowerCase().indexOf(q2) >= 0 || (/^\d+$/.test(q2) && digits.length > 0 && digits.slice(-q2.length) === q2.slice(-digits.length));
+    }).map(function (r) {
+      var b = BADGE[r.estado];
+      var parts = r.qtd.split(' / ');
+      var parcial = parts[0] !== parts[1];
+      return Object.assign({}, r, { badgeStyle: pill(b[0], b[1]), qtdStyle: 'font-weight: ' + (parcial ? '700' : '500') + '; color: ' + (parcial ? '#6B3F00' : '#1B1F1C') + ';' });
+    });
+    var chipsRes = CHIPS_RES.map(function (c) {
+      var a = s.filtroRes === c[1];
+      return { label: c[0], active: a, style: chip(a), pick: function () { self.setState({ filtroRes: c[1] }); } };
+    });
+
+    // G6
+    var cfg = s.cfg;
+    var dirty = JSON.stringify(cfg) !== JSON.stringify(s.saved);
+    var cfgJanelas = [1, 2, 4, 8, 12, 24].map(function (n) {
+      return { label: n + ' h', active: cfg.janela === n, style: tile(cfg.janela === n), pick: function () { self.setCfg({ janela: n }); } };
+    });
+    var equipe = cfg.equipe.map(function (p) {
+      return Object.assign({}, p, {
+        iniciais: iniciais(p.nome), outro: !p.eu, papelLabel: 'Papel de ' + p.nome,
+        setPapel: function (e) { var v = e.target.value; self.setCfg({ equipe: self.state.cfg.equipe.map(function (x) { return x.id === p.id ? Object.assign({}, x, { papel: v }) : x; }) }); },
+        remover: function () { self.setCfg({ equipe: self.state.cfg.equipe.filter(function (x) { return x.id !== p.id; }) }); }
+      });
+    });
+    var emailOk = /.+@.+\..+/.test(s.novoEmail.trim());
+
+    return {
+      isLogin: s.login, isApp: !s.login, conectando: s.conectando,
+      email: s.email, senha: s.senha, manter: s.manter,
+      onEmail: function (e) { self.setState({ email: e.target.value }); },
+      onSenha: function (e) { self.setState({ senha: e.target.value }); },
+      toggleManter: function () { self.setState({ manter: !self.state.manter }); },
+      entrar: function (e) { if (e && e.preventDefault) e.preventDefault(); self.setState({ login: false, tela: 'painel' }); },
+      sair: function () {
+        self.setState({ login: true, conectando: true, senha: '' });
+        self.later(function () { self.setState({ conectando: false }); }, 2200);
+      },
+      go: go, is: is, menu: menu, cur: cur,
+
+      periodos: periodos, periodoTexto: P.texto, chartUnidade: P.unidade, kpi: P.kpi, barras: barras,
+      eixo: { max: top, meio: top / 2 },
+      ofertasAtivas: ofertasAtivas, andamento: andamento,
+
+      janelas: janelas, chegadas: chegadas,
+      res: { perda: pct(j.perda), bloq: pct(j.bloq), ret: pct(j.ret) },
+      lote: s.lote, procura: s.procura, procuraTxt: s.procura.toFixed(1).replace('.', ',') + '× o lote',
+      onLote: function (e) { self.setState({ lote: parseInt(e.target.value, 10) }); },
+      onProcura: function (e) { self.setState({ procura: parseFloat(e.target.value) }); },
+      calculando: s.calculando, recalcLabel: s.calculando ? 'Calculando…' : 'Recalcular projeção',
+      recalcular: function () {
+        self.setState({ calculando: true });
+        self.later(function () { self.setState({ calculando: false }); self.showToast('Projeção recalculada · 1.000 rodadas por janela'); }, 1200);
+      },
+
+      ofAba: {
+        ativa: s.abaOf === 'ativa', encerrada: s.abaOf === 'encerrada',
+        ativaStyle: seg(s.abaOf === 'ativa'), encerradaStyle: seg(s.abaOf === 'encerrada'),
+        nAtivas: nAtivas, nEncerradas: s.ofertas.length - nAtivas
+      },
+      abaAtivas: function () { self.setState({ abaOf: 'ativa', ofSel: null }); },
+      abaEncerradas: function () { self.setState({ abaOf: 'encerrada', ofSel: null }); },
+      ofKpi: ofKpi, ofLista: ofLista, temSel: !!selO, sel: sel,
+      abrirAjuste: function () { if (selO && selO.livre > 0 && selO.estado === 'ativa') self.setState({ ajuste: { qtd: 1, motivo: null, outro: '', tentouMais: false } }); },
+      fecharAjuste: function () { self.setState({ ajuste: null }); },
+      ajusteAberto: !!(s.ajuste && selO), aj: aj,
+      ajMenos: function () { var a = self.state.ajuste; if (a.qtd > 1) self.setState({ ajuste: Object.assign({}, a, { qtd: a.qtd - 1, tentouMais: false }) }); },
+      ajMais: function () {
+        var a = self.state.ajuste;
+        if (a.qtd < selO.livre) self.setState({ ajuste: Object.assign({}, a, { qtd: a.qtd + 1, tentouMais: false }) });
+        else self.setState({ ajuste: Object.assign({}, a, { tentouMais: true }) });
+      },
+      onOutro: function (e) { self.setState({ ajuste: Object.assign({}, self.state.ajuste, { outro: e.target.value }) }); },
+      registrarAjuste: function () {
+        var a = self.state.ajuste;
+        if (!a || !a.motivo || !selO) return;
+        var n = a.qtd;
+        self.setState({
+          ajuste: null,
+          ofertas: self.state.ofertas.map(function (o) { return o.id === selO.id ? Object.assign({}, o, { livre: o.livre - n, ajustado: o.ajustado + n }) : o; })
+        });
+        self.showToast('Ajuste de ' + n + ' un. registrado · ' + (a.motivo === 'Outro' ? a.outro : a.motivo));
+      },
+      verReservas: function () { if (selO) self.setState({ tela: 'reservas', busca: selO.produto, filtroRes: null }); },
+
+      calendario: calendario, chipsGr: chipsGr, gruposLista: gruposLista,
+      cadastrarLote: function () { self.showToast('O cadastro do lote abre o mesmo formulário do celular (L3)'); },
+
+      busca: s.busca, onBusca: function (e) { self.setState({ busca: e.target.value }); },
+      chipsRes: chipsRes, resLista: resLista, resVazio: resLista.length === 0,
+      limparRes: function () { self.setState({ busca: '', filtroRes: null }); },
+
+      cfg: cfg, cfgJanelas: cfgJanelas, equipe: equipe, dirty: dirty,
+      cnt: {
+        margemMenos: cntBtn(cfg.margem <= 0), margemMais: cntBtn(cfg.margem >= 7), margemUn: cfg.margem === 1 ? 'dia' : 'dias',
+        antMenos: cntBtn(cfg.antecedencia <= 1), antMais: cntBtn(cfg.antecedencia >= 30)
+      },
+      margemMenos: function () { if (self.state.cfg.margem > 0) self.setCfg({ margem: self.state.cfg.margem - 1 }); },
+      margemMais: function () { if (self.state.cfg.margem < 7) self.setCfg({ margem: self.state.cfg.margem + 1 }); },
+      antMenos: function () { if (self.state.cfg.antecedencia > 1) self.setCfg({ antecedencia: self.state.cfg.antecedencia - 1 }); },
+      antMais: function () { if (self.state.cfg.antecedencia < 30) self.setCfg({ antecedencia: self.state.cfg.antecedencia + 1 }); },
+      onNome: function (e) { self.setCfg({ nome: e.target.value }); },
+      onEndereco: function (e) { self.setCfg({ endereco: e.target.value }); },
+      novoEmail: s.novoEmail, novoPapel: s.novoPapel, semEmail: !emailOk,
+      addBtn: 'height: 48px; padding: 0 18px; border-radius: 12px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; opacity: ' + (emailOk ? '1' : '0.4') + ';',
+      onNovoEmail: function (e) { self.setState({ novoEmail: e.target.value }); },
+      onNovoPapel: function (e) { self.setState({ novoPapel: e.target.value }); },
+      adicionar: function () {
+        var em = self.state.novoEmail.trim();
+        if (!/.+@.+\..+/.test(em)) return;
+        var nome = em.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+        self.setState({
+          novoEmail: '',
+          cfg: Object.assign({}, self.state.cfg, { equipe: self.state.cfg.equipe.concat([{ id: 'e' + Date.now(), nome: nome, email: em, papel: self.state.novoPapel, eu: false }]) })
+        });
+      },
+      descartar: function () { self.setState({ cfg: clone(self.state.saved) }); },
+      salvar: function () { self.setState({ saved: clone(self.state.cfg) }); self.showToast('Configurações salvas'); },
+
+      temToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

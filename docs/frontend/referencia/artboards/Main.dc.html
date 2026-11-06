@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Cadastro do lote</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Bricolage+Grotesque:wght@400;600;700;800&amp;family=Nunito:wght@400;600;700;800;900&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{t.bg}}; color: {{t.ink}}; font-family: {{t.font}}; display: flex; flex-direction: column;">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 16px 16px 12px; background: {{t.surface}}; border-bottom: 1px solid {{t.line}};">
+    <button aria-label="Voltar" style="width: 44px; height: 44px; border: none; background: transparent; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: {{t.ink}}; cursor: pointer;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </button>
+    <div style="display: flex; flex-direction: column;">
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Cadastrar lote</h1>
+      <span style="font-size: 13px; color: {{t.muted}};">Mercadinho Vila Nova · recebimento</span>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 20px 16px; overflow: hidden;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label for="produto" style="font-size: 14px; font-weight: 600;">Produto</label>
+      <div style="display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px; background: {{t.surface}}; border: 1.5px solid {{t.lineStrong}}; border-radius: 12px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color: {{t.muted}};"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <input id="produto" value="Molho de tomate 300 g" style="flex-grow: 1; border: none; outline: none; font: inherit; font-size: 16px; color: {{t.ink}}; background: transparent; min-width: 0;">
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label for="validade" style="font-size: 14px; font-weight: 600;">Validade impressa</label>
+      <div style="display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px; background: {{t.surface}}; border: 1.5px solid {{t.lineStrong}}; border-radius: 12px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color: {{t.muted}};"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        <input id="validade" value="18/12/2026" inputmode="numeric" style="flex-grow: 1; border: none; outline: none; font: inherit; font-size: 16px; color: {{t.ink}}; background: transparent; min-width: 0;">
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <span id="qtd-label" style="font-size: 14px; font-weight: 600;">Quantidade recebida</span>
+      <div role="group" aria-labelledby="qtd-label" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; background: {{t.surface}}; border: 1.5px solid {{t.lineStrong}}; border-radius: 16px;">
+        <button onClick="{{menos}}" aria-label="Diminuir quantidade" style="width: 72px; height: 72px; border: none; border-radius: 14px; background: {{t.primarySoft}}; color: {{t.primary}}; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg>
+        </button>
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <span style="font-size: 44px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;">{{qtd}}</span>
+          <span style="font-size: 13px; color: {{t.muted}};">unidades</span>
+        </div>
+        <button onClick="{{mais}}" aria-label="Aumentar quantidade" style="width: 72px; height: 72px; border: none; border-radius: 14px; background: {{t.primary}}; color: {{t.onPrimary}}; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <section aria-label="Cor da fita" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; background: {{t.surface}}; border: 1.5px solid {{t.line}}; border-radius: 16px;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div aria-hidden="true" style="width: 64px; height: 64px; border-radius: 14px; background: #1B1B1B; display: flex; align-items: center; justify-content: center;">
+          <div style="width: 64px; height: 18px; background: repeating-linear-gradient(90deg, #1B1B1B 0 6px, #2E2E2E 6px 12px);"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Cor da fita</span>
+          <span style="font-size: 26px; font-weight: 800;">Preto</span>
+          <span style="font-size: 14px; color: {{t.muted}};">Bimestre de vencimento: nov–dez</span>
+        </div>
+      </div>
+
+      <sc-if value="{{agrupado}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: {{t.primarySoft}}; color: {{t.primaryDark}}; font-size: 14px; line-height: 1.45;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px;"><path d="M20 6L9 17l-5-5"></path></svg>
+          <span><strong>Agrupado ao grupo Preto ativo.</strong> Data de referência do grupo: <strong>09/12/2026</strong> (a mais próxima).</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{novo}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: {{t.primarySoft}}; color: {{t.primaryDark}}; font-size: 14px; line-height: 1.45;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px;"><path d="M12 5v14M5 12h14"></path></svg>
+          <span><strong>Novo grupo Preto criado.</strong> Data de referência: <strong>18/12/2026</strong>.</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{colisao}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: #FEF3C7; color: #6B3F00; font-size: 14px; line-height: 1.45;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px;"><path d="M12 3l10 18H2L12 3z"></path><path d="M12 10v5M12 18h.01"></path></svg>
+          <span><strong>Colisão de ciclo:</strong> ainda há lote Preto do ano anterior ativo para este produto (validade 22/12/2025). Separe as zonas antes de colar a fita.</span>
+        </div>
+      </sc-if>
+
+      <p style="margin: 0; font-size: 14px; color: {{t.muted}}; line-height: 1.45;">Cole a fita preta na caixa e posicione a divisória na zona Preto da gôndola.</p>
+    </section>
+  </main>
+
+  <footer style="padding: 12px 16px 24px;">
+    <button style="width: 100%; height: 56px; border: none; border-radius: 14px; background: {{t.primary}}; color: {{t.onPrimary}}; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer;">Salvar lote e agendar aviso</button>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;identidade&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Prazo Certo&quot;,&quot;Vale Hoje&quot;,&quot;Bairro Bom&quot;,&quot;Resgate&quot;,&quot;Original (verde)&quot;],&quot;default&quot;:&quot;Original (verde)&quot;},&quot;estado&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;agrupado&quot;,&quot;novo grupo&quot;,&quot;colisão&quot;],&quot;default&quot;:&quot;agrupado&quot;},&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { qtd: 24 }; }
+  renderVals() {
+    const TH = {
+      'Prazo Certo': { font: "'Manrope', system-ui, sans-serif", bg: '#F2F6F5', surface: '#FFFFFF', ink: '#0F1E20', muted: '#51666A', line: '#DCE6E5', lineStrong: '#B9CCCB', primary: '#0E5C63', primaryDark: '#0A464C', primarySoft: '#DDF0EE', onPrimary: '#FFFFFF', accent: '#D9F35B', onAccent: '#1A2B0A', phBg: '#E3ECEB', phFg: '#7C9396' },
+      'Vale Hoje': { font: "'Bricolage Grotesque', system-ui, sans-serif", bg: '#FFF8F3', surface: '#FFFFFF', ink: '#231A17', muted: '#6B5D57', line: '#F0E2DA', lineStrong: '#D9C4B8', primary: '#C8372D', primaryDark: '#9E2A22', primarySoft: '#FCE9E4', onPrimary: '#FFFFFF', accent: '#1F2A44', onAccent: '#FFFFFF', phBg: '#F6E8DF', phFg: '#A88E80' },
+      'Bairro Bom': { font: "'Nunito', system-ui, sans-serif", bg: '#FBF5EC', surface: '#FFFDF9', ink: '#2A1E16', muted: '#6E5E52', line: '#EBDFD0', lineStrong: '#D4C3AF', primary: '#A6411F', primaryDark: '#7F3016', primarySoft: '#F7E6DC', onPrimary: '#FFFFFF', accent: '#E9B23A', onAccent: '#2A1B0F', phBg: '#F1E6D6', phFg: '#A08C76' },
+      'Resgate': { font: "'Space Grotesk', system-ui, sans-serif", bg: '#F5F5FA', surface: '#FFFFFF', ink: '#16152B', muted: '#5A5975', line: '#E2E1EE', lineStrong: '#C4C3D8', primary: '#3730A3', primaryDark: '#28237A', primarySoft: '#E7E6FB', onPrimary: '#FFFFFF', accent: '#F59E0B', onAccent: '#2A1A00', phBg: '#E8E7F3', phFg: '#8A89A6' },
+      'Original (verde)': { font: "'Plus Jakarta Sans', system-ui, sans-serif", bg: '#F6F5F1', surface: '#FFFFFF', ink: '#1B1F1C', muted: '#5B635D', line: '#E3E1DA', lineStrong: '#C9C6BC', primary: '#1E6A48', primaryDark: '#14503A', primarySoft: '#E3F0E8', onPrimary: '#FFFFFF', accent: '#C2410C', onAccent: '#FFFFFF', phBg: '#EDEBE4', phFg: '#8A8678' }
+    };
+    const t = TH[this.props.identidade] || TH['Original (verde)'];
+    const e = this.props.estado ?? 'agrupado';
+    return {
+      t: t,
+      qtd: this.state.qtd,
+      menos: () => this.setState({ qtd: Math.max(1, this.state.qtd - 1) }),
+      mais: () => this.setState({ qtd: this.state.qtd + 1 }),
+      agrupado: e === 'agrupado',
+      novo: e === 'novo grupo',
+      colisao: e === 'colisão'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Entrar — computador</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 900px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-wrap: wrap;">
+  <section style="flex: 1 1 420px; box-sizing: border-box; padding: 64px 56px; background: #1E6A48; color: #FFFFFF; display: flex; flex-direction: column; gap: 28px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span aria-hidden="true" style="width: 56px; height: 56px; border-radius: 16px; background: #FFFFFF; color: #1E6A48; display: flex; align-items: center; justify-content: center;">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path><path d="M9 20v-5h6v5"></path></svg>
+      </span>
+      <span style="font-size: 26px; font-weight: 800;">[Nome do app]</span>
+    </div>
+    <h1 style="margin: 0; font-size: 40px; font-weight: 800; line-height: 1.15; max-width: 520px;">Produtos perto da validade, com desconto, no mercadinho do bairro.</h1>
+    <div style="display: flex; flex-direction: column; gap: 16px; max-width: 520px;">
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span aria-hidden="true" style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: #14503A; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"></path><path d="M4 9v11h16V9"></path></svg></span>
+        <span style="font-size: 16px; line-height: 1.5;"><strong>Para quem compra:</strong> veja ofertas perto de você, reserve e retire na loja.</span>
+      </div>
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span aria-hidden="true" style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: #14503A; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path></svg></span>
+        <span style="font-size: 16px; line-height: 1.5;"><strong>Para a loja:</strong> cadastre lotes, receba avisos de validade e publique ofertas.</span>
+      </div>
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span aria-hidden="true" style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: #14503A; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg></span>
+        <span style="font-size: 16px; line-height: 1.5;"><strong>Para o responsável:</strong> acompanhe retiradas, expirações e perdas no painel.</span>
+      </div>
+    </div>
+    <span style="margin-top: auto; font-size: 14px; color: #CFE6DA;">Uma conta só: as telas da loja aparecem para quem tem vínculo com ela.</span>
+  </section>
+
+  <section style="flex: 1 1 520px; box-sizing: border-box; padding: 64px 40px; display: flex; align-items: center; justify-content: center;">
+    <div style="width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 20px; padding: 36px; box-sizing: border-box; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <h2 style="margin: 0; font-size: 26px; font-weight: 800;">Entrar</h2>
+        <span style="font-size: 15px; color: #5B635D;">Use o e-mail e a senha da sua conta.</span>
+      </div>
+      <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #FBEFD0; color: #6B4A00; font-size: 13px; font-weight: 700;">Conectando ao servidor… pode levar até 1 minuto.</div>
+      <form style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="em" style="font-size: 14px; font-weight: 600;">E-mail</label>
+          <input id="em" type="email" autocomplete="email" value="ana.souza@email.com" style="height: 48px; padding: 0 14px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; font: inherit; font-size: 15px; color: #1B1F1C;">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;"><label for="se" style="font-size: 14px; font-weight: 600;">Senha</label><a href="#" style="font-size: 13px; font-weight: 700; color: #1E6A48;">Esqueci minha senha</a></div>
+          <input id="se" type="password" autocomplete="current-password" value="senha1234" style="height: 48px; padding: 0 14px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; font: inherit; font-size: 15px; color: #1B1F1C;">
+        </div>
+        <label style="display: flex; gap: 10px; align-items: center; font-size: 14px;"><input type="checkbox" checked style="width: 20px; height: 20px; margin: 0; accent-color: #1E6A48;">Manter conectado neste computador</label>
+      </form>
+      <a href="Painel.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font-size: 16px; font-weight: 700;">Entrar</a>
+      <span style="font-size: 14px; color: #5B635D; text-align: center;">Não tem conta? <a href="CriarConta.dc.html" style="color: #1E6A48; font-weight: 700;">Criar conta</a></span>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

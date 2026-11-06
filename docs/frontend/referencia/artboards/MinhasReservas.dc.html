@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Minhas reservas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+  <header style="display: flex; flex-direction: column; gap: 14px; padding: 20px 16px 0; background: #FFFFFF; border-bottom: 1px solid #E3E1DA;">
+    <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Minhas reservas</h1>
+    <div role="tablist" aria-label="Filtro" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));">
+      <sc-for list="{{abas}}" as="a" hint-placeholder-count="2">
+        <button role="tab" aria-selected="{{a.on}}" onClick="{{a.pick}}" style="{{a.style}}">{{a.label}}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 16px; overflow: hidden;">
+    <sc-for list="{{itens}}" as="r" hint-placeholder-count="3">
+      <a href="{{r.href}}" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+          <span style="font-size: 16px; font-weight: 700;">{{r.produto}}</span>
+          <span style="{{r.badge}}">{{r.estado}}</span>
+        </div>
+        <span style="font-size: 13px; color: #5B635D;">{{r.qtd}} · {{r.loja}}</span>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; padding-top: 10px; border-top: 1px solid #E3E1DA;">
+          <span style="{{r.codStyle}}">{{r.codigo}}</span>
+          <span style="{{r.infoStyle}}">{{r.info}}</span>
+        </div>
+      </a>
+    </sc-for>
+  </main>
+
+  <nav aria-label="Navegação do consumidor" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 8px 8px 20px; background: #FFFFFF; border-top: 1px solid #E3E1DA;">
+    <a href="Vitrine.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; font-size: 12px; font-weight: 600; color: #5B635D;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"></path><path d="M4 9v11h16V9"></path><path d="M3 9h18"></path></svg>Vitrine</a>
+    <a href="#" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; font-size: 12px; font-weight: 700; color: #1E6A48;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"></path></svg>Reservas</a>
+    <a href="Perfil.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; font-size: 12px; font-weight: 600; color: #5B635D;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0116 0"></path></svg>Perfil</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { aba: 'Ativas' }; }
+  renderVals() {
+    const tab = 'height: 48px; border: none; background: transparent; font: inherit; font-size: 15px; cursor: pointer; ';
+    const on = tab + 'font-weight: 700; color: #1E6A48; box-shadow: inset 0 -3px 0 #1E6A48;';
+    const off = tab + 'font-weight: 600; color: #5B635D;';
+    const b = (bg, c) => 'padding: 3px 10px; border-radius: 999px; background: ' + bg + '; color: ' + c + '; font-size: 12px; font-weight: 700; white-space: nowrap;';
+    const cod = 'font-size: 22px; font-weight: 800; letter-spacing: 0.08em;';
+    const codOff = 'font-size: 15px; font-weight: 600; color: #8A8678;';
+    const ativas = [
+      { produto: 'Iogurte natural 170 g', qtd: '2 un.', loja: 'Mercadinho Vila Nova', estado: 'Reservada', badge: b('#FBEFD0', '#6B4A00'), codigo: '482 917', codStyle: cod, info: 'faltam 3 h 42 min', infoStyle: 'font-size: 14px; font-weight: 700; color: #1E6A48;', href: 'Codigo.dc.html' },
+      { produto: 'Presunto fatiado 200 g', qtd: '1 un.', loja: 'Mercadinho Vila Nova', estado: 'Reservada', badge: b('#FBEFD0', '#6B4A00'), codigo: '105 336', codStyle: cod, info: 'faltam 25 min', infoStyle: 'font-size: 14px; font-weight: 700; color: #B42318;', href: 'Codigo.dc.html' }
+    ];
+    const hist = [
+      { produto: 'Molho de tomate 300 g', qtd: '3 un.', loja: 'Mercado Dois Irmãos', estado: 'Retirada', badge: b('#E4F1E4', '#1F5B2A'), codigo: 'Retirada em 20/10', codStyle: codOff, info: 'R$ 5,85', infoStyle: 'font-size: 14px; font-weight: 700;', href: 'CodigoEstados.dc.html' },
+      { produto: 'Biscoito recheado 140 g', qtd: '2 un.', loja: 'Empório Santa Rita', estado: 'Expirada', badge: b('#ECEBE5', '#4A4F4B'), codigo: 'Expirou em 18/10', codStyle: codOff, info: 'não retirada', infoStyle: 'font-size: 14px; color: #5B635D;', href: 'CodigoEstados.dc.html' },
+      { produto: 'Requeijão cremoso 200 g', qtd: '1 un.', loja: 'Mercadinho Vila Nova', estado: 'Cancelada', badge: b('#FDE8E7', '#8A1C13'), codigo: 'Cancelada em 15/10', codStyle: codOff, info: 'por você', infoStyle: 'font-size: 14px; color: #5B635D;', href: 'CodigoEstados.dc.html' }
+    ];
+    return {
+      abas: ['Ativas', 'Histórico'].map((a) => ({ label: a === 'Ativas' ? 'Ativas (2)' : a, on: this.state.aba === a, style: this.state.aba === a ? on : off, pick: () => this.setState({ aba: a }) })),
+      itens: this.state.aba === 'Ativas' ? ativas : hist
+    };
+  }
+}
+</script>
+</body>
+</html>

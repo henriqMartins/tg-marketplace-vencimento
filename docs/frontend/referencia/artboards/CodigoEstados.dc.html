@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Reserva — cancelar, expirada, retirada</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width: 1300px; height: 948px; box-sizing: border-box; padding: 32px; background: #ECEBE5; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #1B1F1C; display: flex; gap: 32px;">
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <span style="font-size: 14px; font-weight: 700; color: #4A4F4B;">Confirmar cancelamento (folha sobre C6)</span>
+    <div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; border-radius: 24px; border: 1px solid #C9C6BC; overflow: hidden; background: #F6F5F1;">
+      <div aria-hidden="true" style="padding: 76px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+        <span style="font-size: 14px; color: #5B635D;">Código de retirada</span>
+        <span style="font-size: 40px; font-weight: 800; letter-spacing: 0.1em;">482 917</span>
+      </div>
+      <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(27,31,28,0.45);"></div>
+      <section role="dialog" aria-labelledby="t-canc" style="position: absolute; left: 0; bottom: 0; width: 100%; box-sizing: border-box; padding: 24px 20px 28px; background: #FFFFFF; border-radius: 24px 24px 0 0; display: flex; flex-direction: column; gap: 14px;">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #C9C6BC;"></span>
+        <h2 id="t-canc" style="margin: 0; font-size: 22px; font-weight: 800;">Cancelar esta reserva?</h2>
+        <p style="margin: 0; font-size: 15px; color: #5B635D; line-height: 1.5;">As 2 unidades de Iogurte natural 170 g voltam para a vitrine na hora e outra pessoa pode reservá-las. Não dá para desfazer.</p>
+        <a href="MinhasReservas.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 14px; background: #A3261B; color: #FFFFFF; font-size: 17px; font-weight: 700;">Sim, cancelar</a>
+        <a href="Codigo.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 14px; font-size: 16px; font-weight: 600;">Manter reserva</a>
+      </section>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <span style="font-size: 14px; font-weight: 700; color: #4A4F4B;">Expirada (janela acabou)</span>
+    <div style="width: 390px; height: 844px; box-sizing: border-box; padding: 20px 16px 28px; border-radius: 24px; border: 1px solid #C9C6BC; overflow: hidden; background: #F6F5F1; display: flex; flex-direction: column; gap: 16px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 700;">Sua reserva</h2>
+      <section style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 16px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 20px; text-align: center;">
+        <span style="padding: 4px 12px; border-radius: 999px; background: #ECEBE5; color: #4A4F4B; font-size: 14px; font-weight: 700;">Expirada</span>
+        <span aria-label="Código 4 8 2 9 1 7, inválido" style="font-size: 36px; font-weight: 800; letter-spacing: 0.1em; color: #8A8678; text-decoration: line-through;">482 917</span>
+        <p style="margin: 0; font-size: 15px; color: #5B635D; line-height: 1.5;">O prazo terminou hoje às 20:00 sem retirada. As unidades voltaram para a vitrine e este código não vale mais.</p>
+      </section>
+      <div style="display: flex; justify-content: space-between; padding: 14px 16px; border-radius: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; font-size: 14px;"><span>2 × Iogurte natural 170 g</span><span style="color: #5B635D;">Mercadinho Vila Nova</span></div>
+      <a href="Vitrine.dc.html" style="margin-top: auto; display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font-size: 17px; font-weight: 700;">Ver se ainda tem na vitrine</a>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <span style="font-size: 14px; font-weight: 700; color: #4A4F4B;">Retirada (lojista confirmou)</span>
+    <div style="width: 390px; height: 844px; box-sizing: border-box; padding: 20px 16px 28px; border-radius: 24px; border: 1px solid #C9C6BC; overflow: hidden; background: #F6F5F1; display: flex; flex-direction: column; gap: 16px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 700;">Sua reserva</h2>
+      <section style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 16px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 20px; text-align: center;">
+        <span aria-hidden="true" style="width: 72px; height: 72px; border-radius: 36px; background: #E4F1E4; color: #1F5B2A; display: flex; align-items: center; justify-content: center;">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+        </span>
+        <span style="padding: 4px 12px; border-radius: 999px; background: #E4F1E4; color: #1F5B2A; font-size: 14px; font-weight: 700;">Retirada</span>
+        <p style="margin: 0; font-size: 16px; line-height: 1.5;"><strong>Retirada hoje às 18:12</strong><br><span style="color: #5B635D;">Obrigado por evitar desperdício!</span></p>
+      </section>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; font-size: 14px;">
+        <div style="display: flex; justify-content: space-between;"><span>2 × Iogurte natural 170 g</span><strong>R$ 6,28</strong></div>
+        <div style="display: flex; justify-content: space-between; color: #5B635D;"><span>Você economizou</span><span>R$ 2,70</span></div>
+      </div>
+      <a href="Vitrine.dc.html" style="margin-top: auto; display: flex; align-items: center; justify-content: center; height: 52px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 14px; background: #FFFFFF; font-size: 16px; font-weight: 600;">Voltar para a vitrine</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1300,"height":948}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

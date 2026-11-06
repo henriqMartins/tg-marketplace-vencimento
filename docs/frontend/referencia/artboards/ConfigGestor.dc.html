@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Configurações da loja — desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+th{font-weight:600}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 1000px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-wrap: wrap;">
+  <nav aria-label="Menu do gestor" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; padding: 24px 16px; background: #FFFFFF; border-right: 1px solid #E3E1DA; display: flex; flex-direction: column; gap: 4px;">
+    <div style="padding: 0 12px 20px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5B635D;">Gestor</span>
+      <span style="font-size: 16px; font-weight: 800;">Mercadinho Vila Nova</span>
+    </div>
+    <a href="Painel.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Painel</a>
+    <a href="Projecao.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"></path><path d="M14 7h7v7"></path></svg>Projeção</a>
+    <a href="OfertasGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12l-8 8-9-9V3h8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>Ofertas</a>
+    <a href="LotesGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path></svg>Lotes e fitas</a>
+    <a href="Historico.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"></path></svg>Reservas</a>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; background: #E3F0E8; color: #14503A; font-size: 15px; font-weight: 700;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>Configurações</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 18px; max-width: 1240px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Configurações da loja</h1>
+      <span style="font-size: 14px; color: #5B635D;">Só o responsável altera. Mudanças valem para lotes e ofertas novos; ofertas publicadas mantêm o fim já calculado.</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; align-items: start;">
+      <section style="display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 700;">Dados da loja</h2>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="n" style="font-size: 14px; font-weight: 600;">Nome</label>
+          <input id="n" value="Mercadinho Vila Nova" style="height: 46px; padding: 0 14px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; font: inherit; font-size: 15px; color: #1B1F1C;">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="e" style="font-size: 14px; font-weight: 600;">Endereço</label>
+          <input id="e" value="Rua das Palmeiras, 410 · Boa Vista · São José do Rio Preto · SP" style="height: 46px; padding: 0 14px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; font: inherit; font-size: 15px; color: #1B1F1C;">
+          <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #1F5B2A;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+            Localização encontrada · usada só para calcular a distância</span>
+        </div>
+      </section>
+
+      <section style="display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 700;">Regras das ofertas</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <span id="jp" style="font-size: 14px; font-weight: 600;">Janela de reserva padrão</span>
+          <div role="group" aria-labelledby="jp" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px;">
+            <sc-for list="{{janelas}}" as="j" hint-placeholder-count="6">
+              <button onClick="{{j.pick}}" aria-pressed="{{j.on}}" style="{{j.style}}">{{j.label}}</button>
+            </sc-for>
+          </div>
+          <span style="font-size: 13px; color: #5B635D;">Vem marcada em cada oferta nova. <a href="Projecao.dc.html" style="color: #1E6A48; font-weight: 700;">Comparar janelas na Projeção</a></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #E3E1DA;">
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 15px; font-weight: 700;">Margem antes da validade</span><span style="font-size: 13px; color: #5B635D;">Produtos podem ter margem própria (cadastro do produto)</span></span>
+          <button onClick="{{mMenos}}" aria-label="Diminuir margem" style="width: 40px; height: 40px; border: none; border-radius: 10px; background: #E3F0E8; color: #1E6A48; font: inherit; font-size: 20px; font-weight: 800; cursor: pointer;">−</button>
+          <span style="min-width: 64px; text-align: center; font-size: 17px; font-weight: 800;">{{margem}}</span>
+          <button onClick="{{mMais}}" aria-label="Aumentar margem" style="width: 40px; height: 40px; border: none; border-radius: 10px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 20px; font-weight: 800; cursor: pointer;">+</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #E3E1DA;">
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 15px; font-weight: 700;">Antecedência do aviso de validade</span><span style="font-size: 13px; color: #5B635D;">Dias antes da data mais próxima do grupo</span></span>
+          <button onClick="{{aMenos}}" aria-label="Diminuir antecedência" style="width: 40px; height: 40px; border: none; border-radius: 10px; background: #E3F0E8; color: #1E6A48; font: inherit; font-size: 20px; font-weight: 800; cursor: pointer;">−</button>
+          <span style="min-width: 64px; text-align: center; font-size: 17px; font-weight: 800;">{{antec}}</span>
+          <button onClick="{{aMais}}" aria-label="Aumentar antecedência" style="width: 40px; height: 40px; border: none; border-radius: 10px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 20px; font-weight: 800; cursor: pointer;">+</button>
+        </div>
+      </section>
+    </div>
+
+    <section style="display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 700;">Equipe</h2>
+        <span style="font-size: 13px; color: #5B635D;">Funcionário: lotes, avisos, ofertas, ajustes e retirada · Responsável: tudo, mais painéis e configurações</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 620px;">
+          <thead>
+            <tr style="text-align: left; color: #5B635D; border-bottom: 1px solid #E3E1DA;">
+              <th style="padding: 10px 8px;">Pessoa</th><th style="padding: 10px 8px;">E-mail da conta</th><th style="padding: 10px 8px;">Papel</th><th style="padding: 10px 8px;"><span style="position: absolute; left: -9999px;">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid #E3E1DA;">
+              <td style="padding: 12px 8px; font-weight: 700;">Ana Souza (você)</td><td style="padding: 12px 8px; color: #5B635D;">ana.souza@email.com</td>
+              <td style="padding: 12px 8px;"><span style="padding: 3px 10px; border-radius: 999px; background: #E3F0E8; color: #14503A; font-size: 12px; font-weight: 700;">Responsável</span></td><td style="padding: 12px 8px;"></td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E3E1DA;">
+              <td style="padding: 12px 8px; font-weight: 700;">Carlos Lima</td><td style="padding: 12px 8px; color: #5B635D;">carlos.lima@email.com</td>
+              <td style="padding: 12px 8px;"><label for="p2" style="position: absolute; left: -9999px;">Papel de Carlos</label><select id="p2" style="height: 38px; padding: 0 10px; border: 1.5px solid #C9C6BC; border-radius: 10px; background: #FFFFFF; font: inherit; font-size: 14px; color: #1B1F1C;"><option selected>Funcionário</option><option>Responsável</option></select></td>
+              <td style="padding: 12px 8px; text-align: right;"><button style="height: 38px; padding: 0 14px; border: 1.5px solid #E7B4AE; border-radius: 10px; background: #FFFFFF; color: #A3261B; font: inherit; font-size: 14px; font-weight: 700;">Remover</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 14px; border-radius: 12px; border: 1.5px dashed #C9C6BC;">
+        <div style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 6px;">
+          <label for="nova" style="font-size: 14px; font-weight: 600;">Adicionar pessoa pelo e-mail da conta</label>
+          <input id="nova" type="email" placeholder="email@exemplo.com" style="height: 44px; padding: 0 14px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; font: inherit; font-size: 15px; color: #1B1F1C;">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="np" style="font-size: 14px; font-weight: 600;">Papel</label>
+          <select id="np" style="height: 44px; padding: 0 10px; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; color: #1B1F1C;"><option selected>Funcionário</option><option>Responsável</option></select>
+        </div>
+        <button style="height: 44px; padding: 0 18px; border: none; border-radius: 12px; background: #14503A; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700;">Adicionar</button>
+        <span style="flex-basis: 100%; font-size: 13px; color: #5B635D;">A pessoa precisa ter criado a conta antes. Uma pessoa tem no máximo um vínculo por loja.</span>
+      </div>
+    </section>
+
+    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA;">
+      <span style="flex-grow: 1; font-size: 14px; color: #5B635D;">Alterações não salvas</span>
+      <button style="height: 46px; padding: 0 18px; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; color: #1B1F1C;">Descartar</button>
+      <button style="height: 46px; padding: 0 22px; border: none; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700;">Salvar alterações</button>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { j: '4 h', m: 1, a: 10 }; }
+  renderVals() {
+    const base = 'height: 40px; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0; ';
+    const dias = (n) => n + (n === 1 ? ' dia' : ' dias');
+    return {
+      janelas: ['1 h', '2 h', '4 h', '8 h', '12 h', '24 h'].map((j) => ({ label: j, on: this.state.j === j, style: base + (this.state.j === j ? 'border: 2px solid #1E6A48; background: #1E6A48; color: #FFFFFF;' : 'border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C;'), pick: () => this.setState({ j: j }) })),
+      margem: dias(this.state.m),
+      antec: dias(this.state.a),
+      mMenos: () => this.setState({ m: Math.max(0, this.state.m - 1) }),
+      mMais: () => this.setState({ m: Math.min(7, this.state.m + 1) }),
+      aMenos: () => this.setState({ a: Math.max(1, this.state.a - 1) }),
+      aMais: () => this.setState({ a: Math.min(60, this.state.a + 1) })
+    };
+  }
+}
+</script>
+</body>
+</html>

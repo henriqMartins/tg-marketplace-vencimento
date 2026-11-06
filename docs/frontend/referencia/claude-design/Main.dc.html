@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Sistema — Consumidor e Loja</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E6A48}a:hover{color:#14503A}
+</style>
+</helmet>
+<div style="width: 980px; height: 1060px; box-sizing: border-box; padding: 32px 40px; background: #E9E7E0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #1B1F1C; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">Protótipo navegável · dados compartilhados</span>
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800">[Nome do app] — Consumidor e Loja</h1>
+      <p style="margin: 0; font-size: 14px; color: #5B635D">Reserve no celular da esquerda e valide o código no da direita. Publicar uma oferta na loja faz ela aparecer na vitrine.</p>
+    </div>
+    <div style="display: flex; gap: 8px">
+      <button type="button" onClick="{{expirar}}" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 1.5px solid #C9C6BC; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; color: #1B1F1C; cursor: pointer">Simular fim da janela</button>
+      <button type="button" onClick="{{reiniciar}}" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 1.5px solid #C9C6BC; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; color: #1B1F1C; cursor: pointer">Reiniciar dados</button>
+    </div>
+  </div>
+  <div style="display: flex; gap: 60px; justify-content: center">
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+      <span style="font-size: 14px; font-weight: 700; color: #4A4F4B">Celular do consumidor · Ana</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 0 0 10px #1B1F1C, 0 24px 60px rgba(27,31,28,.25); background: #F6F5F1">
+        <dc-import name="Consumidor" db="{{db}}" act="{{act}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+      <span style="font-size: 14px; font-weight: 700; color: #4A4F4B">Celular da loja · Carlos (responsável)</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 0 0 10px #1B1F1C, 0 24px 60px rgba(27,31,28,.25); background: #F6F5F1">
+        <dc-import name="Loja" db="{{db}}" act="{{act}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":980,"height":1060}}'>
+var FITAS = [
+  { nome: 'Vermelho', hex: '#D7263D', bim: 'jan–fev' },
+  { nome: 'Amarelo', hex: '#F4C430', bim: 'mar–abr' },
+  { nome: 'Verde', hex: '#2E9E4F', bim: 'mai–jun' },
+  { nome: 'Azul', hex: '#1F5FBF', bim: 'jul–ago' },
+  { nome: 'Branco', hex: '#FFFFFF', bim: 'set–out' },
+  { nome: 'Preto', hex: '#1B1B1B', bim: 'nov–dez' }
+];
+function fitaDe(validade) {
+  var p = String(validade).split('/');
+  var m = parseInt(p[1], 10);
+  if (!m || m < 1 || m > 12) return null;
+  return FITAS[Math.floor((m - 1) / 2)];
+}
+function menosUmDia(validade) {
+  var p = String(validade).split('/');
+  var d = new Date(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+  d.setDate(d.getDate() - 1);
+  var dd = String(d.getDate()).padStart(2, '0');
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  return dd + '/' + mm;
+}
+function oferta(o) {
+  var f = fitaDe(o.validade);
+  return Object.assign({
+    loja: 'Mercadinho Vila Nova', lojaId: 'vn', endereco: 'Rua das Palmeiras, 410 · Boa Vista',
+    distancia: '0,4 km', distKm: 0.4, janela: 4, ajustado: 0, perda: 0, estado: 'ativa', fimUrgente: false,
+    fita: f.nome, fitaHex: f.hex, bimestre: f.bim
+  }, o);
+}
+// Mock do backend: expira_em = mín(agora + janela, fim da oferta). No app real vem da API.
+function expiraDe(o) {
+  var agora = new Date(2026, 9, 22, 16, 0);
+  var lim = new Date(agora.getTime() + (o.janela || 4) * 3600000);
+  var m = /(\d+)\/(\d+), (\d+):(\d+)/.exec(o.fim || '');
+  if (m) { var f = new Date(2026, +m[2] - 1, +m[1], +m[3], +m[4]); if (f < lim) lim = f; }
+  var p = function (n) { return (n < 10 ? '0' : '') + n; };
+  var dia = lim.getDate() === 22 ? 'hoje' : (lim.getDate() === 23 && lim.getMonth() === 9 ? 'amanhã' : p(lim.getDate()) + '/' + p(lim.getMonth() + 1));
+  var min = Math.round((lim - agora) / 60000);
+  return { txt: dia + ', ' + p(lim.getHours()) + ':' + p(lim.getMinutes()), restante: Math.floor(min / 60) + ' h ' + p(min % 60) + ' min', min: min };
+}
+function seed() {
+  return {
+    seq: 100,
+    hoje: '22/10/2026',
+    loja: { id: 'vn', nome: 'Mercadinho Vila Nova', endereco: 'Rua das Palmeiras, 410 · Boa Vista', janelaPadrao: 4, margem: 1, antecedencia: 10 },
+    ofertas: [
+      oferta({ id: 'o1', produto: 'Iogurte natural 170 g', categoria: 'Laticínios', validade: '28/10/2026', fim: '27/10, 23:59', preco: 3.14, original: 4.49, desconto: 30, separado: 12, livre: 6, reservado: 4, retirado: 2 }),
+      oferta({ id: 'o2', produto: 'Presunto fatiado 200 g', categoria: 'Frios', validade: '30/10/2026', fim: '29/10, 23:59', preco: 4.74, original: 7.9, desconto: 40, separado: 8, livre: 5, reservado: 2, retirado: 1 }),
+      oferta({ id: 'o3', produto: 'Biscoito recheado 140 g', categoria: 'Doces', loja: 'Empório Santa Cruz', lojaId: 'sc', endereco: 'Av. Brasil, 1290 · Santa Cruz', distancia: '1,1 km', distKm: 1.1, validade: '05/11/2026', fim: '04/11, 23:59', preco: 2.4, original: 3.2, desconto: 25, separado: 10, livre: 10, reservado: 0, retirado: 0 }),
+      oferta({ id: 'o4', produto: 'Molho de tomate 340 g', categoria: 'Mercearia', loja: 'Mercado Bom Preço', lojaId: 'bp', endereco: 'Rua Ipiranga, 77 · Centro', distancia: '1,8 km', distKm: 1.8, validade: '31/10/2026', fim: '30/10, 23:59', preco: 1.49, original: 2.98, desconto: 50, separado: 6, livre: 2, reservado: 3, retirado: 1 }),
+      oferta({ id: 'o5', produto: 'Queijo minas frescal 250 g', categoria: 'Laticínios', validade: '24/10/2026', fim: '23/10, 23:59', fimUrgente: true, preco: 8.39, original: 13.99, desconto: 40, separado: 8, livre: 3, reservado: 0, retirado: 5 }),
+      oferta({ id: 'o6', produto: 'Requeijão cremoso 200 g', categoria: 'Laticínios', validade: '21/10/2026', fim: '20/10, 23:59', preco: 4.19, original: 6.99, desconto: 40, separado: 10, livre: 0, reservado: 0, retirado: 6, ajustado: 1, perda: 3, estado: 'encerrada' })
+    ],
+    reservas: [
+      { id: 'r1', ofertaId: 'o1', qtd: 2, pedido: 2, codigo: '482917', estado: 'reservada', expira: 'hoje, 20:00', restante: '3 h 42 min', urgente: false, cliente: 'Ana S.', mine: true, quando: '' },
+      { id: 'r2', ofertaId: 'o1', qtd: 1, pedido: 1, codigo: '305118', estado: 'reservada', expira: 'hoje, 18:40', restante: '52 min', urgente: true, cliente: 'Bruno M.', mine: false, quando: '' },
+      { id: 'r3', ofertaId: 'o1', qtd: 1, pedido: 1, codigo: '771204', estado: 'reservada', expira: 'hoje, 21:10', restante: '4 h 52 min', urgente: false, cliente: 'Carla R.', mine: false, quando: '' },
+      { id: 'r4', ofertaId: 'o2', qtd: 2, pedido: 2, codigo: '619033', estado: 'reservada', expira: 'hoje, 18:10', restante: '22 min', urgente: true, cliente: 'Diego P.', mine: false, quando: '' },
+      { id: 'r5', ofertaId: 'o4', qtd: 3, pedido: 3, codigo: '208455', estado: 'reservada', expira: 'hoje, 19:00', restante: '1 h 12 min', urgente: false, cliente: 'Elisa T.', mine: false, quando: '' },
+      { id: 'r6', ofertaId: 'o6', qtd: 1, pedido: 1, codigo: '118340', estado: 'retirada', expira: '', restante: '', urgente: false, cliente: 'Ana S.', mine: true, quando: 'Retirada em 20/10, 17:40' },
+      { id: 'r7', ofertaId: 'o3', qtd: 2, pedido: 2, codigo: '640921', estado: 'expirada', expira: '', restante: '', urgente: false, cliente: 'Ana S.', mine: true, quando: 'Expirou em 18/10, 21:00' },
+      { id: 'r8', ofertaId: 'o5', qtd: 1, pedido: 1, codigo: '993021', estado: 'cancelada', expira: '', restante: '', urgente: false, cliente: 'Ana S.', mine: true, quando: 'Cancelada em 17/10, 10:05' }
+    ],
+    avisos: [
+      { id: 'a1', produto: 'Leite condensado 395 g', categoria: 'Mercearia', validade: '28/10/2026', prazo: 'Vence em 6 dias', urgente: true, adiado: false, precoOriginal: 6.99, estado: 'pendente' },
+      { id: 'a2', produto: 'Creme de leite 200 g', categoria: 'Mercearia', validade: '30/10/2026', prazo: 'Vence em 8 dias', urgente: false, adiado: false, precoOriginal: 3.49, estado: 'pendente' },
+      { id: 'a3', produto: 'Salsicha hot dog 500 g', categoria: 'Frios', validade: '01/11/2026', prazo: 'Vence em 10 dias', urgente: false, adiado: false, precoOriginal: 9.8, estado: 'pendente' },
+      { id: 'a4', produto: 'Chocolate ao leite 90 g', categoria: 'Doces', validade: '01/11/2026', prazo: 'Vence em 10 dias', urgente: false, adiado: false, precoOriginal: 5.49, estado: 'pendente' },
+      { id: 'a5', produto: 'Achocolatado em pó 400 g', categoria: 'Mercearia', validade: '09/12/2026', prazo: 'Adiado · volta amanhã', urgente: false, adiado: true, precoOriginal: 8.9, estado: 'adiado' }
+    ].map(function (a) { var f = fitaDe(a.validade); return Object.assign(a, { fita: f.nome, fitaHex: f.hex, bimestre: f.bim }); }),
+    grupos: [
+      { id: 'g1', produto: 'Leite condensado 395 g', validade: '28/10/2026', lotes: 2, recebido: 36, situacao: 'Conferir', aviso: 'Aviso disparado 18/10', colisao: false },
+      { id: 'g2', produto: 'Achocolatado em pó 400 g', validade: '09/12/2026', lotes: 1, recebido: 24, situacao: 'Adiado', aviso: 'Adiado para 23/10', colisao: true, colisaoTexto: 'Ainda há lote Preto do ciclo anterior (validade 22/12/2025)' },
+      { id: 'g3', produto: 'Iogurte natural 170 g', validade: '28/10/2026', lotes: 1, recebido: 18, situacao: 'Em oferta', aviso: 'Oferta até 27/10', colisao: false },
+      { id: 'g4', produto: 'Feijão carioca 1 kg', validade: '15/02/2027', lotes: 2, recebido: 40, situacao: 'Aguardando', aviso: 'Aviso em 05/02', colisao: false },
+      { id: 'g5', produto: 'Macarrão espaguete 500 g', validade: '20/03/2027', lotes: 1, recebido: 30, situacao: 'Aguardando', aviso: 'Aviso em 10/03', colisao: false },
+      { id: 'g6', produto: 'Chocolate ao leite 90 g', validade: '05/11/2026', lotes: 1, recebido: 20, situacao: 'Conferir', aviso: 'Aviso disparado 26/10', colisao: false }
+    ].map(function (g) { var f = fitaDe(g.validade); return Object.assign(g, { fita: f.nome, fitaHex: f.hex, bimestre: f.bim }); }),
+    produtos: ['Iogurte natural 170 g', 'Leite condensado 395 g', 'Creme de leite 200 g', 'Achocolatado em pó 400 g', 'Feijão carioca 1 kg', 'Macarrão espaguete 500 g', 'Chocolate ao leite 90 g', 'Salsicha hot dog 500 g', 'Presunto fatiado 200 g', 'Requeijão cremoso 200 g'],
+    equipe: [
+      { id: 'e1', nome: 'Carlos Lima', email: 'carlos@vilanova.com.br', papel: 'Responsável', eu: true },
+      { id: 'e2', nome: 'Juliana Prado', email: 'juliana.prado@email.com', papel: 'Funcionário', eu: false }
+    ]
+  };
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { db: seed() };
+  }
+  mut(fn) {
+    var db = JSON.parse(JSON.stringify(this.state.db));
+    var out = fn(db);
+    this.setState({ db: db });
+    return out;
+  }
+  novoCodigo(db) {
+    var c;
+    do { c = String(Math.floor(100000 + Math.random() * 900000)); }
+    while (db.reservas.some(function (r) { return r.estado === 'reservada' && r.codigo === c; }));
+    return c;
+  }
+  renderVals() {
+    var self = this;
+    var act = {
+      reservar: function (ofertaId, pedido) {
+        return self.mut(function (db) {
+          var o = db.ofertas.find(function (x) { return x.id === ofertaId; });
+          if (!o || o.estado !== 'ativa' || o.livre <= 0) return { status: 'recusada', pedido: pedido, quantidade: 0 };
+          var q = Math.min(pedido, o.livre);
+          o.livre -= q; o.reservado += q;
+          db.seq += 1;
+          var r = { id: 'r' + db.seq, ofertaId: ofertaId, qtd: q, pedido: pedido, codigo: self.novoCodigo(db), estado: 'reservada', expira: expiraDe(o).txt, restante: expiraDe(o).restante, urgente: expiraDe(o).min < 60, cliente: 'Ana S.', mine: true, quando: '' };
+          db.reservas.unshift(r);
+          return { status: q < pedido ? 'parcial' : 'confirmada', reservaId: r.id, pedido: pedido, quantidade: q, codigo: r.codigo };
+        });
+      },
+      cancelar: function (reservaId) {
+        self.mut(function (db) {
+          var r = db.reservas.find(function (x) { return x.id === reservaId; });
+          if (!r || r.estado !== 'reservada') return;
+          var o = db.ofertas.find(function (x) { return x.id === r.ofertaId; });
+          r.estado = 'cancelada'; r.quando = 'Cancelada hoje';
+          if (o) { o.reservado -= r.qtd; o.livre += r.qtd; }
+        });
+      },
+      retirar: function (reservaId) {
+        self.mut(function (db) {
+          var r = db.reservas.find(function (x) { return x.id === reservaId; });
+          if (!r || r.estado !== 'reservada') return;
+          var o = db.ofertas.find(function (x) { return x.id === r.ofertaId; });
+          r.estado = 'retirada'; r.quando = 'Retirada hoje às 18:12';
+          if (o) { o.reservado -= r.qtd; o.retirado += r.qtd; }
+        });
+      },
+      ajustar: function (ofertaId, qtd, motivo) {
+        return self.mut(function (db) {
+          var o = db.ofertas.find(function (x) { return x.id === ofertaId; });
+          if (!o || qtd < 1 || qtd > o.livre) return { ok: false, max: o ? o.livre : 0 };
+          o.livre -= qtd; o.ajustado += qtd;
+          return { ok: true };
+        });
+      },
+      publicar: function (p) {
+        return self.mut(function (db) {
+          var a = db.avisos.find(function (x) { return x.id === p.avisoId; });
+          if (!a) return null;
+          db.seq += 1;
+          var preco = Math.round(p.precoOriginal * (100 - p.desconto)) / 100;
+          var o = oferta({ id: 'o' + db.seq, produto: a.produto, categoria: a.categoria, validade: a.validade, fim: menosUmDia(a.validade) + ', 23:59', preco: preco, original: p.precoOriginal, desconto: p.desconto, janela: p.janela, separado: p.separado, livre: p.separado, reservado: 0, retirado: 0, nova: true });
+          db.ofertas.unshift(o);
+          a.estado = 'conferido';
+          var g = db.grupos.find(function (x) { return x.produto === a.produto && x.fita === a.fita; });
+          if (g) { g.situacao = 'Em oferta'; g.aviso = 'Oferta até ' + menosUmDia(a.validade); }
+          return o.id;
+        });
+      },
+      adiar: function (avisoId, dias) {
+        self.mut(function (db) {
+          var a = db.avisos.find(function (x) { return x.id === avisoId; });
+          if (!a) return;
+          a.estado = 'adiado'; a.adiado = true;
+          a.prazo = dias === 1 ? 'Adiado · volta amanhã' : 'Adiado · volta em ' + dias + ' dias';
+        });
+      },
+      cadastrarLote: function (p) {
+        return self.mut(function (db) {
+          var f = fitaDe(p.validade);
+          if (!f) return null;
+          var g = db.grupos.find(function (x) { return x.produto === p.produto && x.fita === f.nome; });
+          var situacao = 'novo';
+          if (g) {
+            situacao = 'agrupado';
+            g.lotes += 1; g.recebido += p.quantidade;
+          } else {
+            db.seq += 1;
+            g = { id: 'g' + db.seq, produto: p.produto, validade: p.validade, lotes: 1, recebido: p.quantidade, situacao: 'Aguardando', aviso: 'Aviso agendado', colisao: false, fita: f.nome, fitaHex: f.hex, bimestre: f.bim };
+            db.grupos.unshift(g);
+          }
+          if (g.colisao) situacao = 'colisao';
+          if (db.produtos.indexOf(p.produto) < 0) db.produtos.unshift(p.produto);
+          return { situacao: situacao, fita: f.nome, fitaHex: f.hex, bimestre: f.bim, referencia: g.validade };
+        });
+      },
+      novoProduto: function (nome) {
+        self.mut(function (db) { if (db.produtos.indexOf(nome) < 0) db.produtos.unshift(nome); });
+      }
+    };
+    return {
+      db: this.state.db,
+      act: act,
+      expirar: function () {
+        self.mut(function (db) {
+          db.reservas.forEach(function (r) {
+            if (r.estado !== 'reservada') return;
+            var o = db.ofertas.find(function (x) { return x.id === r.ofertaId; });
+            r.estado = 'expirada'; r.quando = 'Expirou hoje às 20:00';
+            if (o) { o.reservado -= r.qtd; o.livre += r.qtd; }
+          });
+        });
+      },
+      reiniciar: function () { self.setState({ db: seed() }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

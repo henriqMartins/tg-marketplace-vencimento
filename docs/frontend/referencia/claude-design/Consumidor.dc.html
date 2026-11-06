@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>App do consumidor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E6A48}a:hover{color:#14503A}
+@keyframes cgira{to{transform:rotate(360deg)}}
+@keyframes cpulsa{0%,100%{opacity:1}50%{opacity:.55}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-variant-numeric: tabular-nums">
+
+<!-- A1 · Abertura -->
+<sc-if value="{{t.A1}}" hint-placeholder-val="{{ true }}">
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; background: #1E6A48; color: #FFFFFF">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 0 24px; text-align: center">
+      <div style="width: 104px; height: 104px; border-radius: 30px; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#1E6A48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"></path><path d="M9 20v-6h6v6"></path></svg>
+      </div>
+      <span style="font-size: 40px; font-weight: 800; line-height: 1.1">[Nome do app]</span>
+      <span style="font-size: 18px; color: #CFE6DA">[Slogan a definir]</span>
+    </div>
+    <div style="background: #14503A; padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 14px; align-items: center">
+      <div style="display: flex; gap: 12px; align-items: center">
+        <span style="width: 20px; height: 20px; border-radius: 50%; border: 3px solid rgba(255,255,255,.3); border-top-color: #FFFFFF; animation: cgira 0.9s linear infinite; flex-shrink: 0"></span>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 15px; font-weight: 700">Conectando ao servidor…</span>
+          <span style="font-size: 13px; color: #CFE6DA">Na primeira abertura do dia pode levar até 1 minuto</span>
+        </div>
+      </div>
+      <button type="button" onClick="{{irA2}}" style="height: 44px; padding: 0 12px; background: transparent; border: 0; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer">Pular para o login</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- A2 · Entrar -->
+<sc-if value="{{t.A2}}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+    <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 48px 16px 16px; display: flex; flex-direction: column; gap: 20px">
+      <div style="width: 56px; height: 56px; border-radius: 16px; background: #1E6A48; display: flex; align-items: center; justify-content: center">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"></path><path d="M9 20v-6h6v6"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800">Entrar</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5B635D">Uma conta só para comprar e, se você trabalha numa loja parceira, para operar a loja</p>
+      </div>
+      <sc-if value="{{erroLogin}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background: #FDE8E7; color: #8A1C13; border: 1px solid #E7B4AE; border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 600">E-mail ou senha incorretos. Confira e tente de novo.</div>
+      </sc-if>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="c-email" style="font-size: 14px; font-weight: 600">E-mail</label>
+        <input id="c-email" type="email" autocomplete="email" value="{{email}}" onChange="{{onEmail}}" style="height: 52px; border-radius: 12px; border: 1.5px solid #C9C6BC; background: #FFFFFF; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="c-senha" style="font-size: 14px; font-weight: 600">Senha</label>
+        <div style="position: relative">
+          <input id="c-senha" type="{{tipoSenha}}" autocomplete="current-password" value="{{senha}}" onChange="{{onSenha}}" placeholder="Sua senha" style="width: 100%; box-sizing: border-box; height: 52px; border-radius: 12px; border: 1.5px solid {{bordaSenha}}; background: #FFFFFF; padding: 0 52px 0 14px; font: inherit; font-size: 15px; color: #1B1F1C">
+          <button type="button" aria-label="Mostrar senha" onClick="{{toggleSenha}}" style="position: absolute; right: 4px; top: 4px; width: 44px; height: 44px; border: 0; background: transparent; color: #5B635D; cursor: pointer; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+        <div style="display: flex; justify-content: flex-end">
+          <a href="#" style="font-size: 14px; font-weight: 600; padding: 10px 0">Esqueci minha senha</a>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 12px 16px 24px; display: flex; flex-direction: column; gap: 10px; background: #F6F5F1">
+      <button type="button" onClick="{{entrar}}" style="height: 56px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Entrar</button>
+      <button type="button" onClick="{{irA3}}" style="height: 52px; border-radius: 14px; border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Criar conta</button>
+      <button type="button" onClick="{{entrarVisitante}}" style="height: 44px; border: 0; background: transparent; color: #1E6A48; font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer">Só olhar as ofertas, sem entrar</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- A3 · Criar conta -->
+<sc-if value="{{t.A3}}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+    <div style="height: 56px; display: flex; align-items: center; gap: 4px; padding: 0 8px; background: #FFFFFF; border-bottom: 1px solid #E3E1DA; flex-shrink: 0">
+      <button type="button" aria-label="Voltar" onClick="{{irA2}}" style="width: 44px; height: 44px; border: 0; background: transparent; color: #1B1F1C; cursor: pointer; display: flex; align-items: center; justify-content: center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </button>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700">Criar conta</h1>
+    </div>
+    <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="c-nome" style="font-size: 14px; font-weight: 600">Nome</label>
+        <input id="c-nome" type="text" autocomplete="name" value="{{nomeCad}}" onChange="{{onNomeCad}}" style="height: 52px; border-radius: 12px; border: 1.5px solid #C9C6BC; background: #FFFFFF; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="c-email2" style="font-size: 14px; font-weight: 600">E-mail</label>
+        <input id="c-email2" type="email" autocomplete="email" value="{{emailCad}}" onChange="{{onEmailCad}}" style="height: 52px; border-radius: 12px; border: 1.5px solid #C9C6BC; background: #FFFFFF; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="c-senha2" style="font-size: 14px; font-weight: 600">Senha</label>
+        <input id="c-senha2" type="password" autocomplete="new-password" value="{{senhaCad}}" onChange="{{onSenhaCad}}" style="height: 52px; border-radius: 12px; border: 1.5px solid {{bordaSenhaCad}}; background: #FFFFFF; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C">
+        <span style="font-size: 13px; color: {{corDicaSenha}}">Pelo menos 8 caracteres</span>
+      </div>
+      <label style="display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 1.45; cursor: pointer; min-height: 44px">
+        <input type="checkbox" checked="{{termos}}" onChange="{{toggleTermos}}" style="width: 22px; height: 22px; margin: 0; accent-color: #1E6A48; flex-shrink: 0">
+        <span>Li e aceito os termos de uso. Meus dados são usados só para as reservas</span>
+      </label>
+      <div style="background: #E3F0E8; color: #14503A; border-radius: 16px; padding: 14px 16px; font-size: 14px; line-height: 1.45">Trabalha numa loja parceira? Crie a conta normalmente. O responsável da loja vincula você pelo seu e-mail</div>
+    </div>
+    <div style="padding: 12px 16px 24px">
+      <button type="button" disabled="{{cadDesab}}" onClick="{{criarConta}}" style="width: 100%; height: 56px; border-radius: 14px; border: 0; background: {{cadBg}}; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Criar conta</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- C1 · Localização -->
+<sc-if value="{{t.C1}}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+    <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 56px 16px 16px; display: flex; flex-direction: column; gap: 18px">
+      <div style="width: 64px; height: 64px; border-radius: 20px; background: #E3F0E8; color: #1E6A48; display: flex; align-items: center; justify-content: center">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.5-7-12a7 7 0 0114 0c0 5.5-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>
+      </div>
+      <h1 style="margin: 0; font-size: 24px; font-weight: 800">Ofertas perto de você</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5B635D">Usamos sua localização só para ordenar as lojas pela distância. Nada fica gravado</p>
+      <button type="button" onClick="{{usarLocal}}" style="height: 56px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Usar minha localização</button>
+      <div style="display: flex; align-items: center; gap: 12px; color: #5B635D; font-size: 13px">
+        <span style="flex: 1; height: 1px; background: #E3E1DA"></span><span>ou</span><span style="flex: 1; height: 1px; background: #E3E1DA"></span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="c-cep" style="font-size: 14px; font-weight: 600">CEP</label>
+        <div style="display: flex; gap: 8px">
+          <input id="c-cep" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" value="{{cep}}" onChange="{{onCep}}" style="flex: 1; min-width: 0; height: 52px; border-radius: 12px; border: 1.5px solid {{bordaCep}}; background: #FFFFFF; padding: 0 14px; font: inherit; font-size: 15px; color: #1B1F1C">
+          <button type="button" onClick="{{buscarCep}}" style="height: 52px; padding: 0 18px; border-radius: 12px; border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Buscar</button>
+        </div>
+        <sc-if value="{{erroCep}}" hint-placeholder-val="{{ false }}">
+          <span role="alert" style="font-size: 13px; font-weight: 600; color: #8A1C13">Não encontramos esse CEP. Confira os números</span>
+        </sc-if>
+        <span style="font-size: 13px; color: #5B635D">Se o navegador negar a localização, o CEP é o caminho</span>
+      </div>
+    </div>
+    <div style="padding: 12px 16px 24px; display: flex; justify-content: center">
+      <button type="button" onClick="{{semLocal}}" style="height: 44px; border: 0; background: transparent; color: #1E6A48; font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer">Ver todas sem ordenar por distância</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- C2 · Vitrine -->
+<sc-if value="{{t.C2}}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+    <div style="background: #FFFFFF; border-bottom: 1px solid #E3E1DA; padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 800">Ofertas perto de você</h1>
+        <button type="button" onClick="{{irC1}}" style="align-self: flex-start; min-height: 32px; padding: 0; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 600; color: #1B1F1C; display: flex; align-items: center; gap: 6px; cursor: pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E6A48" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.5-7-12a7 7 0 0114 0c0 5.5-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>
+          <span>{{local}} ▾</span>
+        </button>
+      </div>
+      <div style="position: relative">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B635D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; left: 14px; top: 13px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+        <input type="search" aria-label="Buscar produto" placeholder="Buscar produto" value="{{busca}}" onChange="{{onBusca}}" style="width: 100%; box-sizing: border-box; height: 46px; border-radius: 12px; border: 1.5px solid #C9C6BC; background: #F6F5F1; padding: 0 14px 0 44px; font: inherit; font-size: 15px; color: #1B1F1C">
+      </div>
+      <div style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 0 16px">
+        <sc-for list="{{chipsCat}}" as="c" hint-placeholder-count="5">
+          <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.ativo}}" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1.5px solid {{c.borda}}; background: {{c.bg}}; color: {{c.fg}}; font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; flex-shrink: 0; cursor: pointer">{{c.label}}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 0 16px">
+        <sc-for list="{{chipsDesc}}" as="c" hint-placeholder-count="4">
+          <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.ativo}}" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1.5px solid {{c.borda}}; background: {{c.bg}}; color: {{c.fg}}; font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; flex-shrink: 0; cursor: pointer">{{c.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px">
+      <sc-if value="{{carregando}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="background: #FBEFD0; color: #6B4A00; border-radius: 12px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; font-size: 14px; font-weight: 600">
+            <span style="width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid rgba(107,74,0,.25); border-top-color: #6B4A00; animation: cgira 0.9s linear infinite; flex-shrink: 0"></span>
+            <span>Conectando ao servidor… pode levar até 1 minuto</span>
+          </div>
+          <sc-for list="{{esqueletos}}" as="s" hint-placeholder-count="4">
+            <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 12px; display: flex; gap: 12px; animation: cpulsa 1.4s ease-in-out infinite">
+              <div style="width: 84px; height: 84px; border-radius: 12px; background: #ECEBE5; flex-shrink: 0"></div>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding-top: 4px">
+                <div style="height: 14px; width: 80%; border-radius: 6px; background: #ECEBE5"></div>
+                <div style="height: 12px; width: 50%; border-radius: 6px; background: #ECEBE5"></div>
+                <div style="height: 18px; width: 40%; border-radius: 6px; background: #ECEBE5"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{mostrarLista}}" hint-placeholder-val="{{ true }}">
+        <span style="font-size: 13px; color: #5B635D">{{contagem}}</span>
+        <sc-for list="{{lista}}" as="o" hint-placeholder-count="4">
+          <button type="button" onClick="{{o.abrir}}" style="width: 100%; text-align: left; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 12px; display: flex; gap: 12px; font: inherit; color: #1B1F1C; cursor: pointer">
+            <div style="width: 84px; height: 84px; border-radius: 12px; background: #EDEBE4; position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8A8678" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"></path><path d="M3 7l9 4 9-4"></path><path d="M12 11v10"></path></svg>
+              <span style="position: absolute; top: 6px; left: 6px; background: #C2410C; color: #FFFFFF; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 7px">{{o.descTxt}}</span>
+            </div>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+              <span style="font-size: 15px; font-weight: 700">{{o.produto}}</span>
+              <span style="font-size: 13px; color: #5B635D">{{o.lojaDist}}</span>
+              <span style="display: flex; align-items: baseline; gap: 8px; margin-top: 2px">
+                <span style="font-size: 18px; font-weight: 800; color: #1E6A48">{{o.precoTxt}}</span>
+                <span style="font-size: 13px; color: #5B635D; text-decoration: line-through">{{o.origTxt}}</span>
+              </span>
+              <span style="font-size: 13px; color: #5B635D">Vence {{o.validadeCurta}} · <strong style="color: #1B1F1C">{{o.livre}}</strong> disponíveis</span>
+            </div>
+          </button>
+        </sc-for>
+      </sc-if>
+      <sc-if value="{{vazio}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 40px 12px">
+          <div style="width: 64px; height: 64px; border-radius: 20px; background: #ECEBE5; color: #5B635D; display: flex; align-items: center; justify-content: center">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+          </div>
+          <span style="font-size: 16px; font-weight: 700">Nenhuma oferta com esses filtros</span>
+          <span style="font-size: 15px; line-height: 1.45; color: #5B635D">As lojas publicam ofertas ao longo do dia. Tente outros filtros ou volte mais tarde.</span>
+          <button type="button" onClick="{{limparFiltros}}" style="height: 52px; padding: 0 22px; border-radius: 14px; border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Limpar filtros</button>
+          <button type="button" onClick="{{abrirAvisos}}" style="height: 44px; border: 0; background: transparent; color: #1E6A48; font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer">Ativar avisos de oferta</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<!-- C4 · Reserva da quantidade -->
+<sc-if value="{{t.C4}}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+    <div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column">
+      <div style="height: 165px; background: #EDEBE4; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#8A8678" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"></path><path d="M3 7l9 4 9-4"></path><path d="M12 11v10"></path></svg>
+        <button type="button" aria-label="Voltar" onClick="{{irC2}}" style="position: absolute; left: 16px; top: 16px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #FFFFFF; color: #1B1F1C; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(27,31,28,.12)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+        </button>
+        <span style="position: absolute; right: 16px; top: 22px; background: #C2410C; color: #FFFFFF; font-size: 14px; font-weight: 700; border-radius: 999px; padding: 5px 12px">{{of.descTxt}}</span>
+      </div>
+      <div style="padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h1 style="margin: 0; font-size: 22px; font-weight: 800">{{of.produto}}</h1>
+          <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap">
+            <span style="font-size: 24px; font-weight: 800; color: #1E6A48">{{of.precoTxt}}</span>
+            <span style="font-size: 15px; color: #5B635D"><span style="text-decoration: line-through">{{of.origTxt}}</span> · vence {{of.validade}}</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 12px 14px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E6A48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><path d="M3 9l1.5-5h15L21 9"></path><path d="M3 9h18"></path><path d="M5 12v8h14v-8"></path></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 15px; font-weight: 700">{{of.loja}}</span>
+            <span style="font-size: 13px; color: #5B635D">{{of.endereco}} · {{of.distancia}}</span>
+          </div>
+        </div>
+        <sc-if value="{{of.temEstoque}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; justify-content: space-between; align-items: baseline">
+              <span style="font-size: 14px; font-weight: 600">Quantidade</span>
+              <span style="font-size: 13px; color: #5B635D">{{of.livre}} disponíveis</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px; justify-content: center">
+              <button type="button" aria-label="Diminuir quantidade" disabled="{{menosDesab}}" onClick="{{menos}}" style="width: 60px; height: 60px; border-radius: 16px; border: 0; background: #E3F0E8; color: #14503A; font: inherit; font-size: 28px; font-weight: 700; cursor: pointer; opacity: {{menosOp}}">−</button>
+              <span aria-live="polite" style="min-width: 72px; text-align: center; font-size: 44px; font-weight: 800">{{qtd}}</span>
+              <button type="button" aria-label="Aumentar quantidade" disabled="{{maisDesab}}" onClick="{{mais}}" style="width: 60px; height: 60px; border-radius: 16px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 28px; font-weight: 700; cursor: pointer; opacity: {{maisOp}}">+</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{of.poucas}}" hint-placeholder-val="{{ false }}">
+          <div role="alert" style="background: #FEF3C7; color: #6B3F00; border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.45">Restam só {{of.livre}} unidades. Se alguém reservar antes de você, reservamos o que sobrar e avisamos na hora.</div>
+        </sc-if>
+        <sc-if value="{{of.esgotada}}" hint-placeholder-val="{{ false }}">
+          <div role="alert" style="background: #FDE8E7; color: #8A1C13; border: 1px solid #E7B4AE; border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.45; font-weight: 600">Esgotou. A oferta volta se alguém cancelar ou deixar a reserva expirar.</div>
+        </sc-if>
+        <div style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 12px 14px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E6A48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+          <span style="font-size: 14px; line-height: 1.45">Retire até <strong>{{of.expiraTxt}}</strong> (janela de {{of.janela}} h). O pagamento é feito na loja, na retirada</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 12px 16px 24px; background: #FFFFFF; border-top: 1px solid #E3E1DA">
+      <button type="button" disabled="{{of.esgotada}}" onClick="{{reservar}}" style="width: 100%; height: 56px; border-radius: 14px; border: 0; background: {{reservarBg}}; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">{{reservarTxt}}</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- C5 · Resultado -->
+<sc-if value="{{t.C5}}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+    <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 72px 16px 16px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px">
+      <sc-if value="{{res.confirmada}}" hint-placeholder-val="{{ true }}">
+        <div style="width: 88px; height: 88px; border-radius: 50%; background: #E3F0E8; color: #1E6A48; display: flex; align-items: center; justify-content: center">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+        </div>
+        <h1 style="margin: 0; font-size: 26px; font-weight: 800">Reservado!</h1>
+        <span style="font-size: 15px; font-weight: 600">{{res.item}}</span>
+        <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5B635D">Retire até {{res.expira}}. Você paga {{res.totalTxt}} na loja.</p>
+      </sc-if>
+      <sc-if value="{{res.parcial}}" hint-placeholder-val="{{ false }}">
+        <div style="width: 88px; height: 88px; border-radius: 50%; background: #FEF3C7; color: #6B3F00; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 800">!</div>
+        <h1 style="margin: 0; font-size: 26px; font-weight: 800">Reservamos {{res.quantidade}} de {{res.pedido}}</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5B635D">Alguém reservou antes e só restavam {{res.quantidade}} unidades. Elas já estão separadas para você.</p>
+        <div style="width: 100%; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; gap: 12px; text-align: left">
+          <span style="font-size: 15px; font-weight: 600">{{res.item}}</span>
+          <span style="font-size: 15px; font-weight: 800; color: #1E6A48; white-space: nowrap">{{res.totalTxt}}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{res.recusada}}" hint-placeholder-val="{{ false }}">
+        <div style="width: 88px; height: 88px; border-radius: 50%; background: #FDE8E7; color: #A3261B; display: flex; align-items: center; justify-content: center">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>
+        </div>
+        <h1 style="margin: 0; font-size: 26px; font-weight: 800">Esgotou agora há pouco</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5B635D">Outra pessoa reservou as últimas unidades. A oferta volta para a vitrine se alguém cancelar ou deixar a reserva expirar.</p>
+      </sc-if>
+    </div>
+    <div style="padding: 12px 16px 24px; display: flex; flex-direction: column; gap: 10px">
+      <sc-if value="{{res.confirmada}}" hint-placeholder-val="{{ true }}">
+        <button type="button" onClick="{{verCodigo}}" style="height: 56px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Ver código de retirada</button>
+      </sc-if>
+      <sc-if value="{{res.parcial}}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{verCodigo}}" style="height: 56px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Manter as {{res.quantidade}} unidades</button>
+        <button type="button" onClick="{{cancelarParcial}}" style="height: 52px; border-radius: 14px; border: 1.5px solid #E7B4AE; background: #FFFFFF; color: #A3261B; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Cancelar a reserva</button>
+      </sc-if>
+      <sc-if value="{{res.recusada}}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{irC2}}" style="height: 56px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Ver outras ofertas</button>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<!-- C6 / C7 · Código e desfechos -->
+<sc-if value="{{t.C6}}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+    <div style="height: 56px; display: flex; align-items: center; gap: 4px; padding: 0 8px; background: #FFFFFF; border-bottom: 1px solid #E3E1DA; flex-shrink: 0">
+      <button type="button" aria-label="Voltar" onClick="{{irC8}}" style="width: 44px; height: 44px; border: 0; background: transparent; color: #1B1F1C; cursor: pointer; display: flex; align-items: center; justify-content: center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+      </button>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700">Sua reserva</h1>
+    </div>
+    <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+      <sc-if value="{{rv.reservada}}" hint-placeholder-val="{{ true }}">
+        <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 20px; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+          <span style="background: #E4F1E4; color: #1F5B2A; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 10px">✓ Reserva confirmada</span>
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">Código de retirada</span>
+          <div role="img" aria-label="{{rv.codigoAria}}" style="display: flex; gap: 14px">
+            <div style="display: flex; gap: 6px">
+              <sc-for list="{{rv.g1}}" as="d" hint-placeholder-count="3">
+                <span style="width: 46px; height: 62px; border-radius: 12px; background: #F6F5F1; border: 1.5px solid #C9C6BC; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 800">{{d.v}}</span>
+              </sc-for>
+            </div>
+            <div style="display: flex; gap: 6px">
+              <sc-for list="{{rv.g2}}" as="d" hint-placeholder-count="3">
+                <span style="width: 46px; height: 62px; border-radius: 12px; background: #F6F5F1; border: 1.5px solid #C9C6BC; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 800">{{d.v}}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 4px">
+            <span style="font-size: 28px; font-weight: 800; color: {{rv.corRest}}">{{rv.restante}}</span>
+            <span style="font-size: 13px; color: #5B635D">para retirar · até {{rv.expira}}</span>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 1.45; color: #5B635D">Informe este código no balcão. O lojista digita o código e você paga na retirada</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{rv.expirada}}" hint-placeholder-val="{{ false }}">
+        <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 20px; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+          <span style="background: #ECEBE5; color: #4A4F4B; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 10px">Expirada</span>
+          <span style="font-size: 34px; font-weight: 800; color: #8A8678; text-decoration: line-through; letter-spacing: 0.08em">{{rv.codigoTxt}}</span>
+          <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5B635D">O prazo terminou sem retirada. As unidades voltaram para a vitrine e este código não vale mais.</p>
+          <span style="font-size: 13px; color: #5B635D">{{rv.quando}}</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{rv.cancelada}}" hint-placeholder-val="{{ false }}">
+        <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 20px; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+          <span style="background: #FDE8E7; color: #8A1C13; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 10px">Cancelada</span>
+          <span style="font-size: 34px; font-weight: 800; color: #8A8678; text-decoration: line-through; letter-spacing: 0.08em">{{rv.codigoTxt}}</span>
+          <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5B635D">Você cancelou esta reserva. As unidades voltaram para a vitrine.</p>
+          <span style="font-size: 13px; color: #5B635D">{{rv.quando}}</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{rv.retirada}}" hint-placeholder-val="{{ false }}">
+        <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 20px; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: #E4F1E4; color: #1F5B2A; display: flex; align-items: center; justify-content: center">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+          </div>
+          <span style="background: #E4F1E4; color: #1F5B2A; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 10px">Retirada</span>
+          <span style="font-size: 15px; line-height: 1.45">{{rv.quando}} · Obrigado por evitar desperdício!</span>
+          <span style="font-size: 15px; font-weight: 700; color: #1E6A48">Você economizou {{rv.economiaTxt}}</span>
+        </div>
+      </sc-if>
+
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; gap: 12px">
+          <span style="font-size: 15px; font-weight: 700">{{rv.qtd}} × {{rv.produto}}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 15px">
+          <span style="color: #5B635D">{{rv.rotuloValor}}</span>
+          <strong style="color: #1E6A48">{{rv.totalTxt}}</strong>
+        </div>
+        <div style="height: 1px; background: #E3E1DA"></div>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 14px; font-weight: 600">{{rv.loja}}</span>
+          <span style="font-size: 13px; color: #5B635D">{{rv.endereco}}</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 12px 16px 16px">
+      <sc-if value="{{rv.reservada}}" hint-placeholder-val="{{ true }}">
+        <button type="button" onClick="{{abrirCancelar}}" style="width: 100%; height: 52px; border-radius: 14px; border: 1.5px solid #E7B4AE; background: #FFFFFF; color: #A3261B; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Cancelar reserva</button>
+      </sc-if>
+      <sc-if value="{{rv.encerrada}}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{irC2}}" style="width: 100%; height: 56px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">{{rv.ctaFinal}}</button>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<!-- C8 · Minhas reservas -->
+<sc-if value="{{t.C8}}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+    <div style="background: #FFFFFF; border-bottom: 1px solid #E3E1DA; padding: 16px 16px 0; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 800">Minhas reservas</h1>
+      <div role="tablist" style="display: flex; gap: 4px">
+        <button type="button" role="tab" aria-selected="{{abaAtivas}}" onClick="{{verAtivas}}" style="flex: 1; height: 48px; border: 0; border-bottom: 3px solid {{bordaAtivas}}; background: transparent; font: inherit; font-size: 15px; font-weight: 700; color: {{corAtivas}}; cursor: pointer">Ativas ({{nAtivas}})</button>
+        <button type="button" role="tab" aria-selected="{{abaHist}}" onClick="{{verHist}}" style="flex: 1; height: 48px; border: 0; border-bottom: 3px solid {{bordaHist}}; background: transparent; font: inherit; font-size: 15px; font-weight: 700; color: {{corHist}}; cursor: pointer">Histórico</button>
+      </div>
+    </div>
+    <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px">
+      <sc-for list="{{listaReservas}}" as="r" hint-placeholder-count="2">
+        <button type="button" onClick="{{r.abrir}}" style="width: 100%; text-align: left; background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; font: inherit; color: #1B1F1C; cursor: pointer">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; width: 100%">
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-size: 16px; font-weight: 700">{{r.produto}}</span>
+              <span style="font-size: 13px; color: #5B635D">{{r.qtdLoja}}</span>
+            </div>
+            <span style="background: {{r.seloBg}}; color: {{r.seloFg}}; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 10px; white-space: nowrap">{{r.seloTxt}}</span>
+          </div>
+          <div style="height: 1px; background: #E3E1DA; width: 100%"></div>
+          <sc-if value="{{r.ativa}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%">
+              <span style="font-size: 22px; font-weight: 800; letter-spacing: 0.04em">{{r.codigoTxt}}</span>
+              <span style="font-size: 14px; font-weight: 700; color: {{r.corRest}}">{{r.restante}}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{r.encerrada}}" hint-placeholder-val="{{ false }}">
+            <span style="font-size: 13px; color: #5B635D">{{r.quando}}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+      <sc-if value="{{semReservas}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 48px 12px">
+          <div style="width: 64px; height: 64px; border-radius: 20px; background: #ECEBE5; color: #5B635D; display: flex; align-items: center; justify-content: center">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v17l-3.5-2-3.5 2-3.5-2L5 21z"></path><path d="M9 9h6"></path><path d="M9 13h6"></path></svg>
+          </div>
+          <span style="font-size: 16px; font-weight: 700">{{vazioReservasTxt}}</span>
+          <button type="button" onClick="{{irC2}}" style="height: 52px; padding: 0 22px; border-radius: 14px; border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Ver ofertas</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<!-- C9 · Perfil -->
+<sc-if value="{{t.C9}}" hint-placeholder-val="{{ false }}">
+  <div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column">
+    <div style="background: #FFFFFF; border-bottom: 1px solid #E3E1DA; padding: 24px 16px; display: flex; gap: 14px; align-items: center">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: #E3F0E8; color: #14503A; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800">{{iniciais}}</div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 20px; font-weight: 700">{{nomeUsuario}}</span>
+        <span style="font-size: 14px; color: #5B635D">{{emailUsuario}}</span>
+      </div>
+    </div>
+    <div style="padding: 20px 16px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A4F4B">Preferências</span>
+      <div style="background: #FFFFFF; border: 1px solid #E3E1DA; border-radius: 16px; display: flex; flex-direction: column">
+        <button type="button" onClick="{{irC1}}" style="min-height: 64px; padding: 12px 16px; border: 0; border-bottom: 1px solid #E3E1DA; background: transparent; font: inherit; color: #1B1F1C; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer">
+          <span style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 15px; font-weight: 600">Localização</span>
+            <span style="font-size: 13px; color: #5B635D">{{local}} · não fica gravado</span>
+          </span>
+          <span aria-hidden="true" style="color: #5B635D; font-size: 20px">›</span>
+        </button>
+        <button type="button" role="switch" aria-checked="{{avisosOn}}" onClick="{{toggleAvisos}}" style="min-height: 64px; padding: 12px 16px; border: 0; border-bottom: 1px solid #E3E1DA; background: transparent; font: inherit; color: #1B1F1C; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer">
+          <span style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 15px; font-weight: 600">Avisos de oferta nova</span>
+            <span style="font-size: 13px; color: #5B635D">Só quando uma loja publicar uma oferta</span>
+          </span>
+          <span style="width: 48px; height: 28px; border-radius: 999px; background: {{switchBg}}; position: relative; flex-shrink: 0">
+            <span style="position: absolute; top: 3px; left: {{switchX}}; width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.2)"></span>
+          </span>
+        </button>
+        <button type="button" onClick="{{instalar}}" style="min-height: 64px; padding: 12px 16px; border: 0; background: transparent; font: inherit; color: #1B1F1C; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer">
+          <span style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 15px; font-weight: 600">Instalar na tela inicial</span>
+            <span style="font-size: 13px; color: #5B635D">Abre como um app, sem loja de aplicativos</span>
+          </span>
+          <span aria-hidden="true" style="color: #5B635D; font-size: 20px">›</span>
+        </button>
+      </div>
+      <button type="button" onClick="{{sair}}" style="margin-top: 16px; height: 52px; border-radius: 14px; border: 1.5px solid #E7B4AE; background: #FFFFFF; color: #A3261B; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Sair da conta</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- Navegação inferior -->
+<sc-if value="{{mostrarNav}}" hint-placeholder-val="{{ false }}">
+  <nav aria-label="Navegação principal" style="height: 72px; flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #E3E1DA; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr))">
+    <button type="button" onClick="{{irC2}}" aria-current="{{navVitrine}}" style="border: 0; background: transparent; font: inherit; color: {{corNavVitrine}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 700; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"></path><path d="M3 9h18"></path><path d="M5 12v8h14v-8"></path></svg>
+      <span>Vitrine</span>
+    </button>
+    <button type="button" onClick="{{irC8}}" aria-current="{{navReservas}}" style="border: 0; background: transparent; font: inherit; color: {{corNavReservas}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 700; cursor: pointer; position: relative">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v17l-3.5-2-3.5 2-3.5-2L5 21z"></path><path d="M9 9h6"></path><path d="M9 13h6"></path></svg>
+      <span>Reservas</span>
+    </button>
+    <button type="button" onClick="{{irC9}}" aria-current="{{navPerfil}}" style="border: 0; background: transparent; font: inherit; color: {{corNavPerfil}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 700; cursor: pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+      <span>Perfil</span>
+    </button>
+  </nav>
+</sc-if>
+
+<!-- Folha: avisos de oferta nova -->
+<sc-if value="{{avisosSheet}}" hint-placeholder-val="{{ false }}">
+  <div style="position: absolute; inset: 0; background: rgba(27,31,28,.45); display: flex; flex-direction: column; justify-content: flex-end; z-index: 20">
+    <div role="dialog" aria-modal="true" aria-label="Avisos de oferta nova" style="background: #FFFFFF; border-radius: 24px 24px 0 0; padding: 10px 16px 24px; display: flex; flex-direction: column; gap: 14px">
+      <span style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #C9C6BC"></span>
+      <div style="width: 56px; height: 56px; border-radius: 18px; background: #E3F0E8; color: #1E6A48; display: flex; align-items: center; justify-content: center">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17v-6a6 6 0 0112 0v6l2 2H4z"></path><path d="M10 21h4"></path></svg>
+      </div>
+      <h2 style="margin: 0; font-size: 20px; font-weight: 700">Quer saber das ofertas novas?</h2>
+      <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5B635D">Avisamos só quando uma loja publicar uma oferta. Nada de lembrete de reserva nem propaganda</p>
+      <p style="margin: 0; font-size: 13px; line-height: 1.45; color: #5B635D">No iPhone: adicione à Tela de Início para receber avisos.</p>
+      <button type="button" onClick="{{ativarAvisos}}" style="height: 56px; border-radius: 14px; border: 0; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Ativar avisos</button>
+      <button type="button" onClick="{{fecharAvisos}}" style="height: 44px; border: 0; background: transparent; color: #1E6A48; font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer">Agora não</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- Folha: confirmar cancelamento (C7) -->
+<sc-if value="{{confirmCancel}}" hint-placeholder-val="{{ false }}">
+  <div style="position: absolute; inset: 0; background: rgba(27,31,28,.45); display: flex; flex-direction: column; justify-content: flex-end; z-index: 20">
+    <div role="dialog" aria-modal="true" aria-label="Cancelar esta reserva?" style="background: #FFFFFF; border-radius: 24px 24px 0 0; padding: 10px 16px 24px; display: flex; flex-direction: column; gap: 14px">
+      <span style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #C9C6BC"></span>
+      <h2 style="margin: 0; font-size: 20px; font-weight: 700">Cancelar esta reserva?</h2>
+      <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5B635D">As {{rv.qtd}} unidades de {{rv.produto}} voltam para a vitrine na hora e outra pessoa pode reservar. Não dá para desfazer.</p>
+      <button type="button" onClick="{{confirmarCancelar}}" style="height: 52px; border-radius: 14px; border: 0; background: #A3261B; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Sim, cancelar</button>
+      <button type="button" onClick="{{fecharCancelar}}" style="height: 52px; border-radius: 14px; border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Manter reserva</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- Toast -->
+<sc-if value="{{temToast}}" hint-placeholder-val="{{ false }}">
+  <div role="status" style="position: absolute; left: 16px; right: 16px; bottom: 88px; background: #1B1F1C; color: #FFFFFF; border-radius: 12px; padding: 14px 16px; font-size: 14px; font-weight: 600; z-index: 30; box-shadow: 0 8px 24px rgba(27,31,28,.25)">{{toast}}</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"db":{"editor":null},"act":{"editor":null},"$preview":{"width":390,"height":844}}'>
+var FITAS_C = [
+  { nome: 'Vermelho', hex: '#D7263D', bim: 'jan–fev' },
+  { nome: 'Amarelo', hex: '#F4C430', bim: 'mar–abr' },
+  { nome: 'Verde', hex: '#2E9E4F', bim: 'mai–jun' },
+  { nome: 'Azul', hex: '#1F5FBF', bim: 'jul–ago' },
+  { nome: 'Branco', hex: '#FFFFFF', bim: 'set–out' },
+  { nome: 'Preto', hex: '#1B1B1B', bim: 'nov–dez' }
+];
+function cOferta(o) {
+  var m = parseInt(String(o.validade).split('/')[1], 10);
+  var f = FITAS_C[Math.floor((m - 1) / 2)];
+  return Object.assign({
+    loja: 'Mercadinho Vila Nova', lojaId: 'vn', endereco: 'Rua das Palmeiras, 410 · Boa Vista',
+    distancia: '0,4 km', distKm: 0.4, janela: 4, ajustado: 0, perda: 0, estado: 'ativa', fimUrgente: false,
+    fita: f.nome, fitaHex: f.hex, bimestre: f.bim
+  }, o);
+}
+function cSeed() {
+  return {
+    seq: 100,
+    ofertas: [
+      cOferta({ id: 'o1', produto: 'Iogurte natural 170 g', categoria: 'Laticínios', validade: '28/10/2026', fim: '27/10, 23:59', preco: 3.14, original: 4.49, desconto: 30, separado: 12, livre: 6, reservado: 4, retirado: 2 }),
+      cOferta({ id: 'o2', produto: 'Presunto fatiado 200 g', categoria: 'Frios', validade: '30/10/2026', fim: '29/10, 23:59', preco: 4.74, original: 7.9, desconto: 40, separado: 8, livre: 5, reservado: 2, retirado: 1 }),
+      cOferta({ id: 'o3', produto: 'Biscoito recheado 140 g', categoria: 'Doces', loja: 'Empório Santa Cruz', lojaId: 'sc', endereco: 'Av. Brasil, 1290 · Santa Cruz', distancia: '1,1 km', distKm: 1.1, validade: '05/11/2026', fim: '04/11, 23:59', preco: 2.4, original: 3.2, desconto: 25, separado: 10, livre: 10, reservado: 0, retirado: 0 }),
+      cOferta({ id: 'o4', produto: 'Molho de tomate 340 g', categoria: 'Mercearia', loja: 'Mercado Bom Preço', lojaId: 'bp', endereco: 'Rua Ipiranga, 77 · Centro', distancia: '1,8 km', distKm: 1.8, validade: '31/10/2026', fim: '30/10, 23:59', preco: 1.49, original: 2.98, desconto: 50, separado: 6, livre: 2, reservado: 3, retirado: 1 }),
+      cOferta({ id: 'o5', produto: 'Queijo minas frescal 250 g', categoria: 'Laticínios', validade: '24/10/2026', fim: '23/10, 23:59', fimUrgente: true, preco: 8.39, original: 13.99, desconto: 40, separado: 8, livre: 3, reservado: 0, retirado: 5 }),
+      cOferta({ id: 'o6', produto: 'Requeijão cremoso 200 g', categoria: 'Laticínios', validade: '21/10/2026', fim: '20/10, 23:59', preco: 4.19, original: 6.99, desconto: 40, separado: 10, livre: 0, reservado: 0, retirado: 6, ajustado: 1, perda: 3, estado: 'encerrada' })
+    ],
+    reservas: [
+      { id: 'r1', ofertaId: 'o1', qtd: 2, pedido: 2, codigo: '482917', estado: 'reservada', expira: 'hoje, 20:00', restante: '3 h 42 min', urgente: false, cliente: 'Ana S.', mine: true, quando: '' },
+      { id: 'r6', ofertaId: 'o6', qtd: 1, pedido: 1, codigo: '118340', estado: 'retirada', expira: '', restante: '', urgente: false, cliente: 'Ana S.', mine: true, quando: 'Retirada em 20/10, 17:40' },
+      { id: 'r7', ofertaId: 'o3', qtd: 2, pedido: 2, codigo: '640921', estado: 'expirada', expira: '', restante: '', urgente: false, cliente: 'Ana S.', mine: true, quando: 'Expirou em 18/10, 21:00' },
+      { id: 'r8', ofertaId: 'o5', qtd: 1, pedido: 1, codigo: '993021', estado: 'cancelada', expira: '', restante: '', urgente: false, cliente: 'Ana S.', mine: true, quando: 'Cancelada em 17/10, 10:05' }
+    ]
+  };
+}
+function brl(v) { return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ','); }
+// Mock do backend: expira_em = mín(agora + janela, fim da oferta). No app real vem da API.
+function expiraDe(o) {
+  var agora = new Date(2026, 9, 22, 16, 0);
+  var lim = new Date(agora.getTime() + (o.janela || 4) * 3600000);
+  var m = /(\d+)\/(\d+), (\d+):(\d+)/.exec(o.fim || '');
+  if (m) { var f = new Date(2026, +m[2] - 1, +m[1], +m[3], +m[4]); if (f < lim) lim = f; }
+  var p = function (n) { return (n < 10 ? '0' : '') + n; };
+  var dia = lim.getDate() === 22 ? 'hoje' : (lim.getDate() === 23 && lim.getMonth() === 9 ? 'amanhã' : p(lim.getDate()) + '/' + p(lim.getMonth() + 1));
+  var min = Math.round((lim - agora) / 60000);
+  return { txt: dia + ', ' + p(lim.getHours()) + ':' + p(lim.getMinutes()), restante: Math.floor(min / 60) + ' h ' + p(min % 60) + ' min', min: min };
+}
+var SELO_C = {
+  reservada: { bg: '#FBEFD0', fg: '#6B4A00', txt: 'Reservada' },
+  retirada: { bg: '#E4F1E4', fg: '#1F5B2A', txt: 'Retirada' },
+  expirada: { bg: '#ECEBE5', fg: '#4A4F4B', txt: 'Expirada' },
+  cancelada: { bg: '#FDE8E7', fg: '#8A1C13', txt: 'Cancelada' }
+};
+var CATS_C = ['Todos', 'Laticínios', 'Frios', 'Mercearia', 'Doces'];
+var DESCS_C = [
+  { id: 'todas', label: 'Todas', ok: function () { return true; } },
+  { id: 'ate30', label: 'Até 30%', ok: function (d) { return d <= 30; } },
+  { id: 'meio', label: '30–50%', ok: function (d) { return d > 30 && d < 50; } },
+  { id: 'mais50', label: '50%+', ok: function (d) { return d >= 50; } }
+];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tela: 'A1', email: 'ana.souza@email.com', senha: '', mostrarSenha: false, erroLogin: false,
+      visitante: false, voltarPara: null, logado: false,
+      nomeCad: '', emailCad: '', senhaCad: '', termos: false,
+      cep: '', erroCep: false, local: 'Boa Vista · CEP 15025-000',
+      busca: '', cat: 'Todos', desc: 'todas',
+      carregou: false, carregando: false, avisosSheet: false, avisosPerguntado: false, avisosOn: false,
+      ofertaId: null, qtd: 1, resultado: null, reservaId: null, confirmCancel: false, aba: 'ativas', toast: '',
+      localDb: cSeed()
+    };
+    this.timers = [];
+  }
+  componentDidMount() {
+    var self = this;
+    this.timers.push(setTimeout(function () { if (self.state.tela === 'A1') self.setState({ tela: 'A2' }); }, 1800));
+  }
+  componentWillUnmount() { this.timers.forEach(function (t) { clearTimeout(t); }); }
+  getDb() { return this.props.db || this.state.localDb; }
+  go(tela, extra) {
+    var self = this;
+    var s = Object.assign({ tela: tela, confirmCancel: false }, extra || {});
+    if (tela === 'C2' && !this.state.carregou) {
+      s.carregou = true; s.carregando = true;
+      this.timers.push(setTimeout(function () { self.setState({ carregando: false }); }, 1100));
+    }
+    this.setState(s);
+  }
+  mostrarToast(txt) {
+    var self = this;
+    this.setState({ toast: txt });
+    this.timers.push(setTimeout(function () { self.setState({ toast: '' }); }, 4000));
+  }
+  doReservar(ofertaId, pedido) {
+    if (this.props.act && this.props.db) return this.props.act.reservar(ofertaId, pedido);
+    var db = JSON.parse(JSON.stringify(this.state.localDb));
+    var o = db.ofertas.find(function (x) { return x.id === ofertaId; });
+    var res;
+    if (!o || o.estado !== 'ativa' || o.livre <= 0) {
+      res = { status: 'recusada', pedido: pedido, quantidade: 0 };
+    } else {
+      var q = Math.min(pedido, o.livre);
+      o.livre -= q; o.reservado += q; db.seq += 1;
+      var codigo = String(Math.floor(100000 + Math.random() * 900000));
+      var r = { id: 'r' + db.seq, ofertaId: ofertaId, qtd: q, pedido: pedido, codigo: codigo, estado: 'reservada', expira: expiraDe(o).txt, restante: expiraDe(o).restante, urgente: expiraDe(o).min < 60, cliente: 'Ana S.', mine: true, quando: '' };
+      db.reservas.unshift(r);
+      res = { status: q < pedido ? 'parcial' : 'confirmada', reservaId: r.id, pedido: pedido, quantidade: q, codigo: codigo };
+    }
+    this.setState({ localDb: db });
+    return res;
+  }
+  doCancelar(reservaId) {
+    if (this.props.act && this.props.db) { this.props.act.cancelar(reservaId); return; }
+    var db = JSON.parse(JSON.stringify(this.state.localDb));
+    var r = db.reservas.find(function (x) { return x.id === reservaId; });
+    if (!r || r.estado !== 'reservada') return;
+    var o = db.ofertas.find(function (x) { return x.id === r.ofertaId; });
+    r.estado = 'cancelada'; r.quando = 'Cancelada hoje';
+    if (o) { o.reservado -= r.qtd; o.livre += r.qtd; }
+    this.setState({ localDb: db });
+  }
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var db = this.getDb();
+    var ofertas = db.ofertas || [];
+    var reservas = db.reservas || [];
+    var achaOferta = function (id) { return ofertas.find(function (x) { return x.id === id; }) || null; };
+    var tela = s.tela;
+    var t = { A1: tela === 'A1', A2: tela === 'A2', A3: tela === 'A3', C1: tela === 'C1', C2: tela === 'C2', C4: tela === 'C4', C5: tela === 'C5', C6: tela === 'C6', C8: tela === 'C8', C9: tela === 'C9' };
+
+    // Vitrine
+    var termo = (s.busca || '').trim().toLowerCase();
+    var descSel = DESCS_C.find(function (d) { return d.id === s.desc; }) || DESCS_C[0];
+    var lista = ofertas
+      .filter(function (o) { return o.estado === 'ativa' && o.livre > 0; })
+      .filter(function (o) { return s.cat === 'Todos' || o.categoria === s.cat; })
+      .filter(function (o) { return descSel.ok(o.desconto); })
+      .filter(function (o) { return !termo || o.produto.toLowerCase().indexOf(termo) >= 0; })
+      .sort(function (a, b) { return a.distKm - b.distKm; })
+      .map(function (o) {
+        return {
+          produto: o.produto, lojaDist: o.loja + ' · ' + o.distancia, precoTxt: brl(o.preco), origTxt: brl(o.original),
+          descTxt: '−' + o.desconto + '%', validadeCurta: String(o.validade).slice(0, 5), livre: o.livre,
+          abrir: function () { self.go('C4', { ofertaId: o.id, qtd: 1 }); }
+        };
+      });
+    var chip = function (label, ativo, pick) {
+      return { label: label, ativo: ativo, pick: pick, bg: ativo ? '#1E6A48' : '#FFFFFF', fg: ativo ? '#FFFFFF' : '#1B1F1C', borda: ativo ? '#1E6A48' : '#C9C6BC' };
+    };
+    var chipsCat = CATS_C.map(function (c) { return chip(c, s.cat === c, function () { self.setState({ cat: c }); }); });
+    var chipsDesc = DESCS_C.map(function (d) { return chip(d.label, s.desc === d.id, function () { self.setState({ desc: d.id }); }); });
+    var contagem = lista.length === 1 ? '1 oferta · ordenada por distância' : lista.length + ' ofertas · ordenadas por distância';
+
+    // Oferta (C4)
+    var o = achaOferta(s.ofertaId) || ofertas[0] || cOferta({ id: 'x', produto: '', validade: '01/01/2026', preco: 0, original: 0, desconto: 0, livre: 0, reservado: 0, retirado: 0, separado: 0 });
+    var livre = o.estado === 'ativa' ? o.livre : 0;
+    var qtd = Math.max(1, Math.min(s.qtd, Math.max(livre, 1)));
+    var of = {
+      produto: o.produto, precoTxt: brl(o.preco), origTxt: brl(o.original), validade: o.validade, descTxt: '−' + o.desconto + '%',
+      loja: o.loja, endereco: o.endereco, distancia: o.distancia, livre: livre, janela: o.janela, expiraTxt: expiraDe(o).txt,
+      temEstoque: livre > 0, poucas: livre > 0 && livre <= 2, esgotada: livre <= 0
+    };
+
+    // Resultado (C5)
+    var rs = s.resultado || { status: 'confirmada', quantidade: 0, pedido: 0 };
+    var rsReserva = reservas.find(function (x) { return x.id === rs.reservaId; });
+    var rsOferta = rsReserva ? achaOferta(rsReserva.ofertaId) : o;
+    var res = {
+      confirmada: rs.status === 'confirmada', parcial: rs.status === 'parcial', recusada: rs.status === 'recusada',
+      quantidade: rs.quantidade, pedido: rs.pedido,
+      item: rs.quantidade + ' × ' + (rsOferta ? rsOferta.produto : '') + ' · ' + (rsOferta ? rsOferta.loja : ''),
+      totalTxt: brl((rsOferta ? rsOferta.preco : 0) * rs.quantidade),
+      expira: rsReserva ? rsReserva.expira : ''
+    };
+
+    // Reserva (C6/C7)
+    var r = reservas.find(function (x) { return x.id === s.reservaId; }) || reservas.find(function (x) { return x.mine; }) || null;
+    var ro = r ? achaOferta(r.ofertaId) : null;
+    var cod = r ? String(r.codigo) : '000000';
+    var rv = {
+      reservada: !!r && r.estado === 'reservada', expirada: !!r && r.estado === 'expirada',
+      cancelada: !!r && r.estado === 'cancelada', retirada: !!r && r.estado === 'retirada',
+      encerrada: !!r && r.estado !== 'reservada',
+      g1: cod.slice(0, 3).split('').map(function (v) { return { v: v }; }),
+      g2: cod.slice(3, 6).split('').map(function (v) { return { v: v }; }),
+      codigoTxt: cod.slice(0, 3) + ' ' + cod.slice(3, 6),
+      codigoAria: 'Código de retirada ' + cod.split('').join(' '),
+      restante: r ? r.restante : '', corRest: r && r.urgente ? '#B42318' : '#1E6A48', expira: r ? r.expira : '',
+      quando: r ? r.quando : '', qtd: r ? r.qtd : 0, produto: ro ? ro.produto : '',
+      totalTxt: brl((ro ? ro.preco : 0) * (r ? r.qtd : 0)),
+      rotuloValor: r && r.estado === 'retirada' ? 'Pago na loja' : 'A pagar na loja',
+      economiaTxt: brl(((ro ? ro.original : 0) - (ro ? ro.preco : 0)) * (r ? r.qtd : 0)),
+      loja: ro ? ro.loja : '', endereco: ro ? ro.endereco : '',
+      ctaFinal: r && r.estado === 'retirada' ? 'Voltar para a vitrine' : 'Ver se ainda tem na vitrine'
+    };
+
+    // Minhas reservas (C8)
+    var minhas = reservas.filter(function (x) { return x.mine; });
+    var ativas = minhas.filter(function (x) { return x.estado === 'reservada'; });
+    var hist = minhas.filter(function (x) { return x.estado !== 'reservada'; });
+    var mostrar = s.aba === 'ativas' ? ativas : hist;
+    var listaReservas = mostrar.map(function (x) {
+      var xo = achaOferta(x.ofertaId);
+      var selo = SELO_C[x.estado] || SELO_C.reservada;
+      var c = String(x.codigo);
+      return {
+        produto: xo ? xo.produto : '', qtdLoja: x.qtd + (x.qtd === 1 ? ' unidade · ' : ' unidades · ') + (xo ? xo.loja : ''),
+        seloBg: selo.bg, seloFg: selo.fg, seloTxt: selo.txt, ativa: x.estado === 'reservada', encerrada: x.estado !== 'reservada',
+        codigoTxt: c.slice(0, 3) + ' ' + c.slice(3, 6), restante: x.restante, corRest: x.urgente ? '#B42318' : '#1E6A48', quando: x.quando,
+        abrir: function () { self.go('C6', { reservaId: x.id }); }
+      };
+    });
+
+    var cadOk = s.termos && s.senhaCad.length >= 8 && s.nomeCad.trim() && s.emailCad.indexOf('@') > 0;
+    var nomeUsuario = s.nomeCad.trim() && s.logadoNovo ? s.nomeCad.trim() : 'Ana Souza';
+    var partes = nomeUsuario.split(' ');
+    var iniciais = (partes[0] ? partes[0][0] : '') + (partes.length > 1 ? partes[partes.length - 1][0] : '');
+
+    return {
+      t: t,
+      // A2
+      email: s.email, senha: s.senha, erroLogin: s.erroLogin, tipoSenha: s.mostrarSenha ? 'text' : 'password',
+      bordaSenha: s.erroLogin ? '#A3261B' : '#C9C6BC',
+      onEmail: function (e) { self.setState({ email: e.target.value }); },
+      onSenha: function (e) { self.setState({ senha: e.target.value, erroLogin: false }); },
+      toggleSenha: function () { self.setState({ mostrarSenha: !s.mostrarSenha }); },
+      entrar: function () {
+        if (!s.senha || !s.email) { self.setState({ erroLogin: true }); return; }
+        var destino = s.voltarPara || (s.avisosPerguntado ? 'C2' : 'C1');
+        self.go(destino, { logado: true, visitante: false, voltarPara: null, erroLogin: false });
+      },
+      entrarVisitante: function () { self.go('C2', { visitante: true }); },
+      irA2: function () { self.go('A2'); },
+      irA3: function () { self.go('A3'); },
+      // A3
+      nomeCad: s.nomeCad, emailCad: s.emailCad, senhaCad: s.senhaCad, termos: s.termos,
+      bordaSenhaCad: s.senhaCad && s.senhaCad.length < 8 ? '#A3261B' : '#C9C6BC',
+      corDicaSenha: s.senhaCad && s.senhaCad.length < 8 ? '#8A1C13' : '#5B635D',
+      onNomeCad: function (e) { self.setState({ nomeCad: e.target.value }); },
+      onEmailCad: function (e) { self.setState({ emailCad: e.target.value }); },
+      onSenhaCad: function (e) { self.setState({ senhaCad: e.target.value }); },
+      toggleTermos: function () { self.setState({ termos: !s.termos }); },
+      cadDesab: !cadOk, cadBg: cadOk ? '#1E6A48' : '#9AA29C',
+      criarConta: function () { if (cadOk) self.go('C1', { logado: true, logadoNovo: true, visitante: false }); },
+      // C1
+      cep: s.cep, erroCep: s.erroCep, bordaCep: s.erroCep ? '#A3261B' : '#C9C6BC',
+      onCep: function (e) { self.setState({ cep: e.target.value, erroCep: false }); },
+      buscarCep: function () {
+        var dig = String(s.cep).replace(/\D/g, '');
+        if (dig.length !== 8 || dig === '00000000') { self.setState({ erroCep: true }); return; }
+        self.go('C2', { local: 'CEP ' + dig.slice(0, 5) + '-' + dig.slice(5), avisosSheet: !s.avisosPerguntado, avisosPerguntado: true });
+      },
+      usarLocal: function () { self.go('C2', { local: 'Boa Vista · CEP 15025-000', avisosSheet: !s.avisosPerguntado, avisosPerguntado: true }); },
+      semLocal: function () { self.go('C2', { local: 'Sem ordenar por distância', avisosSheet: !s.avisosPerguntado, avisosPerguntado: true }); },
+      irC1: function () { self.go('C1'); },
+      // C2
+      local: s.local, busca: s.busca, chipsCat: chipsCat, chipsDesc: chipsDesc,
+      onBusca: function (e) { self.setState({ busca: e.target.value }); },
+      carregando: s.carregando, esqueletos: [1, 2, 3, 4],
+      mostrarLista: !s.carregando && lista.length > 0, vazio: !s.carregando && lista.length === 0,
+      lista: lista, contagem: contagem,
+      limparFiltros: function () { self.setState({ cat: 'Todos', desc: 'todas', busca: '' }); },
+      abrirAvisos: function () { self.setState({ avisosSheet: true }); },
+      irC2: function () { self.go('C2'); },
+      // C4
+      of: of, qtd: qtd,
+      menosDesab: qtd <= 1, maisDesab: qtd >= livre,
+      menosOp: qtd <= 1 ? '0.4' : '1', maisOp: qtd >= livre ? '0.4' : '1',
+      menos: function () { if (qtd > 1) self.setState({ qtd: qtd - 1 }); },
+      mais: function () { if (qtd < livre) self.setState({ qtd: qtd + 1 }); },
+      reservarTxt: livre > 0 ? 'Reservar ' + qtd + ' · ' + brl(o.preco * qtd) : 'Indisponível',
+      reservarBg: livre > 0 ? '#1E6A48' : '#9AA29C',
+      reservar: function () {
+        if (livre <= 0) return;
+        if (s.visitante || !s.logado) { self.go('A2', { voltarPara: 'C4' }); return; }
+        var out = self.doReservar(o.id, qtd);
+        self.go('C5', { resultado: out, reservaId: out.reservaId || null });
+      },
+      // C5
+      res: res,
+      verCodigo: function () { self.go('C6', { reservaId: rs.reservaId }); },
+      cancelarParcial: function () { self.go('C6', { reservaId: rs.reservaId, confirmCancel: true }); },
+      // C6/C7
+      rv: rv,
+      abrirCancelar: function () { self.setState({ confirmCancel: true }); },
+      fecharCancelar: function () { self.setState({ confirmCancel: false }); },
+      confirmarCancelar: function () {
+        if (r) self.doCancelar(r.id);
+        self.go('C8', { aba: 'ativas' });
+        self.mostrarToast('Reserva cancelada. As unidades voltaram para a vitrine');
+      },
+      confirmCancel: s.confirmCancel,
+      irC8: function () { self.go('C8'); },
+      // C8
+      abaAtivas: s.aba === 'ativas', abaHist: s.aba !== 'ativas',
+      bordaAtivas: s.aba === 'ativas' ? '#1E6A48' : 'transparent', corAtivas: s.aba === 'ativas' ? '#1B1F1C' : '#5B635D',
+      bordaHist: s.aba !== 'ativas' ? '#1E6A48' : 'transparent', corHist: s.aba !== 'ativas' ? '#1B1F1C' : '#5B635D',
+      verAtivas: function () { self.setState({ aba: 'ativas' }); },
+      verHist: function () { self.setState({ aba: 'hist' }); },
+      nAtivas: ativas.length, listaReservas: listaReservas, semReservas: listaReservas.length === 0,
+      vazioReservasTxt: s.aba === 'ativas' ? 'Nenhuma reserva ativa' : 'Nenhuma reserva no histórico',
+      // C9
+      iniciais: iniciais.toUpperCase(), nomeUsuario: nomeUsuario, emailUsuario: s.logadoNovo && s.emailCad ? s.emailCad : s.email,
+      avisosOn: s.avisosOn, switchBg: s.avisosOn ? '#1E6A48' : '#C9C6BC', switchX: s.avisosOn ? '23px' : '3px',
+      toggleAvisos: function () { self.setState({ avisosOn: !s.avisosOn }); },
+      instalar: function () { self.mostrarToast('Use “Adicionar à tela inicial” no menu do navegador'); },
+      sair: function () { self.go('A2', { logado: false, senha: '', visitante: false }); },
+      irC9: function () { self.go('C9'); },
+      // Nav
+      mostrarNav: t.C2 || t.C6 || t.C8 || t.C9,
+      navVitrine: t.C2 ? 'page' : 'false', navReservas: (t.C8 || t.C6) ? 'page' : 'false', navPerfil: t.C9 ? 'page' : 'false',
+      corNavVitrine: t.C2 ? '#1E6A48' : '#5B635D', corNavReservas: (t.C8 || t.C6) ? '#1E6A48' : '#5B635D', corNavPerfil: t.C9 ? '#1E6A48' : '#5B635D',
+      // Folhas e toast
+      avisosSheet: s.avisosSheet && t.C2,
+      ativarAvisos: function () { self.setState({ avisosSheet: false, avisosOn: true }); self.mostrarToast('Avisos de oferta nova ativados'); },
+      fecharAvisos: function () { self.setState({ avisosSheet: false }); },
+      temToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

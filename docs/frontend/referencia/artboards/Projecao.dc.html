@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Projeção da janela de reserva</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 1060px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-wrap: wrap;">
+  <nav aria-label="Menu do gestor" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; padding: 24px 16px; background: #FFFFFF; border-right: 1px solid #E3E1DA; display: flex; flex-direction: column; gap: 4px;">
+    <div style="padding: 0 12px 20px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5B635D;">Gestor</span>
+      <span style="font-size: 16px; font-weight: 800;">Mercadinho Vila Nova</span>
+    </div>
+    <a href="Painel.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Painel</a>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; background: #E3F0E8; color: #14503A; font-size: 15px; font-weight: 700;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"></path><path d="M14 7h7v7"></path></svg>Projeção</a>
+    <a href="OfertasGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12l-8 8-9-9V3h8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>Ofertas</a>
+    <a href="LotesGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path></svg>Lotes e fitas</a>
+    <a href="Historico.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"></path></svg>Reservas</a>
+    <a href="ConfigGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>Configurações</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 20px; max-width: 1240px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Projeção da janela de reserva</h1>
+      <span style="font-size: 15px; color: #5B635D;">Quanto tempo dar para o cliente retirar? Compare perda e compradores bloqueados para cada janela.</span>
+    </div>
+
+    <div role="note" style="display: flex; gap: 10px; padding: 14px 16px; border-radius: 14px; background: #FEF3C7; color: #6B3F00; font-size: 14px; line-height: 1.5;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>
+      <span><strong>Cenário projetado, não previsão.</strong> Os números vêm de milhares de ofertas simuladas pelo mesmo motor de regras do sistema, com os valores abaixo. Servem para comparar janelas, não para prometer resultado.</span>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch;">
+      <section aria-label="Parâmetros" style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 700;">Parâmetros do cenário</h2>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="lote" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">Tamanho do lote <span>24 un.</span></label>
+          <input id="lote" type="range" min="5" max="60" value="24" style="accent-color: #1E6A48;">
+          <span style="font-size: 12px; color: #5B635D;">Faixa simulada: 5 a 60 unidades</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="proc" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">Procura esperada <span>1,0 × o lote</span></label>
+          <input id="proc" type="range" min="0.3" max="3" step="0.1" value="1" style="accent-color: #1E6A48;">
+          <span style="font-size: 12px; color: #5B635D;">0,3 (pouca procura) a 3,0 (muita)</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <span id="tc" style="font-size: 14px; font-weight: 600;">Tempo típico até o cliente chegar</span>
+          <div role="group" aria-labelledby="tc" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+            <span style="height: 40px; border-radius: 10px; border: 1.5px solid #C9C6BC; box-sizing: border-box; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">1 h</span>
+            <span style="height: 40px; border-radius: 10px; background: #1E6A48; color: #FFFFFF; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">2 h</span>
+            <span style="height: 40px; border-radius: 10px; border: 1.5px solid #C9C6BC; box-sizing: border-box; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">4 h</span>
+          </div>
+        </div>
+        <button style="height: 50px; border: none; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Recalcular projeção</button>
+        <span style="font-size: 12px; color: #5B635D; line-height: 1.45;">Demais valores (quem não aparece, quem cancela, tamanho do pedido) seguem as faixas do estudo.</span>
+      </section>
+
+      <section aria-label="Resultado" style="flex: 3 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 700;">Escolha uma janela para comparar</h2>
+          <div role="group" aria-label="Janela" style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <sc-for list="{{janelas}}" as="j" hint-placeholder-count="7">
+              <button onClick="{{j.pick}}" aria-pressed="{{j.on}}" style="{{j.style}}">{{j.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 14px; background: #E3F0E8;">
+            <span style="font-size: 13px; font-weight: 700; color: #14503A;">Perda projetada</span>
+            <span style="font-size: 30px; font-weight: 800; color: #14503A;">{{sel.perda}}%</span>
+            <span style="font-size: 12px; color: #14503A;">das unidades ofertadas</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 14px; background: #FBE9DE;">
+            <span style="font-size: 13px; font-weight: 700; color: #8A3108;">Compradores bloqueados</span>
+            <span style="font-size: 30px; font-weight: 800; color: #8A3108;">{{sel.bloq}}%</span>
+            <span style="font-size: 12px; color: #8A3108;">não levaram tudo o que pediram</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 14px; background: #ECEBE5;">
+            <span style="font-size: 13px; font-weight: 700; color: #4A4F4B;">Taxa de retirada</span>
+            <span style="font-size: 30px; font-weight: 800; color: #1B1F1C;">{{sel.ret}}%</span>
+            <span style="font-size: 12px; color: #4A4F4B;">das reservas</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px; font-size: 13px; color: #4A4F4B;">
+          <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 3px; background: #1E6A48;"></span>Perda (%)</span>
+          <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 3px; background: #C2410C;"></span>Compradores bloqueados (%)</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; align-items: end; height: 250px; padding: 0 4px; border-bottom: 1px solid #C9C6BC;">
+          <sc-for list="{{barras}}" as="b" hint-placeholder-count="7">
+            <div role="img" aria-label="{{b.aria}}" style="{{b.col}}">
+              <div style="display: flex; align-items: flex-end; gap: 4px; height: 100%;">
+                <div style="{{b.p}}"></div>
+                <div style="{{b.q}}"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; padding: 0 4px; font-size: 13px; text-align: center;">
+          <sc-for list="{{barras}}" as="b" hint-placeholder-count="7">
+            <span style="{{b.lab}}">{{b.label}}</span>
+          </sc-for>
+        </div>
+        <p style="margin: 0; font-size: 14px; color: #4A4F4B; line-height: 1.5;">Janela curta demais: o cliente não chega a tempo e a reserva expira (perda sobe). Janela longa: unidades ficam presas e mais compradores encontram a oferta esgotada.</p>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1060}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { j: 4 }; }
+  renderVals() {
+    const J = [0.5, 1, 2, 4, 8, 12, 24];
+    // Tabela 5 do artigo (resultados_n5000)
+    const P = [92.6, 74.2, 48.4, 31.3, 24.9, 23.7, 24.4];
+    const B = [0.6, 1.3, 5.4, 13.8, 19.5, 21.2, 21.8];
+    const R = [4.6, 16.1, 34.7, 53.3, 64.5, 67.4, 67.4];
+    const lab = (j) => (j === 0.5 ? '30 min' : j + ' h');
+    const fmt = (x) => x.toFixed(1).replace('.', ',');
+    const i = J.indexOf(this.state.j);
+    const base = 'height: 36px; padding: 0 10px; border-radius: 10px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ';
+    const k = 2.5;
+    return {
+      janelas: J.map((j) => ({ label: lab(j), on: this.state.j === j, style: base + (this.state.j === j ? 'border: 2px solid #1E6A48; background: #1E6A48; color: #FFFFFF;' : 'border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C;'), pick: () => this.setState({ j: j }) })),
+      sel: { perda: fmt(P[i]), bloq: fmt(B[i]), ret: fmt(R[i]) },
+      barras: J.map((j, n) => {
+        const s = this.state.j === j;
+        return {
+          label: lab(j),
+          aria: lab(j) + ': perda ' + fmt(P[n]) + '%, bloqueados ' + fmt(B[n]) + '%',
+          col: 'display: flex; justify-content: center; height: 100%; border-radius: 8px; padding: 0 4px; ' + (s ? 'background: #F6F5F1;' : ''),
+          p: 'width: 22px; height: ' + Math.max(2, Math.round(P[n] * k)) + 'px; border-radius: 4px 4px 0 0; background: #1E6A48;' + (s ? '' : ' opacity: 0.55;'),
+          q: 'width: 22px; height: ' + Math.max(2, Math.round(B[n] * k)) + 'px; border-radius: 4px 4px 0 0; background: #C2410C;' + (s ? '' : ' opacity: 0.55;'),
+          lab: s ? 'font-weight: 800; color: #1B1F1C;' : 'color: #5B635D;'
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

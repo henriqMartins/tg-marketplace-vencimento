@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Histórico de reservas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+th{font-weight:600}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 960px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-wrap: wrap;">
+  <nav aria-label="Menu do gestor" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; padding: 24px 16px; background: #FFFFFF; border-right: 1px solid #E3E1DA; display: flex; flex-direction: column; gap: 4px;">
+    <div style="padding: 0 12px 20px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5B635D;">Gestor</span>
+      <span style="font-size: 16px; font-weight: 800;">Mercadinho Vila Nova</span>
+    </div>
+    <a href="Painel.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Painel</a>
+    <a href="Projecao.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"></path><path d="M14 7h7v7"></path></svg>Projeção</a>
+    <a href="OfertasGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12l-8 8-9-9V3h8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>Ofertas</a>
+    <a href="LotesGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path></svg>Lotes e fitas</a>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; background: #E3F0E8; color: #14503A; font-size: 15px; font-weight: 700;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4z"></path></svg>Reservas</a>
+    <a href="ConfigGestor.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #5B635D;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>Configurações</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 18px; max-width: 1240px;">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Reservas</h1>
+        <span style="font-size: 14px; color: #5B635D;">01/10/2026 a 22/10/2026 · 148 reservas · 17 recusas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; width: 280px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B635D" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <input aria-label="Buscar por produto ou código" placeholder="Produto ou final do código" style="flex-grow: 1; min-width: 0; border: none; outline: none; background: transparent; font: inherit; font-size: 14px; color: #1B1F1C;">
+      </div>
+    </div>
+
+    <div role="group" aria-label="Filtrar por estado" style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{filtros}}" as="f" hint-placeholder-count="6">
+        <button onClick="{{f.pick}}" aria-pressed="{{f.on}}" style="{{f.style}}">{{f.label}}</button>
+      </sc-for>
+    </div>
+
+    <section style="padding: 8px 20px 12px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px; overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px;">
+        <thead>
+          <tr style="text-align: left; color: #5B635D; border-bottom: 1px solid #E3E1DA;">
+            <th style="padding: 12px 8px;">Criada em</th>
+            <th style="padding: 12px 8px;">Código</th>
+            <th style="padding: 12px 8px;">Produto</th>
+            <th style="padding: 12px 8px; text-align: right;">Reservado / pedido</th>
+            <th style="padding: 12px 8px;">Cliente</th>
+            <th style="padding: 12px 8px;">Estado</th>
+            <th style="padding: 12px 8px;">Encerrada em</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{linhas}}" as="l" hint-placeholder-count="8">
+            <tr style="border-bottom: 1px solid #E3E1DA;">
+              <td style="padding: 12px 8px; font-variant-numeric: tabular-nums;">{{l.criada}}</td>
+              <td style="padding: 12px 8px; color: #5B635D; font-variant-numeric: tabular-nums;">{{l.cod}}</td>
+              <td style="padding: 12px 8px; font-weight: 600;">{{l.produto}}</td>
+              <td style="padding: 12px 8px; text-align: right; font-variant-numeric: tabular-nums;">{{l.qtd}}</td>
+              <td style="padding: 12px 8px;">{{l.cliente}}</td>
+              <td style="padding: 12px 8px;"><span style="{{l.badge}}">{{l.estado}}</span></td>
+              <td style="padding: 12px 8px; color: #5B635D;">{{l.fim}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+    <span style="font-size: 13px; color: #5B635D;">Recusa = tentativa de reservar com estoque livre zero. Compradores bloqueados = recusas + reservas parciais (aparecem como "2 / 3").</span>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { f: 'Todas' }; }
+  renderVals() {
+    const b = (bg, c) => 'padding: 3px 10px; border-radius: 999px; background: ' + bg + '; color: ' + c + '; font-size: 12px; font-weight: 700; white-space: nowrap;';
+    const E = { Reservada: b('#FBEFD0', '#6B4A00'), Retirada: b('#E4F1E4', '#1F5B2A'), Expirada: b('#ECEBE5', '#4A4F4B'), Cancelada: b('#FDE8E7', '#8A1C13'), Recusa: b('#FBE9DE', '#8A3108') };
+    const todas = [
+      { criada: '22/10 14:18', cod: '••• 917', produto: 'Iogurte natural 170 g', qtd: '2 / 2', cliente: 'Ana S.', estado: 'Reservada', fim: '—' },
+      { criada: '22/10 13:02', cod: '••• 556', produto: 'Presunto fatiado 200 g', qtd: '2 / 3', cliente: 'Marcos T.', estado: 'Reservada', fim: '—' },
+      { criada: '22/10 12:40', cod: '—', produto: 'Presunto fatiado 200 g', qtd: '0 / 1', cliente: 'Júlia R.', estado: 'Recusa', fim: '22/10 12:40' },
+      { criada: '22/10 09:15', cod: '••• 204', produto: 'Biscoito recheado 140 g', qtd: '3 / 3', cliente: 'Paulo M.', estado: 'Retirada', fim: '22/10 11:02' },
+      { criada: '21/10 18:30', cod: '••• 733', produto: 'Leite UHT integral 1 L', qtd: '2 / 2', cliente: 'Rita C.', estado: 'Expirada', fim: '21/10 22:30' },
+      { criada: '21/10 16:05', cod: '••• 640', produto: 'Queijo prato fatiado 150 g', qtd: '1 / 1', cliente: 'Lucas F.', estado: 'Cancelada', fim: '21/10 16:40' },
+      { criada: '21/10 10:22', cod: '••• 118', produto: 'Molho de tomate 300 g', qtd: '3 / 3', cliente: 'Ana S.', estado: 'Retirada', fim: '21/10 12:10' },
+      { criada: '20/10 17:48', cod: '••• 902', produto: 'Queijo prato fatiado 150 g', qtd: '4 / 4', cliente: 'Helena P.', estado: 'Retirada', fim: '20/10 19:31' }
+    ];
+    const pill = 'height: 36px; padding: 0 14px; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ';
+    const fs = ['Todas', 'Reservada', 'Retirada', 'Expirada', 'Cancelada', 'Recusa'];
+    return {
+      filtros: fs.map((f) => ({ label: f === 'Recusa' ? 'Recusas' : (f === 'Todas' ? f : f + 's'), on: this.state.f === f, style: pill + (this.state.f === f ? 'border: 1.5px solid #1E6A48; background: #1E6A48; color: #FFFFFF;' : 'border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C;'), pick: () => this.setState({ f: f }) })),
+      linhas: todas.filter((l) => this.state.f === 'Todas' || l.estado === this.state.f).map((l) => Object.assign({}, l, { badge: E[l.estado] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

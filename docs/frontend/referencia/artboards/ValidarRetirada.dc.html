@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Validar retirada</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 16px 16px 12px; background: #FFFFFF; border-bottom: 1px solid #E3E1DA;">
+    <a href="InicioLoja.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="display: flex; flex-direction: column;">
+      <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Validar retirada</h1>
+      <span style="font-size: 13px; color: #5B635D;">Mercadinho Vila Nova · 6 aguardando</span>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 24px 16px 12px;">
+    <p style="margin: 0; font-size: 16px; text-align: center; line-height: 1.45;">Digite o código de 6 dígitos que o cliente mostra no celular.</p>
+    <div role="status" aria-label="{{aria}}" style="display: flex; gap: 6px;">
+      <sc-for list="{{caixas}}" as="c" hint-placeholder-count="6">
+        <span style="{{c.style}}">{{c.v}}</span>
+      </sc-for>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: 100%; margin-top: 4px;">
+      <sc-for list="{{teclas}}" as="t" hint-placeholder-count="12">
+        <button onClick="{{t.press}}" aria-label="{{t.aria}}" style="{{t.style}}">{{t.label}}</button>
+      </sc-for>
+    </div>
+  </main>
+
+  <footer style="padding: 8px 16px 24px;">
+    <sc-if value="{{completo}}" hint-placeholder-val="{{ false }}">
+      <a href="RetiradaResultado.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font-size: 17px; font-weight: 700;">Buscar reserva</a>
+    </sc-if>
+    <sc-if value="{{incompleto}}" hint-placeholder-val="{{ true }}">
+      <button disabled style="width: 100%; height: 56px; border: none; border-radius: 14px; background: #D8D5CC; color: #4A4F4B; font: inherit; font-size: 17px; font-weight: 700;">Faltam {{faltam}} dígitos</button>
+    </sc-if>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { cod: '4829' }; }
+  renderVals() {
+    const cod = this.state.cod;
+    const caixa = (i) => 'width: 48px; height: 64px; border-radius: 12px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; background: #FFFFFF; ' + (i === cod.length ? 'border: 2px solid #1E6A48; box-shadow: 0 0 0 3px #E3F0E8;' : 'border: 1.5px solid #C9C6BC;') + (i === 3 ? ' margin-left: 10px;' : '');
+    const tecla = 'height: 64px; border: none; border-radius: 14px; background: #FFFFFF; font: inherit; font-size: 26px; font-weight: 700; color: #1B1F1C; cursor: pointer; box-shadow: 0 1px 0 #C9C6BC;';
+    const dig = (d) => ({ label: d, aria: 'Dígito ' + d, style: tecla, press: () => { if (cod.length < 6) this.setState({ cod: cod + d }); } });
+    return {
+      caixas: [0, 1, 2, 3, 4, 5].map((i) => ({ v: cod[i] || '', style: caixa(i) })),
+      aria: 'Código digitado: ' + (cod.split('').join(' ') || 'nenhum dígito'),
+      teclas: ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(dig).concat([
+        { label: 'Limpar', aria: 'Limpar código', style: tecla + ' font-size: 15px; color: #5B635D; background: transparent; box-shadow: none;', press: () => this.setState({ cod: '' }) },
+        dig('0'),
+        { label: '⌫', aria: 'Apagar último dígito', style: tecla + ' background: transparent; box-shadow: none;', press: () => this.setState({ cod: cod.slice(0, -1) }) }
+      ]),
+      completo: cod.length === 6,
+      incompleto: cod.length < 6,
+      faltam: 6 - cod.length
+    };
+  }
+}
+</script>
+</body>
+</html>

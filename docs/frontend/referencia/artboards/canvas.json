@@ -1,0 +1,566 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Abertura.dc.html": {
+      "h": 844,
+      "page": "acesso",
+      "title": "A1 · Abertura (servidor acordando)",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Ajuste.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "lojista",
+      "title": "L11 · Ajuste de estoque",
+      "w": 390,
+      "x": 940,
+      "y": 2600
+    },
+    "Avisos.dc.html": {
+      "h": 844,
+      "page": "lojista",
+      "title": "L5 · Lista de avisos (Figura 3)",
+      "w": 390,
+      "x": 0,
+      "y": 1300
+    },
+    "Codigo.dc.html": {
+      "h": 844,
+      "page": "consumidor",
+      "title": "C6 · Código de retirada",
+      "w": 390,
+      "x": 1850,
+      "y": 1300
+    },
+    "CodigoEstados.dc.html": {
+      "h": 948,
+      "page": "consumidor",
+      "title": "C7 · Reserva — cancelar, expirada, retirada",
+      "w": 1300,
+      "x": 2320,
+      "y": 1300
+    },
+    "Componentes.dc.html": {
+      "h": 1640,
+      "page": "base",
+      "title": "Componentes e tokens — paleta verde (oficial)",
+      "w": 1440,
+      "x": 0,
+      "y": 1360
+    },
+    "Conferencia.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "lojista",
+      "title": "L6 · Conferência na gôndola (Figura 3)",
+      "w": 390,
+      "x": 470,
+      "y": 1300
+    },
+    "ConferenciaEstados.dc.html": {
+      "h": 948,
+      "page": "lojista",
+      "title": "L8 · Adiar aviso e oferta publicada",
+      "w": 876,
+      "x": 1410,
+      "y": 1300
+    },
+    "ConfigLoja.dc.html": {
+      "h": 1300,
+      "page": "lojista",
+      "title": "L14 · Configurações da loja (responsável)",
+      "w": 390,
+      "x": 0,
+      "y": 5200
+    },
+    "CriarConta.dc.html": {
+      "h": 844,
+      "page": "acesso",
+      "title": "A3 · Criar conta",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "Entrar.dc.html": {
+      "h": 844,
+      "page": "acesso",
+      "title": "A2 · Entrar",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "EscolherPerfil.dc.html": {
+      "h": 844,
+      "page": "acesso",
+      "title": "A4 · Escolher como entrar",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "Fluxos.dc.html": {
+      "h": 2000,
+      "page": "base",
+      "title": "Fluxos de navegação e estados",
+      "w": 1600,
+      "x": 1520,
+      "y": 1360
+    },
+    "Historico.dc.html": {
+      "expand": "fill",
+      "h": 960,
+      "is_interactive": true,
+      "page": "gestor",
+      "title": "G3 · Histórico de reservas",
+      "w": 1440,
+      "x": 0,
+      "y": 1340
+    },
+    "Identidades.dc.html": {
+      "h": 1000,
+      "page": "base",
+      "title": "Opções de identidade avaliadas (escolhida: paleta original verde)",
+      "w": 2400,
+      "x": 0,
+      "y": -3
+    },
+    "InicioLoja.dc.html": {
+      "h": 844,
+      "page": "lojista",
+      "title": "L1 · Início da loja",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Lotes.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "lojista",
+      "title": "L4 · Lotes e fitas",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "lojista",
+      "title": "L3 · Cadastro do lote (Figura 3)",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "MinhasReservas.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "consumidor",
+      "title": "C8 · Minhas reservas",
+      "w": 390,
+      "x": 0,
+      "y": 2600
+    },
+    "NovoProduto.dc.html": {
+      "h": 844,
+      "page": "lojista",
+      "title": "L2 · Novo produto",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "OfertaDetalhe.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "lojista",
+      "title": "L10 · Detalhe da oferta",
+      "w": 390,
+      "x": 470,
+      "y": 2600
+    },
+    "OfertasLoja.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "lojista",
+      "title": "L9 · Ofertas da loja",
+      "w": 390,
+      "x": 0,
+      "y": 2600
+    },
+    "Painel.dc.html": {
+      "expand": "fill",
+      "h": 1060,
+      "page": "gestor",
+      "title": "G1 · Painel de acompanhamento (Figura 6)",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Perfil.dc.html": {
+      "h": 844,
+      "page": "consumidor",
+      "title": "C9 · Perfil e preferências",
+      "w": 390,
+      "x": 470,
+      "y": 2600
+    },
+    "Permissoes.dc.html": {
+      "h": 948,
+      "page": "consumidor",
+      "title": "C1 · Localização e avisos de oferta",
+      "w": 876,
+      "x": 0,
+      "y": 0
+    },
+    "Projecao.dc.html": {
+      "expand": "fill",
+      "h": 1060,
+      "is_interactive": true,
+      "page": "gestor",
+      "title": "G2 · Projeção da janela de reserva",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "Publicar.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "lojista",
+      "title": "L7 · Revisar e publicar oferta",
+      "w": 390,
+      "x": 940,
+      "y": 1300
+    },
+    "Reserva.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "consumidor",
+      "title": "C4 · Reserva da quantidade",
+      "w": 390,
+      "x": 0,
+      "y": 1300
+    },
+    "ReservaResultado.dc.html": {
+      "h": 948,
+      "page": "consumidor",
+      "title": "C5 · Resultado da reserva",
+      "w": 1300,
+      "x": 470,
+      "y": 1300
+    },
+    "RetiradaResultado.dc.html": {
+      "h": 948,
+      "page": "lojista",
+      "title": "L13 · Retirada — encontrada, não encontrada, confirmada",
+      "w": 1300,
+      "x": 470,
+      "y": 3900
+    },
+    "ValidarRetirada.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "lojista",
+      "title": "L12 · Validar retirada",
+      "w": 390,
+      "x": 0,
+      "y": 3900
+    },
+    "Vitrine.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "consumidor",
+      "title": "C2 · Vitrine com filtros",
+      "w": 390,
+      "x": 956,
+      "y": 0
+    },
+    "VitrineEstados.dc.html": {
+      "h": 948,
+      "page": "consumidor",
+      "title": "C3 · Vitrine — estados",
+      "w": 1300,
+      "x": 1426,
+      "y": 0
+    },
+    "OfertasGestor.dc.html": {
+      "page": "gestor",
+      "x": 1520,
+      "y": 1340,
+      "w": 1440,
+      "h": 960,
+      "title": "G4 · Ofertas (desktop)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "LotesGestor.dc.html": {
+      "page": "gestor",
+      "x": 0,
+      "y": 2620,
+      "w": 1440,
+      "h": 1000,
+      "title": "G5 · Lotes e fitas (desktop)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfigGestor.dc.html": {
+      "page": "gestor",
+      "x": 1520,
+      "y": 2620,
+      "w": 1440,
+      "h": 1000,
+      "title": "G6 · Configurações da loja (desktop)",
+      "expand": "fill"
+    },
+    "EntrarDesktop.dc.html": {
+      "page": "acesso",
+      "x": 0,
+      "y": 1240,
+      "w": 1440,
+      "h": 900,
+      "title": "A5 · Entrar no computador",
+      "expand": "fill"
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-22T14:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "page": "base",
+    "view": "canvas"
+  },
+  "noteOrder": [
+    "tid",
+    "tbase",
+    "tacesso",
+    "nacesso",
+    "tc1",
+    "tc2",
+    "tc3",
+    "tl1",
+    "tl2",
+    "tl3",
+    "tl4",
+    "tl5",
+    "fitas",
+    "npapel",
+    "tg1",
+    "npaleta",
+    "tacesso2"
+  ],
+  "notes": {
+    "fitas": {
+      "page": "lojista",
+      "size": 24,
+      "text": "Cores da fita por bimestre de vencimento (ciclo anual, data absoluta):\n\nJan–Fev · Vermelho\nMar–Abr · Amarelo\nMai–Jun · Verde\nJul–Ago · Azul\nSet–Out · Branco\nNov–Dez · Preto\n\nCores de fita isolante comum. A tela sempre mostra o nome da cor e a data exata, para não depender só da cor (daltonismo, iluminação).",
+      "w": 340,
+      "x": 1880,
+      "y": 0
+    },
+    "nacesso": {
+      "page": "acesso",
+      "size": 24,
+      "text": "Login único (decidido 23/10): a mesma conta reserva como consumidor e, se tiver vínculo com uma loja, entra como Responsável ou Funcionário.\n\nA CONFIRMAR: login por e-mail e senha (recomendação: token do DRF).",
+      "w": 360,
+      "x": 1880,
+      "y": 0
+    },
+    "npapel": {
+      "fill": "blue",
+      "page": "lojista",
+      "size": 24,
+      "text": "Papéis: Funcionário opera o dia a dia (lotes, avisos, conferência, publicação, ajuste, retirada). Responsável faz tudo isso e ainda vê painéis, projeção e configurações. Permissões finais: etapa 6 do backend.",
+      "w": 340,
+      "x": 1880,
+      "y": 520
+    },
+    "tacesso": {
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "acesso",
+      "text": "Acesso — um login só para todos os perfis",
+      "w": 240,
+      "x": 0,
+      "y": -280
+    },
+    "tbase": {
+      "kind": "title1",
+      "maxW": 3120,
+      "page": "base",
+      "text": "Componentes, tokens e fluxos",
+      "w": 240,
+      "x": 0,
+      "y": 1080
+    },
+    "tc1": {
+      "kind": "title1",
+      "maxW": 2726,
+      "page": "consumidor",
+      "text": "Consumidor · descobrir ofertas",
+      "w": 240,
+      "x": 0,
+      "y": -280
+    },
+    "tc2": {
+      "kind": "title1",
+      "maxW": 3620,
+      "page": "consumidor",
+      "text": "Consumidor · reservar e retirar (Figura 4: C2, C4, C6)",
+      "w": 240,
+      "x": 0,
+      "y": 1020
+    },
+    "tc3": {
+      "kind": "title1",
+      "maxW": 860,
+      "page": "consumidor",
+      "text": "Consumidor · conta",
+      "w": 240,
+      "x": 0,
+      "y": 2320
+    },
+    "tg1": {
+      "kind": "title1",
+      "maxW": 2960,
+      "page": "gestor",
+      "text": "Gestor (Responsável) · painéis no computador (Figura 6: G1)",
+      "w": 240,
+      "x": 0,
+      "y": -280
+    },
+    "tid": {
+      "kind": "title1",
+      "maxW": 2400,
+      "page": "base",
+      "text": "Identidade do produto",
+      "w": 240,
+      "x": 0,
+      "y": -280
+    },
+    "tl1": {
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "lojista",
+      "text": "Lojista · recebimento do lote",
+      "w": 240,
+      "x": 0,
+      "y": -280
+    },
+    "tl2": {
+      "kind": "title1",
+      "maxW": 2286,
+      "page": "lojista",
+      "text": "Lojista · do aviso à oferta (Figura 3: L3, L5, L6)",
+      "w": 240,
+      "x": 0,
+      "y": 1020
+    },
+    "tl3": {
+      "kind": "title1",
+      "maxW": 1330,
+      "page": "lojista",
+      "text": "Lojista · oferta ativa",
+      "w": 240,
+      "x": 0,
+      "y": 2320
+    },
+    "tl4": {
+      "kind": "title1",
+      "maxW": 1770,
+      "page": "lojista",
+      "text": "Lojista · retirada no balcão",
+      "w": 240,
+      "x": 0,
+      "y": 3620
+    },
+    "tl5": {
+      "kind": "title1",
+      "maxW": 1000,
+      "page": "lojista",
+      "text": "Responsável · configurações",
+      "w": 240,
+      "x": 0,
+      "y": 4920
+    },
+    "npaleta": {
+      "page": "base",
+      "x": 2480,
+      "y": 0,
+      "w": 360,
+      "fill": "green",
+      "size": 24,
+      "text": "Paleta oficial: original verde (Plus Jakarta Sans, verde #1E6A48, desconto #C2410C).\n\nAs 7 telas do artigo ainda têm o ajuste \"identidade\" (Tweaks), já em Original (verde). As telas novas usam a paleta verde fixa."
+    },
+    "tacesso2": {
+      "page": "acesso",
+      "kind": "title1",
+      "maxW": 1440,
+      "text": "Acesso no computador",
+      "x": 0,
+      "y": 960
+    }
+  },
+  "order": [
+    "Vitrine.dc.html",
+    "VitrineEstados.dc.html",
+    "Reserva.dc.html",
+    "ReservaResultado.dc.html",
+    "Codigo.dc.html",
+    "CodigoEstados.dc.html",
+    "MinhasReservas.dc.html",
+    "Perfil.dc.html",
+    "InicioLoja.dc.html",
+    "NovoProduto.dc.html",
+    "Main.dc.html",
+    "Lotes.dc.html",
+    "Avisos.dc.html",
+    "Conferencia.dc.html",
+    "Publicar.dc.html",
+    "ConferenciaEstados.dc.html",
+    "OfertasLoja.dc.html",
+    "OfertaDetalhe.dc.html",
+    "Ajuste.dc.html",
+    "ValidarRetirada.dc.html",
+    "RetiradaResultado.dc.html",
+    "ConfigLoja.dc.html",
+    "Painel.dc.html",
+    "Projecao.dc.html",
+    "Historico.dc.html",
+    "Identidades.dc.html",
+    "Componentes.dc.html",
+    "Fluxos.dc.html",
+    "Abertura.dc.html",
+    "Entrar.dc.html",
+    "CriarConta.dc.html",
+    "EscolherPerfil.dc.html",
+    "Permissoes.dc.html",
+    "OfertasGestor.dc.html",
+    "LotesGestor.dc.html",
+    "ConfigGestor.dc.html",
+    "EntrarDesktop.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "base",
+      "name": "0 · Base, componentes e fluxos"
+    },
+    {
+      "id": "acesso",
+      "name": "1 · Acesso (todos)"
+    },
+    {
+      "id": "consumidor",
+      "name": "2 · Consumidor"
+    },
+    {
+      "id": "lojista",
+      "name": "3 · Lojista"
+    },
+    {
+      "id": "gestor",
+      "name": "4 · Gestor"
+    }
+  ],
+  "title": "Telas TG — Marketplace"
+}

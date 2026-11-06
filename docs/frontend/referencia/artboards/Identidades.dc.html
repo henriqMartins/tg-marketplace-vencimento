@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Opções de identidade</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Bricolage+Grotesque:wght@400;600;700;800&amp;family=Nunito:wght@400;600;700;800;900&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 2400px; height: 1000px; box-sizing: border-box; padding: 40px; background: #FFFFFF; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px;">
+  <sc-for list="{{ids}}" as="t" hint-placeholder-count="4">
+    <article style="display: flex; flex-direction: column; gap: 28px; padding: 36px; border-radius: 28px; background: {{t.bg}}; color: {{t.ink}}; font-family: {{t.font}}; border: 1px solid {{t.line}};">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div aria-hidden="true" style="width: 72px; height: 72px; border-radius: 20px; background: {{t.primary}}; color: {{t.onPrimary}}; display: flex; align-items: center; justify-content: center;">
+          <sc-if value="{{t.gClock}}" hint-placeholder-val="{{ false }}">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.5 2.5L16 9.5"></path></svg>
+          </sc-if>
+          <sc-if value="{{t.gTag}}" hint-placeholder-val="{{ false }}">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12l-8 8-9-9V3h8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle><path d="M13 9l3 3"></path></svg>
+          </sc-if>
+          <sc-if value="{{t.gHouse}}" hint-placeholder-val="{{ false }}">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path><path d="M9 20v-5h6v5"></path></svg>
+          </sc-if>
+          <sc-if value="{{t.gLoop}}" hint-placeholder-val="{{ false }}">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 00-14.5-4.5L4 8"></path><path d="M4 3v5h5"></path><path d="M4 13a8 8 0 0014.5 4.5L20 16"></path><path d="M20 21v-5h-5"></path></svg>
+          </sc-if>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 40px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em;">{{t.nome}}</span>
+          <span style="font-size: 17px; color: {{t.muted}};">{{t.slogan}}</span>
+        </div>
+      </div>
+
+      <p style="margin: 0; font-size: 17px; line-height: 1.5;">{{t.conceito}}</p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: {{t.muted}};">Paleta</span>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;">
+          <sc-for list="{{t.swatches}}" as="s" hint-placeholder-count="8">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="height: 56px; border-radius: 12px; background: {{s.c}}; border: 1px solid {{t.lineStrong}};"></div>
+              <span style="font-size: 12px; font-weight: 700;">{{s.n}}</span>
+              <span style="font-size: 12px; color: {{t.muted}};">{{s.c}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: {{t.muted}};">Tipografia · {{t.fonte}}</span>
+        <span style="font-size: 30px; font-weight: 800;">Iogurte natural 170 g</span>
+        <span style="font-size: 16px;">Retire até hoje, 20:00. Pagamento na loja.</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: auto;">
+        <div style="display: flex; gap: 12px; padding: 12px; border-radius: 16px; background: {{t.surface}}; border: 1.5px solid {{t.line}};">
+          <div style="position: relative; width: 72px; height: 72px; flex-shrink: 0; border-radius: 12px; background: {{t.phBg}};">
+            <span style="position: absolute; top: 6px; left: 6px; padding: 2px 6px; border-radius: 6px; background: {{t.accent}}; color: {{t.onAccent}}; font-size: 12px; font-weight: 800;">−30%</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <span style="font-size: 15px; font-weight: 700;">Iogurte natural 170 g</span>
+            <span style="font-size: 13px; color: {{t.muted}};">Mercadinho Vila Nova · 0,8 km</span>
+            <span style="font-size: 18px; font-weight: 800; color: {{t.primary}};">R$ 3,14 <s style="font-size: 13px; font-weight: 400; color: {{t.muted}};">R$ 4,49</s></span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <span style="height: 36px; padding: 0 14px; border-radius: 18px; background: {{t.primary}}; color: {{t.onPrimary}}; font-size: 14px; font-weight: 600; display: flex; align-items: center;">Laticínios</span>
+          <span style="height: 36px; padding: 0 14px; border-radius: 18px; background: {{t.surface}}; border: 1.5px solid {{t.lineStrong}}; box-sizing: border-box; font-size: 14px; font-weight: 600; display: flex; align-items: center;">Frios</span>
+        </div>
+        <span style="height: 56px; border-radius: 14px; background: {{t.primary}}; color: {{t.onPrimary}}; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center;">Reservar 2 · R$ 6,28</span>
+      </div>
+    </article>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2400,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const mk = (o) => Object.assign(o, {
+      swatches: [
+        { n: 'Primária', c: o.primary }, { n: 'Primária escura', c: o.primaryDark }, { n: 'Primária suave', c: o.primarySoft }, { n: 'Destaque (desconto)', c: o.accent },
+        { n: 'Fundo', c: o.bg }, { n: 'Superfície', c: o.surface }, { n: 'Texto', c: o.ink }, { n: 'Texto secundário', c: o.muted }
+      ]
+    });
+    return {
+      ids: [
+        mk({ nome: 'Prazo Certo', slogan: 'O produto certo, no prazo certo.', fonte: 'Manrope', gClock: true,
+          conceito: 'Confiança e organização. Tom sóbrio e técnico, que conversa bem com o lojista e com o controle de validade. O verde-limão marca o desconto sem parecer liquidação.',
+          font: "'Manrope', system-ui, sans-serif", bg: '#F2F6F5', surface: '#FFFFFF', ink: '#0F1E20', muted: '#51666A', line: '#DCE6E5', lineStrong: '#B9CCCB', primary: '#0E5C63', primaryDark: '#0A464C', primarySoft: '#DDF0EE', onPrimary: '#FFFFFF', accent: '#D9F35B', onAccent: '#1A2B0A', phBg: '#E3ECEB' }),
+        mk({ nome: 'Vale Hoje', slogan: 'Desconto que vale hoje.', fonte: 'Bricolage Grotesque', gTag: true,
+          conceito: 'Urgência e oferta. O nome lembra que o desconto dura pouco, como a validade. Energia de varejo, vermelho de promoção com azul-noite para equilibrar.',
+          font: "'Bricolage Grotesque', system-ui, sans-serif", bg: '#FFF8F3', surface: '#FFFFFF', ink: '#231A17', muted: '#6B5D57', line: '#F0E2DA', lineStrong: '#D9C4B8', primary: '#C8372D', primaryDark: '#9E2A22', primarySoft: '#FCE9E4', onPrimary: '#FFFFFF', accent: '#1F2A44', onAccent: '#FFFFFF', phBg: '#F6E8DF' }),
+        mk({ nome: 'Bairro Bom', slogan: 'O desconto do seu bairro.', fonte: 'Nunito', gHouse: true,
+          conceito: 'Comunidade e acolhimento. Reforça o mercadinho de bairro, não a grande rede. Terracota e mostarda de feira, fonte arredondada e amigável.',
+          font: "'Nunito', system-ui, sans-serif", bg: '#FBF5EC', surface: '#FFFDF9', ink: '#2A1E16', muted: '#6E5E52', line: '#EBDFD0', lineStrong: '#D4C3AF', primary: '#A6411F', primaryDark: '#7F3016', primarySoft: '#F7E6DC', onPrimary: '#FFFFFF', accent: '#E9B23A', onAccent: '#2A1B0F', phBg: '#F1E6D6' }),
+        mk({ nome: 'Resgate', slogan: 'Compre bem. Desperdice menos.', fonte: 'Space Grotesk', gLoop: true,
+          conceito: 'Propósito e ODS 12. Cada reserva "resgata" um alimento do descarte. Índigo moderno com âmbar, visual jovem e de impacto social.',
+          font: "'Space Grotesk', system-ui, sans-serif", bg: '#F5F5FA', surface: '#FFFFFF', ink: '#16152B', muted: '#5A5975', line: '#E2E1EE', lineStrong: '#C4C3D8', primary: '#3730A3', primaryDark: '#28237A', primarySoft: '#E7E6FB', onPrimary: '#FFFFFF', accent: '#F59E0B', onAccent: '#2A1A00', phBg: '#E8E7F3' })
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

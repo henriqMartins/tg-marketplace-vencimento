@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Componentes e tokens</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+@keyframes girar{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1640px; box-sizing: border-box; padding: 56px; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; gap: 40px;">
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <div aria-hidden="true" style="width: 56px; height: 56px; border-radius: 16px; background: #1E6A48; color: #FFFFFF; display: flex; align-items: center; justify-content: center;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path><path d="M9 20v-5h6v5"></path></svg>
+    </div>
+    <div style="display: flex; flex-direction: column;">
+      <h1 style="margin: 0; font-size: 34px; font-weight: 800;">Componentes · paleta verde</h1>
+      <span style="font-size: 16px; color: #5B635D;">Base para o frontend (React + TypeScript). Fonte Plus Jakarta Sans. Toque mínimo 44 px. Contraste mínimo 4,5:1.</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px;">
+    <section style="display: flex; flex-direction: column; gap: 14px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Cores (tokens)</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+        <sc-for list="{{cores}}" as="c" hint-placeholder-count="12">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="height: 52px; border-radius: 12px; background: {{c.hex}}; border: 1px solid #C9C6BC;"></div>
+            <span style="font-size: 13px; font-weight: 800;">{{c.token}}</span>
+            <span style="font-size: 12px; color: #5B635D;">{{c.hex}} · {{c.uso}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 14px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Fitas (bimestre de vencimento)</h2>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px;">
+        <sc-for list="{{fitas}}" as="f" hint-placeholder-count="6">
+          <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
+            <div style="{{f.sw}}"></div>
+            <span style="font-size: 14px; font-weight: 800;">{{f.nome}}</span>
+            <span style="font-size: 12px; color: #5B635D;">{{f.bim}} · {{f.hex}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <h2 style="margin: 12px 0 0; font-size: 20px; font-weight: 800;">Selos de estado</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <span style="padding: 4px 10px; border-radius: 999px; background: #FBEFD0; color: #6B4A00; font-size: 13px; font-weight: 800;">Reservada</span>
+        <span style="padding: 4px 10px; border-radius: 999px; background: #E4F1E4; color: #1F5B2A; font-size: 13px; font-weight: 800;">Retirada</span>
+        <span style="padding: 4px 10px; border-radius: 999px; background: #ECEBE5; color: #4A4F4B; font-size: 13px; font-weight: 800;">Expirada</span>
+        <span style="padding: 4px 10px; border-radius: 999px; background: #FDE8E7; color: #8A1C13; font-size: 13px; font-weight: 800;">Cancelada</span>
+        <span style="padding: 4px 10px; border-radius: 999px; background: #E4F1E4; color: #1F5B2A; font-size: 13px; font-weight: 800;">Oferta ativa</span>
+        <span style="padding: 4px 10px; border-radius: 999px; background: #ECEBE5; color: #4A4F4B; font-size: 13px; font-weight: 800;">Oferta encerrada</span>
+        <span style="padding: 4px 10px; border-radius: 999px; background: #E3F0E8; color: #14503A; font-size: 13px; font-weight: 800;">Aguardando aviso</span>
+        <span style="padding: 4px 10px; border-radius: 999px; background: #FDE8E7; color: #8A1C13; font-size: 13px; font-weight: 800;">Aviso urgente</span>
+        <span style="padding: 4px 10px; border-radius: 999px; background: #FEF3C7; color: #6B3F00; font-size: 13px; font-weight: 800;">Adiado</span>
+      </div>
+    </section>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px;">
+    <section style="display: flex; flex-direction: column; gap: 10px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Tipografia</h2>
+      <span style="font-size: 28px; font-weight: 800;">Display 28/900</span>
+      <span style="font-size: 24px; font-weight: 800;">Título de lista 24/800</span>
+      <span style="font-size: 20px; font-weight: 700;">Título de tela 20/700</span>
+      <span style="font-size: 16px; font-weight: 700;">Título de card 16/700</span>
+      <span style="font-size: 15px;">Corpo 15/400, entrelinha 1,45</span>
+      <span style="font-size: 14px; font-weight: 600;">Rótulo de campo 14/600</span>
+      <span style="font-size: 13px; color: #5B635D;">Legenda 13/400 · texto secundário</span>
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5B635D;">Sobrelinha 12/700</span>
+      <span style="font-size: 44px; font-weight: 800; font-variant-numeric: tabular-nums;">24 <span style="font-size: 15px; font-weight: 600; color: #5B635D;">números grandes, tabulares</span></span>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 10px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Botões</h2>
+      <button style="height: 56px; border: none; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 17px; font-weight: 800;">Primário</button>
+      <button style="height: 52px; border: 1.5px solid #C9C6BC; border-radius: 14px; background: #FFFFFF; color: #1B1F1C; font: inherit; font-size: 16px; font-weight: 700;">Secundário</button>
+      <button style="height: 52px; border: 1.5px solid #E7B4AE; border-radius: 14px; background: #FFFFFF; color: #A3261B; font: inherit; font-size: 16px; font-weight: 800;">Perigo (cancelar)</button>
+      <button disabled style="height: 56px; border: none; border-radius: 14px; background: #D8D5CC; color: #4A4F4B; font: inherit; font-size: 17px; font-weight: 800;">Desabilitado</button>
+      <button style="height: 56px; border: none; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4); border-top-color: #FFFFFF; animation: girar 0.9s linear infinite;"></span>Enviando…</button>
+      <div style="display: flex; gap: 10px;">
+        <button aria-label="Voltar" style="width: 44px; height: 44px; border: none; border-radius: 12px; background: #E3F0E8; color: #14503A; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+        <span style="font-size: 13px; color: #5B635D; align-self: center;">Botão de ícone 44×44 (sempre com aria-label)</span>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 10px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Campos</h2>
+      <label for="c1" style="font-size: 14px; font-weight: 600;">Padrão</label>
+      <input id="c1" value="Molho de tomate 300 g" style="height: 52px; padding: 0 14px; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 16px; color: #1B1F1C;">
+      <label for="c2" style="font-size: 14px; font-weight: 600;">Em foco</label>
+      <input id="c2" value="18/12/2026" style="height: 52px; padding: 0 14px; border: 2px solid #1E6A48; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 16px; color: #1B1F1C; box-shadow: 0 0 0 3px #E3F0E8;">
+      <label for="c3" style="font-size: 14px; font-weight: 600;">Com erro</label>
+      <input id="c3" value="31/02/2026" aria-invalid="true" style="height: 52px; padding: 0 14px; border: 2px solid #A3261B; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 16px; color: #1B1F1C;">
+      <span style="font-size: 13px; font-weight: 700; color: #A3261B;">Data inválida. Use dd/mm/aaaa.</span>
+    </section>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px;">
+    <section style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Contador de quantidade</h2>
+      <span style="font-size: 13px; color: #5B635D;">Três tamanhos: 60 px (consumidor), 72 px (cadastro do lote), 96 px (conferência de pé). Nunca abre teclado.</span>
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #FFFFFF; border: 1.5px solid #C9C6BC; border-radius: 16px;">
+        <button aria-label="Diminuir" style="width: 72px; height: 72px; border: none; border-radius: 14px; background: #E3F0E8; color: #1E6A48; font: inherit; font-size: 34px; font-weight: 800;">−</button>
+        <span style="font-size: 44px; font-weight: 800; font-variant-numeric: tabular-nums;">24</span>
+        <button aria-label="Aumentar" style="width: 72px; height: 72px; border: none; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 34px; font-weight: 800;">+</button>
+      </div>
+      <span style="font-size: 13px; color: #5B635D;">Mínimo e máximo travam o botão (fica com 40% de opacidade). Toque longo repete.</span>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Chips e seletor</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <span style="height: 36px; padding: 0 14px; border-radius: 18px; background: #1E6A48; color: #FFFFFF; font-size: 14px; font-weight: 700; display: flex; align-items: center;">Selecionado</span>
+        <span style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1.5px solid #C9C6BC; box-sizing: border-box; background: #FFFFFF; font-size: 14px; font-weight: 700; display: flex; align-items: center;">Não selecionado</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;">
+        <span style="height: 48px; border-radius: 12px; border: 1.5px solid #C9C6BC; box-sizing: border-box; background: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">1 h</span>
+        <span style="height: 48px; border-radius: 12px; border: 1.5px solid #C9C6BC; box-sizing: border-box; background: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">2 h</span>
+        <span style="height: 48px; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">4 h</span>
+        <span style="height: 48px; border-radius: 12px; border: 1.5px solid #C9C6BC; box-sizing: border-box; background: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">8 h</span>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #E3E1DA;">
+        <span style="font-size: 15px; font-weight: 600;">Interruptor (ligado)</span>
+        <span aria-hidden="true" style="width: 48px; height: 28px; border-radius: 14px; background: #1E6A48; position: relative;"><span style="position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF;"></span></span>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 10px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Mensagens</h2>
+      <div style="padding: 12px; border-radius: 12px; background: #E3F0E8; color: #14503A; font-size: 14px; line-height: 1.45;"><strong>Informação.</strong> Agrupado ao grupo Preto ativo.</div>
+      <div style="padding: 12px; border-radius: 12px; background: #E4F1E4; color: #1F5B2A; font-size: 14px; line-height: 1.45;"><strong>Sucesso.</strong> Retirada registrada.</div>
+      <div style="padding: 12px; border-radius: 12px; background: #FEF3C7; color: #6B3F00; font-size: 14px; line-height: 1.45;"><strong>Atenção.</strong> Reserva parcial ou colisão de ciclo.</div>
+      <div style="padding: 12px; border-radius: 12px; background: #FDE8E7; color: #8A1C13; font-size: 14px; line-height: 1.45;"><strong>Erro.</strong> Código não encontrado nesta loja.</div>
+      <div style="padding: 12px 14px; border-radius: 12px; background: #1B1F1C; color: #FFFFFF; font-size: 14px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">Toast (rodapé, 4 s) <span style="color: #C2410C; font-weight: 800;">Desfazer</span></div>
+    </section>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px;">
+    <section style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Card de oferta (vitrine)</h2>
+      <div style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <div style="position: relative; width: 84px; height: 84px; flex-shrink: 0; border-radius: 12px; background: #EDEBE4;">
+          <span style="position: absolute; top: 6px; left: 6px; padding: 2px 6px; border-radius: 6px; background: #C2410C; color: #FFFFFF; font-size: 12px; font-weight: 800;">−30%</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 15px; font-weight: 800;">Iogurte natural 170 g</span>
+          <span style="font-size: 13px; color: #5B635D;">Mercadinho Vila Nova · 0,8 km</span>
+          <span style="font-size: 18px; font-weight: 800; color: #1E6A48;">R$ 3,14 <s style="font-size: 13px; font-weight: 400; color: #5B635D;">R$ 4,49</s></span>
+          <span style="font-size: 13px;">Vence 28/10 · <strong>12</strong> disponíveis</span>
+        </div>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Carregando e vazio</h2>
+      <div style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <div style="width: 84px; height: 84px; border-radius: 12px; background: #ECEBE5;"></div>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 4px;">
+          <div style="height: 14px; width: 80%; border-radius: 7px; background: #ECEBE5;"></div>
+          <div style="height: 12px; width: 55%; border-radius: 6px; background: #ECEBE5;"></div>
+          <div style="height: 16px; width: 40%; border-radius: 8px; background: #ECEBE5;"></div>
+        </div>
+      </div>
+      <div style="padding: 20px; border-radius: 16px; border: 1.5px dashed #C9C6BC; text-align: center; font-size: 14px; color: #5B635D;"><strong style="color: #1B1F1C; font-size: 16px;">Nada por aqui ainda</strong><br>Estado vazio: ícone, uma frase, uma ação.</div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Servidor e conexão</h2>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #FBEFD0; color: #6B4A00; font-size: 14px; font-weight: 700;">
+        <span aria-hidden="true" style="width: 16px; height: 16px; border-radius: 50%; border: 3px solid #E9B23A; border-top-color: #6B4A00; animation: girar 0.9s linear infinite;"></span>
+        Conectando ao servidor… pode levar até 1 minuto.</div>
+      <div style="padding: 12px 14px; border-radius: 12px; background: #ECEBE5; color: #4A4F4B; font-size: 14px; font-weight: 700;">Sem internet. Mostrando os dados da última atualização.</div>
+      <span style="font-size: 13px; color: #5B635D; line-height: 1.45;">O Render gratuito dorme após ~15 min. Toda tela que chama a API mostra a faixa amarela enquanto espera a primeira resposta, sem travar.</span>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sw = (bg, b) => 'width: 100%; height: 44px; border-radius: 10px; box-sizing: border-box; background: ' + bg + '; border: 2px solid ' + b + ';';
+    return {
+      cores: [
+        { token: 'primary', hex: '#1E6A48', uso: 'ação principal' },
+        { token: 'primary-dark', hex: '#14503A', uso: 'texto sobre suave' },
+        { token: 'primary-soft', hex: '#E3F0E8', uso: 'fundo de destaque' },
+        { token: 'accent', hex: '#C2410C', uso: 'selo de desconto' },
+        { token: 'bg', hex: '#F6F5F1', uso: 'fundo da tela' },
+        { token: 'surface', hex: '#FFFFFF', uso: 'cards e campos' },
+        { token: 'ink', hex: '#1B1F1C', uso: 'texto' },
+        { token: 'muted', hex: '#5B635D', uso: 'texto secundário' },
+        { token: 'line', hex: '#E3E1DA', uso: 'bordas de card' },
+        { token: 'line-strong', hex: '#C9C6BC', uso: 'bordas de campo' },
+        { token: 'danger', hex: '#A3261B', uso: 'erro, cancelar' },
+        { token: 'success', hex: '#1F5B2A', uso: 'retirada, ativa' }
+      ],
+      fitas: [
+        { nome: 'Vermelho', bim: 'jan–fev', hex: '#D7263D', sw: sw('#D7263D', '#D7263D') },
+        { nome: 'Amarelo', bim: 'mar–abr', hex: '#F4C430', sw: sw('#F4C430', '#F4C430') },
+        { nome: 'Verde', bim: 'mai–jun', hex: '#2E9E4F', sw: sw('#2E9E4F', '#2E9E4F') },
+        { nome: 'Azul', bim: 'jul–ago', hex: '#1F5FBF', sw: sw('#1F5FBF', '#1F5FBF') },
+        { nome: 'Branco', bim: 'set–out', hex: '#FFFFFF', sw: sw('#FFFFFF', '#9A968A') },
+        { nome: 'Preto', bim: 'nov–dez', hex: '#1B1B1B', sw: sw('#1B1B1B', '#1B1B1B') }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

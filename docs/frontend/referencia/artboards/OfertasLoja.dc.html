@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Ofertas da loja</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+  <header style="display: flex; flex-direction: column; gap: 10px; padding: 16px 16px 0; background: #FFFFFF; border-bottom: 1px solid #E3E1DA;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <a href="InicioLoja.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+      </a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 800;">Ofertas</h1>
+    </div>
+    <div role="tablist" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));">
+      <sc-for list="{{abas}}" as="a" hint-placeholder-count="2">
+        <button role="tab" aria-selected="{{a.on}}" onClick="{{a.pick}}" style="{{a.style}}">{{a.label}}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <main style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; overflow: hidden;">
+    <sc-for list="{{ofertas}}" as="o" hint-placeholder-count="4">
+      <a href="OfertaDetalhe.dc.html" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span aria-hidden="true" style="{{o.dot}}"></span>
+          <span style="flex-grow: 1; font-size: 15px; font-weight: 700;">{{o.produto}}</span>
+          <span style="font-size: 15px; font-weight: 800; color: #1E6A48;">{{o.preco}}</span>
+        </div>
+        <div aria-hidden="true" style="display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #ECEBE5;">
+          <span style="{{o.bRet}}"></span><span style="{{o.bRes}}"></span><span style="{{o.bLivre}}"></span><span style="{{o.bPerda}}"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 13px; color: #4A4F4B;">
+          <span>{{o.resumo}}</span>
+          <span style="{{o.fimStyle}}">{{o.fim}}</span>
+        </div>
+      </a>
+    </sc-for>
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: #4A4F4B;">
+      <span style="display: flex; align-items: center; gap: 5px;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: #14503A;"></span>Retirado</span>
+      <span style="display: flex; align-items: center; gap: 5px;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: #E9B23A;"></span>Reservado</span>
+      <span style="display: flex; align-items: center; gap: 5px;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: #9CC9A0;"></span>Livre</span>
+      <span style="display: flex; align-items: center; gap: 5px;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: #A3261B;"></span>Perda</span>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { aba: 'Ativas' }; }
+  renderVals() {
+    const tab = 'height: 48px; border: none; background: transparent; font: inherit; font-size: 15px; cursor: pointer; ';
+    const on = tab + 'font-weight: 700; color: #1E6A48; box-shadow: inset 0 -3px 0 #1E6A48;';
+    const off = tab + 'font-weight: 600; color: #5B635D;';
+    const dot = (bg, b) => 'width: 16px; height: 16px; flex-shrink: 0; border-radius: 5px; box-sizing: border-box; background: ' + bg + '; border: 1.5px solid ' + b + ';';
+    const W = '#FFFFFF', WB = '#9A968A', P = '#1B1B1B';
+    const seg = (n, sep, c) => 'width: ' + (100 * n / sep) + '%; background: ' + c + ';';
+    const mk = (o) => Object.assign(o, {
+      dot: dot(o.c[0], o.c[1]),
+      bRet: seg(o.ret, o.sep, '#14503A'), bRes: seg(o.res, o.sep, '#E9B23A'), bLivre: seg(o.livre, o.sep, '#9CC9A0'), bPerda: seg(o.perda + o.aj, o.sep, '#A3261B')
+    });
+    const n = 'font-weight: 600;';
+    const ativas = [
+      mk({ produto: 'Iogurte natural 170 g', preco: 'R$ 3,14', c: [W, WB], sep: 12, ret: 2, res: 4, livre: 6, perda: 0, aj: 0, resumo: '6 livres · 4 reservadas · 2 retiradas', fim: 'até 27/10', fimStyle: n + ' color: #B42318;' }),
+      mk({ produto: 'Biscoito recheado 140 g', preco: 'R$ 2,39', c: [W, WB], sep: 18, ret: 2, res: 5, livre: 11, perda: 0, aj: 0, resumo: '11 livres · 5 reservadas', fim: 'até 28/10', fimStyle: n }),
+      mk({ produto: 'Presunto fatiado 200 g', preco: 'R$ 6,90', c: [W, WB], sep: 7, ret: 1, res: 2, livre: 3, perda: 0, aj: 1, resumo: '3 livres · 1 ajustada', fim: 'até 29/10', fimStyle: n }),
+      mk({ produto: 'Molho de tomate 300 g', preco: 'R$ 1,95', c: [P, P], sep: 12, ret: 3, res: 0, livre: 9, perda: 0, aj: 0, resumo: '9 livres · 3 retiradas', fim: 'até 04/11', fimStyle: n })
+    ];
+    const enc = [
+      mk({ produto: 'Leite UHT integral 1 L', preco: 'R$ 3,99', c: [W, WB], sep: 12, ret: 9, res: 0, livre: 0, perda: 3, aj: 0, resumo: '9 retiradas · 3 viraram perda', fim: 'encerrada 21/10', fimStyle: n + ' color: #5B635D;' }),
+      mk({ produto: 'Queijo prato fatiado 150 g', preco: 'R$ 5,90', c: [W, WB], sep: 8, ret: 8, res: 0, livre: 0, perda: 0, aj: 0, resumo: '8 retiradas · sem perda', fim: 'encerrada 19/10', fimStyle: n + ' color: #5B635D;' })
+    ];
+    return {
+      abas: ['Ativas', 'Encerradas'].map((a) => ({ label: a === 'Ativas' ? 'Ativas (4)' : 'Encerradas', on: this.state.aba === a, style: this.state.aba === a ? on : off, pick: () => this.setState({ aba: a }) })),
+      ofertas: this.state.aba === 'Ativas' ? ativas : enc
+    };
+  }
+}
+</script>
+</body>
+</html>
