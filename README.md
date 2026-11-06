@@ -64,8 +64,12 @@ Legenda: ✅ existe · 🚧 planejado (ainda não existe)
 │       ├── test_servico.py         testes do serviço
 │       ├── test_concorrencia.py    N pessoas ao mesmo tempo pela última unidade
 │       └── test_varredura.py       varredura idempotente e endpoint protegido
-├── docs/colinha-python.md    ✅ colinha de Python com exemplos do projeto
-├── frontend/                 🚧 React + TypeScript + Vite, PWA (Vercel)
+├── docs/
+│   ├── colinha-python.md     ✅ colinha de Python com exemplos do projeto
+│   ├── api/contrato.md       ✅ contrato da API: rotas, entradas, saídas (dono: backend)
+│   ├── api/pedidos-do-front.md ✅ pedidos do frontend para o contrato
+│   └── frontend/             ✅ especificação das telas, protótipos e briefing do agente
+├── frontend/                 🚧 React + TypeScript + Vite, PWA (Vercel) — branch `frontend`
 └── docker-compose.yml        ✅ só desenvolvimento local (PostgreSQL no Docker do WSL 2)
 ```
 
@@ -347,17 +351,17 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Fechar decisões em aberto (login/token, permissões, push, geocodificação) |
-| ⏳ | Backend (etapa 6): login e papéis |
-| ⏳ | Backend (etapa 7): endpoints da reserva (publicar, vitrine, reservar, cancelar, retirar) |
-| ⏳ | Backend: fitas coloridas e aviso de colisão de ciclo |
-| ⏳ | Backend: proximidade por Haversine em SQL |
-| ⏳ | Backend: indicadores dos painéis |
-| ⏳ | Frontend: telas do consumidor (vitrine, reserva, código) |
-| ⏳ | Frontend: telas do lojista (cadastro de lote, fitas, retirada, ajuste, avisos) |
-| ⏳ | Frontend: painéis do gestor |
-| ⏳ | Notificação de oferta nova |
-| ⏳ | `backend/Dockerfile` de produção + deploy (Render, Neon, Vercel) |
-| ⏳ | Capturas de tela para o artigo |
-| ⏳ | **09/11/2026** — versão para a banca |
-| ⏳ | **17/11 a 02/12/2026** — apresentação ao vivo |
+| ⏳ | Backend (etapa 6): login por e-mail e senha, token e permissões por papel |
+| ⏳ | Backend (etapa 7): migração com as colunas que faltam (categoria, janela padrão, antecedência, `encerrada_em`, `retirada_por`) |
+| ⏳ | Backend (etapa 8): endpoints do consumidor (vitrine, oferta, reservar, cancelar, minhas reservas) + CORS |
+| ⏳ | Backend (etapa 9): endpoints da operação da loja (retirada, ajuste, ofertas, resumo do dia) |
+| ⏳ | Backend (etapa 10): lote, fita, aviso e publicação + configuração da loja |
+| ⏳ | Backend (etapa 11): indicadores dos painéis e histórico |
+| ⏳ | Backend (etapa 12): proximidade por Haversine em SQL |
+| ⏳ | Backend (etapa 13): projeção a partir do resumo de `resultados_n5000` |
+| ⏳ | Frontend (worktree `frontend`, etapas F0–F9 do `docs/frontend/BRIEFING-agente.md`), integrado por grupo do contrato |
+| ⏳ | **09/11/2026** — versão para a banca (artigo com os protótipos das telas) |
+| ⏳ | Notificação de oferta nova (Web Push) — depois de 09/11 |
+| ⏳ | `backend/Dockerfile` de produção + deploy (Render, Neon, Vercel) — se sobrar tempo |
+| ⏳ | Gravação do vídeo do sistema |
+| ⏳ | **17/11 a 02/12/2026** — apresentação final, com o vídeo |

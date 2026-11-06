@@ -36,6 +36,16 @@ As regras de verdade (reserva parcial, expiração limitada ao fim da oferta, co
 - **Projeção (G2)**: sem frase que recomende uma janela. Os números do mock são os da Tabela 5 (`resultados_n5000`).
 - **`expira_em`** vem sempre do backend (`mín(agora + janela, fim da oferta)`).
 
+## Contrato da API e decisões de 05/11/2026
+
+- **`docs/api/contrato.md`** define rotas, entradas, saídas e erros. Para formato de dado,
+  ele vale acima da especificação. Dono: backend; pedidos do frontend em
+  `docs/api/pedidos-do-front.md`.
+- **`BRIEFING-agente.md`**: instruções para o agente que constrói o `frontend/` na worktree.
+- Decisões de 05/11 (lista completa no fim de `especificacao-telas.md`): categorias únicas;
+  L6 só conta e a L7 tem preço e desconto; "Não vai para oferta"; adiar até a véspera do
+  último dia da oferta; grupo de fita inclui o ano; Projeção filtra rodadas já simuladas.
+
 ## Ainda em aberto
 
-Ver a seção "Pendências e suposições" no fim de `especificacao-telas.md`. Entre os itens: login, push, CEP para coordenada, permissões por papel e as tabelas que faltam no banco (lote e grupo de fita, aviso, categoria).
+Ver a seção "Ainda em aberto" no fim de `especificacao-telas.md`: tipo de token, "Esqueci minha senha", serviço de CEP/endereço para coordenada e nome do app.

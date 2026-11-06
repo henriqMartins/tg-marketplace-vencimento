@@ -1,5 +1,7 @@
 # Especificação técnica das telas — TG Marketplace de produtos próximos ao vencimento
 
+Versão 3.1 (05/11/2026): decisões de 05/11 aplicadas (ver "Decisões de 05/11/2026" no fim). **Rotas e formatos da API: vale `docs/api/contrato.md`** (prefixo `/api/`); as rotas citadas nas telas abaixo são indicativas.
+
 Versão 3 (04/11/2026), consolidada com o protótipo do Claude Design. Versão 2 de 26/10/2026. Substitui a versão anterior, que cobria só as 7 telas do artigo.
 Este arquivo traz o desenho completo do frontend: **37 artboards**, que somam 33 telas e mais 16 estados, organizados em 5 páginas no canvas "Telas TG — Marketplace".
 
@@ -110,8 +112,8 @@ A amostra da fita aparece sempre junto com o nome da cor e a data exata, nunca s
 **Comportamentos globais:**
 1. **Servidor acordando.** O Render gratuito dorme depois de cerca de 15 min sem uso e leva cerca de 1 min para acordar. Toda tela que chama a API mostra a faixa `pending` com o texto "Conectando ao servidor… pode levar até 1 minuto" e esqueletos. Ela nunca trava.
 2. **Estado sempre fresco.** A expiração é conferida em toda leitura do backend. Por isso, as telas de reserva, código, oferta e painel recarregam ao abrir e a cada 30 s enquanto estão visíveis.
-3. **Erros de regra viram mensagens, não códigos HTTP:**
-   - 409 na reserva: resultado "Recusada" ou "Parcial" (C5);
+3. **Erros de regra viram mensagens, não códigos HTTP** (formatos em `docs/api/contrato.md`):
+   - reserva: parcial é sucesso (`201`, `status: parcial`); só a recusa vem como `409` (C5);
    - ajuste acima do livre: mensagem inline em L11;
    - código inexistente: L13 "não encontrado".
 4. **Acessibilidade:**
@@ -247,8 +249,8 @@ Aparece só para quem tem vínculo com alguma loja.
 **Cabeçalho branco:**
 - "Ofertas perto de você" e o botão de local com pino `primary`: "Boa Vista · CEP 15025-000 ▾" (abre C1);
 - busca de 46 px;
-- chips de categoria: Todos, Laticínios, Frios, Mercearia, Doces (linha rolável);
-- chips de desconto: Todas, Até 30%, 30–50%, 50%+.
+- chips de categoria: Todos, Mercearia, Enlatados, Laticínios, Leite, Frios, Doces (linha rolável; **lista única**, a mesma da L2);
+- chips de desconto: Todas, Até 30% (≤ 30), 30–50% (> 30 e < 50), 50%+ (≥ 50).
 
 **Lista:** começa com "N ofertas · ordenadas por distância". Cada card leva a C4 e tem:
 - imagem placeholder de 84 × 84 com o selo "−30%" em `discount`;
@@ -258,7 +260,7 @@ Aparece só para quem tem vínculo com alguma loja.
 
 **Navegação inferior:** Vitrine ativa.
 
-**API:** `GET /ofertas?lat=&lng=&categoria=&desconto_min=&desconto_max=&q=`. Retorna oferta, produto, loja, `distancia_km`, `preco`, `preco_original`, `livre` (já descontando as vencidas) e `validade`.
+**API:** `GET /api/ofertas?lat=&lng=&categoria=&faixa_desconto=&q=` (ver contrato, grupo B). Retorna oferta, produto, loja, `distancia_km`, `preco`, `preco_original`, `livre` (já descontando as vencidas) e `validade`. `lat`/`lng` vêm da localização do navegador ou do CEP convertido **no navegador**.
 
 **Dados de exemplo:** ver o artboard (iogurte 30%, presunto 40%, biscoito 25%, molho 50%).
 
@@ -359,14 +361,14 @@ Usado quando o produto não existe na busca de L3.
 
 **Campos:**
 - Nome do produto, com a dica "Inclua o tamanho da embalagem";
-- Categoria (chips únicos): Mercearia, Enlatados, Doces e chocolates, Laticínios, Frios embalados, Leite;
+- Categoria (chips únicos): Mercearia, Enlatados, Laticínios, Leite, Frios, Doces (**lista única**, a mesma da vitrine C2);
 - card "Fim da oferta antes da validade": opção "Usar a margem da loja (1 dia)" ou "Margem própria deste produto", com o exemplo "validade 18/12 e margem de 1 dia → sai em 17/12. Mudar depois vale só para ofertas novas".
 
 Caixa `warn` com o escopo: "Só produtos embalados e fechados, vendidos por unidade. Nada vendido a peso no balcão, hortifrúti ou pão."
 
 Botão "Salvar e cadastrar o lote", que volta para L3 com o produto selecionado.
 
-**Modelo:** `Produto(nome, loja, margem_fim opcional)`. A **categoria ainda não existe no modelo** (ver pendências).
+**API:** `POST /api/lojas/:id/produtos {nome, categoria, margem_fim_dias}` (contrato, grupo D).
 
 ## L3 · Cadastro do lote (Figura 3)
 Já descrito na versão 1.
@@ -385,10 +387,10 @@ Instrução final: "Cole a fita preta na caixa e posicione a divisória na zona 
 
 Botão "Salvar lote e agendar aviso". O aviso é agendado pela antecedência da loja.
 
-**Regras:**
+**Regras** (calculadas no backend; a tela mostra o `resultado` de `POST /api/lojas/:id/lotes`):
 - A cor vem do bimestre da data **absoluta** de validade.
-- Mesmo produto + mesma cor + grupo ativo = agrega ao grupo, e a referência passa a ser a data mais próxima.
-- A colisão é aviso e não bloqueia.
+- Grupo = produto + cor + **ano do bimestre**. Mesmo produto, mesma cor e mesmo ano de um grupo ativo = agrega ao grupo, e a referência passa a ser a data mais próxima.
+- Colisão = grupo ativo do mesmo produto e mesma cor, mas de outro ano: cria grupo novo, avisa e não bloqueia. Exemplo realista: lote novo de feijão com validade 18/12/2027 chegando enquanto ainda há o grupo Preto de 2026 (validade 09/12/2026).
 
 ## L4 · Lotes e fitas
 **Layout:**
@@ -416,28 +418,30 @@ Estado vazio: "Nenhum aviso agora. Você será avisado conforme a antecedência 
 **Layout:**
 - card do produto: amostra de 72 px, "Zona **Branco** · set–out" e "Data mais próxima: **28/10/2026**";
 - instrução "Vá à zona Branco da gôndola e conte as unidades que vão para a oferta";
-- contador de **96 px**, sem digitação;
-- desconto: 4 botões (20/30/40/50%) com o preço recalculado ("De ~~R$ 4,49~~ por R$ 3,14");
+- contador de **96 px**, sem digitação (aqui **só se conta**; preço e desconto ficam na L7, decidido 05/11/2026);
 - botão "Continuar para publicar" (L7);
-- botão "Adiar aviso", que abre a folha de L8.
+- botão "Adiar aviso", que abre a folha de L8;
+- link "Não vai para oferta" (decidido 05/11/2026): abre uma folha com o motivo — "Não sobrou nenhuma unidade" ou "Outro destino" — e o botão "Encerrar aviso". Encerra o grupo sem criar oferta e **não conta como perda** no painel. **API:** `POST /api/lojas/:id/avisos/:avisoId/descartar {motivo}`.
 
 ## L7 · Revisar e publicar oferta
 **Layout:**
 - resumo: amostra da fita, produto, "Fita Branco · validade 28/10/2026" e "12 separadas" (o número da contagem);
-- duas colunas: Preço normal (campo, sugerido pela última oferta do produto) e Preço na oferta (calculado, `primary-soft`, com o desconto em `discount`);
+- duas colunas: Preço normal (campo, **pré-preenchido com o preço original da última oferta do produto**, `preco_sugerido` da API; vazio na primeira oferta) e Preço na oferta (`primary-soft`, com o desconto em `discount`);
+- desconto: 4 botões (20/30/40/50%) com a prévia do preço ("De ~~R$ 4,49~~ por R$ 3,14"). O valor oficial é o que a API devolve ao publicar (arredondamento no backend);
 - Janela de reserva em grade de 6 opções (1, 2, 4, 8, 12 e 24 h). Vem marcada com o padrão da loja (4 h) e tem a dica "Janelas curtas fazem quem mora longe perder a reserva";
 - card de fim: "Sai da vitrine em 27/10/2026, 23:59 · Validade menos 1 dia de margem. Nenhuma reserva passa desse horário; o que sobrar livre vira perda";
 - caixa de seleção `warn` obrigatória: "**Separei as 12 unidades** na área de reservas e não vou vendê-las no balcão";
 - botão "Publicar oferta". Sem a caixa marcada, ele fica desabilitado com o texto "Confirme a separação".
 
-**API:** `POST /lojas/:id/ofertas {produto, validade, separado, preco_original, preco, janela}`. O backend calcula `fim = validade − margem efetiva` e grava.
+**API:** `POST /api/lojas/:id/avisos/:avisoId/publicar {separado, preco_original, desconto, janela_horas, confirmou_separacao}`. O backend calcula o preço, o `fim` (23:59 do dia validade − margem efetiva) e grava.
 
 **Regras:**
 - `livre = separado` no início.
 - O preço da oferta precisa ser maior que 0 e menor que o original (trava do banco).
+- **Estado de erro:** se o fim já passou (validade próxima demais), a API responde `409 fim_ja_passou`; a tela mostra "Essa validade está perto demais: a oferta acabaria antes de começar".
 
 ## L8 · Adiar aviso e oferta publicada
-1. **Adiar** (folha sobre L6): "Lembrar de novo quando?", produto, zona e vencimento, uma grade com Amanhã, Em 2 dias, Em 3 dias e Escolher data, e o botão "Adiar aviso" (volta para L5). **Proposta:** nunca adiar para depois do fim da oferta.
+1. **Adiar** (folha sobre L6): "Lembrar de novo quando?", produto, zona e vencimento, uma grade com Amanhã, Em 2 dias, Em 3 dias e Escolher data, e o botão "Adiar aviso" (volta para L5). **Limite (decidido 05/11/2026):** até a véspera do último dia da oferta (`adiar_ate_max` da API). Ex.: validade 05/11, margem 1 dia → a oferta iria até 04/11, 23:59 → adiar até 03/11. Opções além do limite ficam desabilitadas, com a dica "Depois disso não dá tempo de ofertar".
 2. **Oferta publicada:** ✓ "Oferta na vitrine", um card com quantidade, preço, janela e "Sai da vitrine 27/10, 23:59", o texto "Quem ativou os avisos de oferta foi notificado", e os botões "Ver a oferta" (L10) e "Próximo aviso" (L5).
 
 ## L9 · Ofertas da loja
@@ -484,7 +488,7 @@ Legenda da barra no fim da lista.
    - item com amostra da fita e "Zona Branco · área de reservas";
    - "Cobrar no caixa: **R$ 6,28**" (30 / 800);
    - caixa `warn`: "Retirada tudo ou nada: entregue as 2 unidades. Se o cliente quiser menos, ele cancela no app e reserva de novo";
-   - botão "Entreguei e cobrei · confirmar" (`POST /reservas/:id/retirar`) e botão "Voltar".
+   - botão "Entreguei e cobrei · confirmar" (`POST /api/lojas/:id/retiradas {codigo}`: a retirada é por loja + código, não pelo id da reserva) e botão "Voltar".
 2. **Não encontrado:** caixa `danger` "Nenhuma reserva ativa com esse código nesta loja", com as causas possíveis (digitado errado, expirada ou cancelada, de outra loja), o aviso "Não entregue o produto sem validar" e o botão "Digitar de novo".
 3. **Confirmada:** ✓ "Retirada registrada", item, valor, hora, quem registrou e "A oferta agora tem 6 livres e 2 reservadas", e os botões "Validar outro código" e "Início".
 
@@ -536,12 +540,13 @@ Já descrito na versão 1.
 **Layout:**
 - título e o subtítulo "Compare perda e compradores bloqueados para cada janela";
 - faixa `warn` fixa: "**Cenário projetado, não previsão.** Os números vêm de milhares de ofertas simuladas pelo mesmo motor de regras do sistema… Servem para comparar janelas, não para prometer resultado";
-- card **Parâmetros do cenário**:
-  - controle deslizante Tamanho do lote (5–60, padrão 24);
-  - controle deslizante Procura esperada (0,3–3,0 × o lote);
-  - Tempo típico até o cliente chegar: 1, 2 ou 4 h;
-  - botão "Recalcular projeção";
-  - nota de que os demais valores seguem as faixas do estudo;
+- card **Parâmetros do cenário** (decidido 05/11/2026: os controles **filtram as rodadas já simuladas**; nada é simulado na hora):
+  - controle deslizante Tamanho do lote, com paradas nas faixas 5–14, 15–24, 25–34, 35–44, 45–60 e a posição "Todos" (padrão);
+  - controle deslizante Procura esperada, com paradas nas faixas 0,3–0,8, 0,8–1,3, 1,3–1,8, 1,8–2,3, 2,3–3,0 × o lote e a posição "Todas" (padrão);
+  - Tempo típico até o cliente chegar: 1, 2 (padrão) ou 4 h;
+  - botão "Atualizar projeção";
+  - a frase "Baseado em N rodadas simuladas" (N vem da API), e a nota de que os demais valores seguem as faixas do estudo;
+  - com tudo no padrão, a tela mostra exatamente a Tabela 5;
 - card **Resultado**:
   - seletor de janela: 30 min, 1, 2, 4, 8, 12 e 24 h;
   - 3 cartões: Perda projetada (`primary-soft`), Compradores bloqueados (#FBE9DE / #8A3108; total + parcial, em % dos compradores) e Taxa de retirada (`neutral`);
@@ -561,7 +566,7 @@ Já descrito na versão 1.
 | 12 h | 23,7 | 21,2 | 67,4 |
 | 24 h | 24,4 | 21,8 | 67,4 |
 
-**API:** `POST /lojas/:id/projecao {lote, procura, mediana_chegada}` chama o motor de `simulacao/` com N rodadas e semente fixa. Pode levar alguns segundos; mostrar "Calculando…" no botão.
+**API:** `GET /api/lojas/:id/projecao?lote=&procura=&chegada=` (contrato, grupo G). Lê um resumo pré-calculado de `simulacao/resultados_n5000/`; não roda a simulação.
 
 ## G3 · Histórico de reservas
 **Layout:**
@@ -647,25 +652,21 @@ Mesmo conteúdo de L14, reorganizado para tela larga.
 
 ---
 
-## Pendências e suposições (confirmar com o Yan antes de codar)
+## Decisões de 05/11/2026 (aplicadas acima e em `docs/api/contrato.md`)
 
-**1. O que as telas pressupõem e o banco ainda não tem.** Hoje o modelo tem Loja, Vinculo, Produto, Oferta, Reserva, Ajuste e Recusa. Faltam:
-- `Produto.categoria`;
-- **Lote e grupo de fita** (lote recebido com validade e quantidade, cor calculada, grupo por produto e cor, colisão de ciclo);
-- **Aviso** (agendado, disparado, adiado ou conferido);
-- `Loja.antecedencia_aviso` e `Loja.janela_padrao`;
-- inscrição de **push** do consumidor.
+- **Login:** só e-mail e senha. **Permissões:** funcionário faz L1–L13; responsável faz tudo isso, mais L14 e G1–G6; o consumidor vê e cancela só as próprias reservas.
+- **Visitante:** "Só olhar as ofertas, sem entrar" fica; reservar exige login.
+- **Fita:** grupo = produto + cor + ano do bimestre; colisão cria grupo novo e avisa.
+- **Aviso:** adiar até a véspera do último dia da oferta; "Não vai para oferta" encerra o grupo sem oferta.
+- **Publicação:** L6 só conta; preço normal (sugerido pela última oferta) e desconto na L7; fim às 23:59 do dia (validade − margem).
+- **Categorias:** lista única (Mercearia, Enlatados, Laticínios, Leite, Frios, Doces).
+- **Localização:** navegador ou CEP, as duas opções; o CEP também serve para ver outro lugar; conversão no navegador.
+- **Projeção:** controles filtram as rodadas já simuladas (resumo de `resultados_n5000`); sem filtro = Tabela 5.
+- **Push:** Web Push padrão, implementado depois de 09/11. Na C1 e na C9 o botão fica desenhado.
+- **Figuras do artigo:** saem dos protótipos. O sistema real aparece no vídeo da apresentação final.
 
-**2. Login:** proposta de e-mail e senha com token do DRF; a recuperação de senha está desenhada, mas pode ficar fora do protótipo.
+## Ainda em aberto
 
-**3. Visitante:** "Só olhar as ofertas, sem entrar" (A2) é uma proposta. Reservar exige login.
-
-**4. Permissões por papel:** proposta. Funcionário faz L1–L13. Responsável faz tudo isso, mais L14 e G1–G3. A definição final é da etapa 6 do backend.
-
-**5. Adiar aviso:** opções de 1, 2 ou 3 dias e data livre, limitadas pelo fim da oferta. É proposta.
-
-**6. Serviços externos:** push (Web Push) e CEP para coordenada ainda **em aberto**.
-
-**7. Nome e slogan do app:** em aberto; usar espaço reservado.
-
-**8. Figuras do artigo:** 3 (L3, L5, L6), 4 (C2, C4, C6) e 6 (G1) devem ser capturadas do sistema rodando, não do protótipo.
+1. Tipo de token da API (recomendação: token do DRF) e se "Esqueci minha senha" entra (exige envio de e-mail).
+2. Serviço que converte CEP e endereço da loja em coordenada (testar antes de escolher).
+3. Nome e slogan do app: usar espaço reservado.
