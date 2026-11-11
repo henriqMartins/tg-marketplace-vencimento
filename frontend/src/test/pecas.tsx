@@ -29,7 +29,9 @@ export interface OpcoesPecas {
 }
 
 export function criarPecas({ atrasoMs = 0, agora = () => AGORA_TESTE, tentarDeNovo = false }: OpcoesPecas = {}) {
-  const armazem = criarArmazemSessao(memoria(), memoria())
+  const local = memoria()
+  const sessao = memoria()
+  const armazem = criarArmazemSessao(local, sessao)
   const mock = criarClienteMock({ obterToken: armazem.obterToken, agora, atrasoMs })
   const consultas = criarClienteConsultas(() => armazem.limpar())
   if (!tentarDeNovo) {
@@ -49,5 +51,5 @@ export function criarPecas({ atrasoMs = 0, agora = () => AGORA_TESTE, tentarDeNo
     )
   }
 
-  return { armazem, mock, consultas, entrarComo, Provedor }
+  return { armazem, local, sessao, mock, consultas, entrarComo, Provedor }
 }

@@ -8,10 +8,13 @@ import { LayoutConsumidor } from './layouts/LayoutConsumidor'
 import type { HandleRota } from './layouts/LayoutGestor'
 import { LayoutLoja } from './layouts/LayoutLoja'
 import { LayoutRaiz } from './layouts/LayoutRaiz'
-import { ExigeLogin, ExigeVinculo } from './protecao'
+import { ExigeLogin, ExigeVinculo, SoVisitante } from './protecao'
 import { A1Abertura } from './telas/A1Abertura'
 import { NaoEncontrada } from './telas/NaoEncontrada'
 import { TelaEmConstrucao } from './telas/TelaEmConstrucao'
+import { TelaCriarConta } from '../telas/acesso/TelaCriarConta'
+import { TelaEntrar } from '../telas/acesso/TelaEntrar'
+import { TelaEscolher } from '../telas/acesso/TelaEscolher'
 
 const tela = (path: string | undefined, codigo: string, titulo: string, etapa: string, larga = false): RouteObject => ({
   ...(path === undefined ? { index: true } : { path }),
@@ -26,9 +29,10 @@ export const rotas: RouteObject[] = [
     element: <LayoutRaiz />,
     children: [
       // ---------- Acesso ----------
-      tela('entrar', 'A2 / A5', 'Entrar', 'F4'),
-      tela('criar-conta', 'A3', 'Criar conta', 'F4'),
-      { element: <ExigeLogin />, children: [tela('escolher', 'A4', 'Como você quer entrar?', 'F4')] },
+      // Quem já está logado (inclusive logo após entrar) é levado ao destino pelo SoVisitante.
+      { element: <SoVisitante />, children: [{ path: 'entrar', element: <TelaEntrar /> }] },
+      { element: <SoVisitante destino="boas-vindas" />, children: [{ path: 'criar-conta', element: <TelaCriarConta /> }] },
+      { element: <ExigeLogin />, children: [{ path: 'escolher', element: <TelaEscolher /> }] },
 
       // ---------- Consumidor (vitrine e oferta abertas ao visitante) ----------
       {

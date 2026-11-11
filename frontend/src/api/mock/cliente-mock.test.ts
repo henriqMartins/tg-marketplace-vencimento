@@ -145,7 +145,7 @@ describe('mock · acesso e permissões', () => {
   it('senha errada → 400 credenciais_invalidas, com a frase no corpo', async () => {
     const e = await erroDe(api.acesso.entrar({ email: 'ana@email.com', senha: 'errada123' }))
     expect([e.status, e.codigo]).toEqual([400, 'credenciais_invalidas'])
-    expect(e.corpo).toEqual({ erro: 'E-mail ou senha incorretos.', codigo: 'credenciais_invalidas' })
+    expect(e.corpo).toEqual({ erro: 'E-mail ou senha incorretos. Confira e tente de novo.', codigo: 'credenciais_invalidas' })
   })
 
   it('/eu traz os vínculos: Carlos é responsável da loja 1', async () => {
@@ -203,5 +203,29 @@ describe('mock · vitrine', () => {
 
   it('grupos ainda sem mock avisam a etapa', async () => {
     await expect(api.operacao.resumoDoDia(1)).rejects.toThrow('etapa F6')
+  })
+})
+
+describe('mock · estado guardado entre recargas', () => {
+  it('outra instância com o mesmo armazenamento continua de onde parou (login e estoque)', async () => {
+    const guarda = new Map<string, string>()
+    const persistencia = {
+      getItem: (k: string) => guarda.get(k) ?? null,
+      setItem: (k: string, v: string) => void guarda.set(k, v),
+      removeItem: (k: string) => void guarda.delete(k),
+    }
+    const primeira = criarClienteMock({ obterToken: () => token, agora: () => agora, persistencia })
+    token = (await primeira.acesso.entrar({ email: 'ana@email.com', senha: SENHA_MOCK })).token
+    await primeira.consumidor.reservar(1, 2)
+
+    // "recarregou a página"
+    const segunda = criarClienteMock({ obterToken: () => token, agora: () => agora, persistencia })
+    expect((await segunda.acesso.eu()).nome).toBe('Ana Souza')
+    expect(segunda.estoqueDe(1).livre).toBe(4)
+    const ativas = await segunda.consumidor.minhasReservas('ativa')
+    expect(ativas.map((r) => r.expira_em)).toContain('2026-10-22T20:00:00-03:00') // datas voltam como datas
+
+    segunda.reiniciar()
+    expect(criarClienteMock({ obterToken: () => token, agora: () => agora, persistencia }).estoqueDe(1).livre).toBe(6)
   })
 })

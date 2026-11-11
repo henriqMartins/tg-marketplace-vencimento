@@ -1,0 +1,174 @@
+/* ---------- A2 · celular ---------- */
+
+.celular {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 56px 20px 32px;
+}
+
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--primary);
+  color: #fff;
+}
+
+.titulo {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.texto {
+  color: var(--muted);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.outrasAcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+/* Link com cara de botão secundário (navegação, não ação). */
+.botaoLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--altura-botao-secundario);
+  border: var(--borda-botao-secundario) solid var(--line-strong);
+  border-radius: var(--raio-botao);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.linkDiscreto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--toque-minimo);
+  color: var(--muted);
+  font: var(--texto-rotulo);
+}
+
+/* ---------- A5 · computador ---------- */
+
+.desktop {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 100dvh;
+}
+
+.apresentacao {
+  flex: 1 1 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 64px 56px;
+  background: var(--primary);
+  color: #fff;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.iconeClaro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--primary);
+}
+
+.nomeApp {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.chamada {
+  max-width: 520px;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.pontos {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 520px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.rodapeApresentacao {
+  margin-top: auto;
+  font-size: 14px;
+  color: var(--primary-claro);
+}
+
+.ladoCartao {
+  flex: 1 1 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 40px;
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 420px;
+  padding: 36px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-destaque);
+  background: var(--surface);
+}
+
+.tituloCartao {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.semConta {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.semConta a {
+  color: var(--primary);
+  font-weight: 700;
+}

@@ -29,6 +29,7 @@ import {
   processarVencimentos,
   quantidadeReservada,
 } from './regras-fingidas'
+import { carregar, salvar, type Guarda } from './persistencia'
 import { criarSemente, type BancoMock, type OfertaMock, type ReservaMock, type UsuarioMock } from './semente'
 
 export interface OpcoesMock {
@@ -38,6 +39,8 @@ export interface OpcoesMock {
   agora?: () => Date
   /** Atraso artificial de cada resposta, para ver esqueletos e "carregando". */
   atrasoMs?: number
+  /** Onde guardar o estado entre recargas da página (sessionStorage no app; nada nos testes). */
+  persistencia?: Guarda | null
 }
 
 /** O ClienteApi + ganchos que só o mock tem (para testes e para recomeçar a demonstração). */
@@ -47,8 +50,13 @@ export interface ClienteMock extends ClienteApi {
   estoqueDe(ofertaId: number): Estoque
 }
 
-export function criarClienteMock({ obterToken, agora = () => new Date(), atrasoMs = 0 }: OpcoesMock): ClienteMock {
-  let banco: BancoMock = criarSemente(agora())
+export function criarClienteMock({
+  obterToken,
+  agora = () => new Date(),
+  atrasoMs = 0,
+  persistencia = null,
+}: OpcoesMock): ClienteMock {
+  let banco: BancoMock = carregar(persistencia) ?? criarSemente(agora())
 
   // ---------- Infraestrutura ----------
 
@@ -56,7 +64,11 @@ export function criarClienteMock({ obterToken, agora = () => new Date(), atrasoM
   async function responder<T>(executar: () => T): Promise<T> {
     if (atrasoMs > 0) await new Promise((r) => setTimeout(r, atrasoMs))
     processarVencimentos(banco, agora())
-    return structuredClone(executar())
+    try {
+      return structuredClone(executar())
+    } finally {
+      salvar(persistencia, banco) // também quando dá erro: uma recusa fica registrada
+    }
   }
 
   function erro(status: number, codigo: string, frase: string, extra: object = {}): ErroApi {
@@ -148,7 +160,7 @@ export function criarClienteMock({ obterToken, agora = () => new Date(), atrasoM
       responder(() => {
         const usuario = banco.usuarios.find((u) => u.email === email.trim().toLowerCase())
         if (!usuario || usuario.senha !== senha) {
-          throw erro(400, 'credenciais_invalidas', 'E-mail ou senha incorretos.')
+          throw erro(400, 'credenciais_invalidas', 'E-mail ou senha incorretos. Confira e tente de novo.')
         }
         return abrirSessao(usuario)
       }),
@@ -295,6 +307,7 @@ export function criarClienteMock({ obterToken, agora = () => new Date(), atrasoM
 
     reiniciar() {
       banco = criarSemente(agora())
+      salvar(persistencia, banco)
     },
     estoqueDe(ofertaId) {
       processarVencimentos(banco, agora())

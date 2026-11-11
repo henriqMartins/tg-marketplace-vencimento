@@ -3,6 +3,7 @@
  * Temporária: na F3 a casca com rotas ocupa o App e a galeria vira uma rota só de desenvolvimento.
  */
 import { useState } from 'react'
+import { apagarDadosDoMock } from '../api'
 import type { CorFita } from '../api/tipos'
 import { AmostraFita } from '../componentes/AmostraFita'
 import { Botao, BotaoIcone } from '../componentes/Botao'
@@ -122,6 +123,22 @@ export function Galeria() {
           }
         >
           Mostrar toast
+        </Botao>
+      </section>
+
+      <section className={styles.secao}>
+        <h2 className={styles.titulo}>Dados do mock</h2>
+        <p className={styles.legenda}>
+          O mock guarda reservas e login nesta aba (sessionStorage). Reiniciar volta à semente e pede login de novo.
+        </p>
+        <Botao
+          variante="perigo"
+          onClick={() => {
+            apagarDadosDoMock()
+            window.location.assign('/')
+          }}
+        >
+          Reiniciar dados do mock
         </Botao>
       </section>
 

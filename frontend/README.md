@@ -11,7 +11,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F1 · Contrato + mock (tipos A–G; mock dos grupos A e B) | ✅ |
 | F2 · Componentes (botão, contador, chip, folha, toast, esqueleto, vazio, selo, fita) | ✅ |
 | F3 · Casca (sessão, consultas, faixa do servidor, rotas, layouts, proteção, A1) | ✅ |
-| F4 · Acesso (A2–A5) | — |
+| F4 · Acesso (A2 entrar, A3 criar conta, A4 escolher, A5 entrar no computador) | ✅ |
+| F5 · Consumidor (C1–C9) | — |
 
 ## Decisões do frontend
 
@@ -24,6 +25,9 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 11/11/2026 | Faixa "Conectando ao servidor…" só depois de 2 s de espera (resposta rápida não pisca a faixa) |
 | 11/11/2026 | Responsável no computador: menu lateral em todas as rotas da loja + item "Operação da loja" (→ L1), **acréscimo à especificação**; telas de operação ficam no centro, na largura de celular |
 | 11/11/2026 | Visitante: navegação inferior Vitrine · Entrar |
+| 11/11/2026 | "Esqueci minha senha" **fora da tela** até a recuperação existir (em aberto no contrato) |
+| 11/11/2026 | Estado do mock guardado no `sessionStorage` (recarregar mantém login e reservas; fechar a aba recomeça) |
+| 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
 
@@ -100,13 +104,22 @@ espelham `docs/api/contrato.md` com os mesmos nomes de campo.
 | `layouts/` | consumidor e loja com navegação inferior; gestor (responsável, ≥ 1024 px) com menu lateral — mesma rota, troca o layout |
 | `telas/A1Abertura` | `/health` → `/entrar`, `/escolher` ou `/vitrine`; 90 s → Tentar de novo |
 
-No `npm run dev`, abrir `/` passa pela A1 e cai em `/entrar`, que ainda está em construção
-(a tela de login chega na F4). Até lá, as rotas de conta e de loja são exercitadas pelos testes
-(`src/app/rotas.test.tsx`).
+### Para onde cada um vai depois de entrar (`app/destino.ts`)
 
-Atenção ao usar o mock: o estado dele (reservas, tokens) vive **na memória da aba**. Recarregar a
-página zera o mock; o token guardado deixa de valer, o `/api/eu` responde 401 e a sessão é
-encerrada — é o comportamento esperado, não um erro.
+Uma regra só, usada na A1 e depois do login (o guarda `SoVisitante` leva):
+1. `?voltar=` (só caminho interno: começa com `/`, não com `//` — evita *open redirect*);
+2. escolha lembrada na A4, se o vínculo ainda existe;
+3. sem vínculo → `/vitrine`;
+4. computador com um vínculo só → responsável `/loja/:id/painel` (G1), funcionário `/loja/:id` (L1);
+5. celular ou vários vínculos → `/escolher` (A4).
+
+Depois de criar conta → `/boas-vindas` (C1), levando o `?voltar`.
+
+### Usando o mock no navegador
+
+`npm run dev`, abra `/` e entre com um usuário da tabela acima. O mock guarda reservas e login
+**na aba** (`sessionStorage`): recarregar mantém tudo; fechar a aba recomeça da semente. Para
+zerar sem fechar a aba: `/dev/componentes` → "Reiniciar dados do mock".
 
 ## Componentes (`src/componentes/`)
 

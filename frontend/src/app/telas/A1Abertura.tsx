@@ -3,15 +3,17 @@ import { useState } from 'react'
 import { Link, Navigate } from 'react-router'
 import { IconeCasa } from '../../componentes/icones'
 import { useApi, useSessao } from '../contextos'
+import { destinoAposEntrar } from '../destino'
+import { lerEscolha } from '../escolha'
 import { LIMITE_SERVIDOR_MS, useLimiteEspera } from '../espera'
 import { NOME_DO_APP, SLOGAN } from '../marca'
+import { useEhDesktop } from '../tela'
 import styles from './A1Abertura.module.css'
 
 /**
  * A1 · Abertura: espera o servidor acordar (GET /health) e decide o destino.
  *   sem token            → A2 (/entrar)
- *   token, com vínculo   → A4 (/escolher)
- *   token, sem vínculo   → C2 (/vitrine)
+ *   com token            → destinoAposEntrar (escolha lembrada, A4, loja ou vitrine)
  *   90 s sem resposta    → "O servidor não respondeu. Tentar de novo"
  */
 export function A1Abertura() {
@@ -26,13 +28,16 @@ export function A1Abertura() {
     },
   })
   const [reinicio, setReinicio] = useState(0)
+  const desktop = useEhDesktop()
 
   const esperando = saude.isPending || (token !== null && !eu && !erroEu)
   const passouDoLimite = useLimiteEspera(esperando, LIMITE_SERVIDOR_MS, reinicio)
   const falhou = passouDoLimite || saude.isError || (token !== null && !!erroEu)
 
   if (saude.isSuccess && !token) return <Navigate to="/entrar" replace />
-  if (saude.isSuccess && eu) return <Navigate to={eu.vinculos.length > 0 ? '/escolher' : '/vitrine'} replace />
+  if (saude.isSuccess && eu) {
+    return <Navigate to={destinoAposEntrar(eu, { desktop, escolhaLembrada: lerEscolha(eu.id) })} replace />
+  }
 
   function tentarDeNovo() {
     setReinicio((n) => n + 1)

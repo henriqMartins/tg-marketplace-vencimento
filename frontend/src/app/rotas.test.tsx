@@ -1,28 +1,7 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { criarPecas, type OpcoesPecas } from '../test/pecas'
-import { definirLarguraTela } from '../test/tela'
+import { abrir, ANA, CARLOS, JULIANA } from '../test/abrir'
 import { LIMITE_SERVIDOR_MS } from './espera'
-import { rotas } from './rotas'
-
-const ANA = 'ana@email.com' // consumidora
-const CARLOS = 'carlos@vilanova.com.br' // responsável da loja 1
-const JULIANA = 'juliana.prado@email.com' // funcionária da loja 1
-
-async function abrir(caminho: string, { email, largura, ...opcoes }: { email?: string; largura?: number } & OpcoesPecas = {}) {
-  const pecas = criarPecas(opcoes)
-  if (email) await pecas.entrarComo(email)
-  if (largura) definirLarguraTela(largura)
-  const roteador = createMemoryRouter(rotas, { initialEntries: [caminho] })
-  render(
-    <pecas.Provedor>
-      <RouterProvider router={roteador} />
-    </pecas.Provedor>,
-  )
-  const caminhoAtual = () => roteador.state.location.pathname + roteador.state.location.search
-  return { ...pecas, roteador, caminhoAtual }
-}
 
 afterEach(() => {
   vi.useRealTimers()
@@ -32,7 +11,7 @@ describe('A1 · Abertura decide o destino depois do /health', () => {
   it('sem token → /entrar', async () => {
     const { caminhoAtual } = await abrir('/')
     await waitFor(() => expect(caminhoAtual()).toBe('/entrar'))
-    expect(screen.getByRole('heading', { name: 'Entrar' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument()
   })
 
   it('consumidora → /vitrine', async () => {

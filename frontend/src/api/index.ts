@@ -7,6 +7,7 @@ import { GRUPOS, PARTE_DO_GRUPO, type ClienteApi, type GrupoContrato } from './c
 import { lerConfigApi, type ConfigApi } from './config'
 import { criarRequisitar, type Requisitar } from './http/requisitar'
 import { criarClienteMock } from './mock/cliente-mock'
+import { CHAVE_MOCK, type Guarda } from './mock/persistencia'
 
 export type { ClienteApi, GrupoContrato } from './cliente'
 export { ErroApi, ehErroApi, SEM_CONEXAO } from './erros'
@@ -28,10 +29,12 @@ export interface OpcoesCliente {
   baseUrl: string
   atrasoMockMs?: number
   agora?: () => Date
+  /** Onde o mock guarda o estado entre recargas (sessionStorage no app). */
+  persistenciaMock?: Guarda | null
 }
 
-export function criarCliente({ config, obterToken, baseUrl, atrasoMockMs, agora }: OpcoesCliente): ClienteApi {
-  const mock = criarClienteMock({ obterToken, agora, atrasoMs: atrasoMockMs })
+export function criarCliente({ config, obterToken, baseUrl, atrasoMockMs, agora, persistenciaMock }: OpcoesCliente): ClienteApi {
+  const mock = criarClienteMock({ obterToken, agora, atrasoMs: atrasoMockMs, persistencia: persistenciaMock })
   // Começa com tudo no mock (sem os ganchos de teste dele) e troca os grupos marcados como http.
   const cliente: ClienteApi = {
     servidor: mock.servidor,
@@ -70,6 +73,20 @@ export function criarClienteDoAmbiente(obterToken: () => string | null): Cliente
     config: lerConfigApi(import.meta.env.VITE_API),
     baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000',
     atrasoMockMs: Number(import.meta.env.VITE_MOCK_ATRASO_MS ?? 400),
+    persistenciaMock: sessionStorageSeguro(),
     obterToken,
   })
+}
+
+/** Apaga o estado guardado do mock (botão "Reiniciar dados do mock"); vale a partir da recarga. */
+export function apagarDadosDoMock(): void {
+  sessionStorageSeguro()?.removeItem(CHAVE_MOCK)
+}
+
+function sessionStorageSeguro(): Guarda | null {
+  try {
+    return window.sessionStorage
+  } catch {
+    return null
+  }
 }
