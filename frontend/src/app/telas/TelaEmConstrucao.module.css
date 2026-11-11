@@ -1,0 +1,21 @@
+.tela {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px 0;
+}
+
+.codigo {
+  font: var(--texto-sobrelinha);
+  letter-spacing: var(--sobrelinha-espacamento);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.titulo {
+  font: var(--texto-titulo-lista);
+}
+
+.texto {
+  color: var(--muted);
+}

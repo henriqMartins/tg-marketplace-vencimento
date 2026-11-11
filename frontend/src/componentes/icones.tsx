@@ -44,3 +44,83 @@ export function IconeSacola({ tamanho = 40 }: { tamanho?: number }) {
     </Icone>
   )
 }
+
+// ---------- Navegação ----------
+
+type PropsIcone = { tamanho?: number }
+
+export function IconeCasa({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M3 11l9-7 9 7" />
+      <path d="M5 10v10h14V10" />
+      <path d="M9 20v-5h6v5" />
+    </Icone>
+  )
+}
+
+export function IconeVitrine({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M4 9h16l-1.5-5h-13L4 9z" />
+      <path d="M5 9v11h14V9" />
+      <path d="M10 20v-6h4v6" />
+    </Icone>
+  )
+}
+
+export function IconeReservas({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V7z" />
+      <path d="M14 5v14" strokeDasharray="2 2" />
+    </Icone>
+  )
+}
+
+export function IconePerfil({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
+    </Icone>
+  )
+}
+
+export function IconeEntrar({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
+      <path d="M10 8l4 4-4 4" />
+      <path d="M4 12h10" />
+    </Icone>
+  )
+}
+
+export function IconeLotes({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M3 8l9-5 9 5-9 5-9-5z" />
+      <path d="M3 8v8l9 5 9-5V8" />
+      <path d="M12 13v8" />
+    </Icone>
+  )
+}
+
+export function IconeAvisos({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2z" />
+      <path d="M10 21h4" />
+    </Icone>
+  )
+}
+
+export function IconeRetirada({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01" strokeWidth="3" />
+    </Icone>
+  )
+}

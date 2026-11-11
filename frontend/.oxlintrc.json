@@ -43,7 +43,8 @@
     },
     {
       "files": [
-        "src/test/**"
+        "src/test/**",
+        "src/app/rotas.tsx"
       ],
       "rules": {
         "react/only-export-components": "off"

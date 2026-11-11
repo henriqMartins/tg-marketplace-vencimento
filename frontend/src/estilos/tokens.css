@@ -16,6 +16,7 @@
   --primary: #1e6a48;
   --primary-dark: #14503a;
   --primary-soft: #e3f0e8;
+  --primary-claro: #cfe6da; /* texto secundário sobre primary (A1); 4,8:1 */
 
   --discount: #c2410c; /* selo de desconto, texto branco */
 

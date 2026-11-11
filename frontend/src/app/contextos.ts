@@ -25,6 +25,8 @@ export interface Sessao {
   sair(): Promise<void>
   /** Papel do usuário na loja, ou null se não tem vínculo com ela. */
   papelNaLoja(lojaId: number): Papel | null
+  /** Busca o /api/eu de novo (botão "Tentar de novo"). */
+  recarregarEu(): void
 }
 
 export const ContextoSessao = createContext<Sessao | null>(null)

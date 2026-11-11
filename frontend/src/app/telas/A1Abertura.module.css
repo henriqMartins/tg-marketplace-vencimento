@@ -1,0 +1,117 @@
+.abertura {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--primary);
+  color: #fff;
+}
+
+.centro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px var(--margem-lateral);
+  text-align: center;
+}
+
+.icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 104px;
+  height: 104px;
+  margin-bottom: 8px;
+  border-radius: 30px;
+  background: #fff;
+  color: var(--primary);
+}
+
+.nome {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.slogan {
+  font-size: 18px;
+  color: var(--primary-claro);
+}
+
+.rodape {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 var(--margem-lateral) calc(20px + env(safe-area-inset-bottom));
+}
+
+.faixa {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  padding: 14px 16px;
+  border-radius: var(--raio-card);
+  background: var(--primary-dark);
+}
+
+.textos {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--primary-claro);
+}
+
+.textos strong {
+  font-size: 15px;
+  color: #fff;
+}
+
+.giro {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: girar 0.9s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giro {
+    animation-duration: 2.5s;
+  }
+}
+
+.tentar {
+  flex: none;
+  min-height: var(--toque-minimo);
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--raio-campo);
+  background: #fff;
+  color: var(--primary-dark);
+  font-weight: 800;
+}
+
+.pular {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--toque-minimo);
+  color: #fff;
+  font: var(--texto-rotulo);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

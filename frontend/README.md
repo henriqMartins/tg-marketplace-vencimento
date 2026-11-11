@@ -10,7 +10,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F0 · Esqueleto (Vite + React + TS, Vitest, fonte, tokens) | ✅ |
 | F1 · Contrato + mock (tipos A–G; mock dos grupos A e B) | ✅ |
 | F2 · Componentes (botão, contador, chip, folha, toast, esqueleto, vazio, selo, fita) | ✅ |
-| F3 · Casca | — |
+| F3 · Casca (sessão, consultas, faixa do servidor, rotas, layouts, proteção, A1) | ✅ |
+| F4 · Acesso (A2–A5) | — |
 
 ## Decisões do frontend
 
@@ -19,7 +20,10 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 10/11/2026 | Estilo com CSS Modules + variáveis CSS; fonte hospedada no app (`@fontsource`) |
 | 11/11/2026 | Mock por grupo: A e B na F1; C–G junto com as telas deles (F6–F8) |
 | 11/11/2026 | Datas do mock relativas ao momento em que o app abre (não fixas em 22/10) |
-| 11/11/2026 | TanStack Query para buscar dados (recarga de 30 s, nova tentativa, cache) e React Router — entram na F3 |
+| 11/11/2026 | TanStack Query para buscar dados (recarga de 30 s, nova tentativa, cache) e React Router |
+| 11/11/2026 | Faixa "Conectando ao servidor…" só depois de 2 s de espera (resposta rápida não pisca a faixa) |
+| 11/11/2026 | Responsável no computador: menu lateral em todas as rotas da loja + item "Operação da loja" (→ L1), **acréscimo à especificação**; telas de operação ficam no centro, na largura de celular |
+| 11/11/2026 | Visitante: navegação inferior Vitrine · Entrar |
 
 ## Comandos
 
@@ -83,9 +87,30 @@ espelham `docs/api/contrato.md` com os mesmos nomes de campo.
 | Carlos Lima | `carlos@vilanova.com.br` | `12345678` | responsável do Mercadinho Vila Nova |
 | Juliana Prado | `juliana.prado@email.com` | `12345678` | funcionária do Mercadinho Vila Nova |
 
+## Casca (`src/app/`)
+
+| Peça | O que faz |
+|---|---|
+| `ProvedorApp` | junta cliente da API (`useApi`), TanStack Query, sessão (`useSessao`) e toast |
+| `consultas.ts` | nova tentativa só sem resposta ou 5xx (1→10 s); `RECARGA_30S` para as telas de estado fresco (para com a aba oculta, recarrega ao voltar); **401 em qualquer chamada encerra a sessão** |
+| `sessao/` | token em `localStorage` (ou `sessionStorage` sem "manter conectado"); `/api/eu`; `entrar`, `criarConta`, `sair`, `papelNaLoja` |
+| `FaixaServidor` | observa todas as chamadas: "Conectando…" após 2 s; "O servidor não respondeu" + Tentar de novo aos 90 s; "Sem internet" |
+| `rotas.tsx` | mapa de rotas da especificação; telas não feitas aparecem como "em construção (etapa)"; galeria em `/dev/componentes` só no `npm run dev` |
+| `protecao.tsx` | `ExigeLogin` (→ `/entrar?voltar=…`) e `ExigeVinculo` (loja e papel). Conforto, não segurança: quem barra é o backend (401/403) |
+| `layouts/` | consumidor e loja com navegação inferior; gestor (responsável, ≥ 1024 px) com menu lateral — mesma rota, troca o layout |
+| `telas/A1Abertura` | `/health` → `/entrar`, `/escolher` ou `/vitrine`; 90 s → Tentar de novo |
+
+No `npm run dev`, abrir `/` passa pela A1 e cai em `/entrar`, que ainda está em construção
+(a tela de login chega na F4). Até lá, as rotas de conta e de loja são exercitadas pelos testes
+(`src/app/rotas.test.tsx`).
+
+Atenção ao usar o mock: o estado dele (reservas, tokens) vive **na memória da aba**. Recarregar a
+página zera o mock; o token guardado deixa de valer, o `/api/eu` responde 401 e a sessão é
+encerrada — é o comportamento esperado, não um erro.
+
 ## Componentes (`src/componentes/`)
 
-Para ver todos no navegador: `npm run dev` (a galeria ocupa o App até a F3).
+Para ver todos no navegador: `npm run dev` e abra `/dev/componentes`.
 
 | Componente | Uso e garantias (testadas) |
 |---|---|
@@ -110,10 +135,11 @@ frontend/
 ├── vite.config.ts        # Vite + configuração do Vitest
 └── src/
     ├── main.tsx          # monta o React; importa fonte, tokens e base
-    ├── App.tsx           # placeholder (a casca entra na F3)
+    ├── App.tsx           # ProvedorApp + roteador
     ├── api/              # cliente da API: tipos, interface, config, http/, mock/
+    ├── app/              # casca: provedores, sessão, consultas, rotas, layouts, proteção, A1
     ├── componentes/      # componentes base (F2) + toast/
-    ├── galeria/          # vitrine dos componentes (temporária, até a F3)
+    ├── galeria/          # vitrine dos componentes (/dev/componentes, só em desenvolvimento)
     ├── util/             # classes(), formatar (datas)
     ├── estilos/          # tokens.css e base.css
     └── test/setup.ts     # comparadores do jest-dom + limpeza entre testes

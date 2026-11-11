@@ -47,8 +47,9 @@ export function ProvedorSessao({ armazem, children }: { armazem: ArmazemSessao; 
         }
       },
       papelNaLoja: (lojaId) => eu?.vinculos.find((v) => v.loja.id === lojaId)?.papel ?? null,
+      recarregarEu: () => void consultaEu.refetch(),
     }
-  }, [token, consultaEu.data, consultaEu.isPending, consultaEu.error, api, armazem, consultas])
+  }, [token, consultaEu, api, armazem, consultas])
 
   return <ContextoSessao.Provider value={sessao}>{children}</ContextoSessao.Provider>
 }

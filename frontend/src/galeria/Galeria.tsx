@@ -38,6 +38,7 @@ export function Galeria() {
 
   return (
     <div className={styles.galeria}>
+      <h1 className={styles.tituloPagina}>Componentes (F2)</h1>
       <section className={styles.secao}>
         <h2 className={styles.titulo}>Botões</h2>
         <Botao
