@@ -1,0 +1,96 @@
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--toque-minimo);
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--raio-botao);
+  font-weight: 800;
+  transition: background-color 0.15s;
+}
+
+.total {
+  width: 100%;
+}
+
+.primario {
+  height: var(--altura-botao-primario);
+  background: var(--primary);
+  color: #fff;
+  font-size: 17px;
+}
+
+.primario:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.secundario {
+  height: var(--altura-botao-secundario);
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--borda-botao-secundario) solid var(--line-strong);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.perigo {
+  height: var(--altura-botao-perigo);
+  background: var(--surface);
+  color: var(--danger-strong);
+  border: var(--borda-botao-secundario) solid var(--danger-border);
+  font-size: 16px;
+}
+
+.secundario:hover:not(:disabled),
+.perigo:hover:not(:disabled) {
+  background: var(--bg);
+}
+
+/* Desabilitado de verdade (não o "carregando", que mantém a cor da variante). */
+.botao:disabled:not([aria-busy='true']) {
+  background: var(--desabilitado-bg);
+  color: var(--muted-2);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+.botao[aria-busy='true'] {
+  cursor: progress;
+}
+
+.giro {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 50%;
+  border: 3px solid currentColor;
+  border-top-color: transparent;
+  animation: girar 0.9s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giro {
+    animation-duration: 2.5s;
+  }
+}
+
+.icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--toque-minimo);
+  height: var(--toque-minimo);
+  border: none;
+  border-radius: var(--raio-campo);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}

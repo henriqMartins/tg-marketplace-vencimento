@@ -9,7 +9,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 |---|---|
 | F0 · Esqueleto (Vite + React + TS, Vitest, fonte, tokens) | ✅ |
 | F1 · Contrato + mock (tipos A–G; mock dos grupos A e B) | ✅ |
-| F2 · Componentes | — |
+| F2 · Componentes (botão, contador, chip, folha, toast, esqueleto, vazio, selo, fita) | ✅ |
+| F3 · Casca | — |
 
 ## Decisões do frontend
 
@@ -82,6 +83,25 @@ espelham `docs/api/contrato.md` com os mesmos nomes de campo.
 | Carlos Lima | `carlos@vilanova.com.br` | `12345678` | responsável do Mercadinho Vila Nova |
 | Juliana Prado | `juliana.prado@email.com` | `12345678` | funcionária do Mercadinho Vila Nova |
 
+## Componentes (`src/componentes/`)
+
+Para ver todos no navegador: `npm run dev` (a galeria ocupa o App até a F3).
+
+| Componente | Uso e garantias (testadas) |
+|---|---|
+| `Botao`, `BotaoIcone` | primário 56 px, secundário e perigo 52 px; `carregando` trava e mostra "Enviando…"; ícone exige `rotulo` (aria-label) |
+| `Contador` | tamanhos `consumidor` 60, `cadastro` 72, `conferencia` 96; respeita mín./máx. (botão a 40%); **nunca abre teclado** (sem `<input>`); segurar repete |
+| `Chip` | pílula com `aria-pressed`; área de toque de 44 px |
+| `FolhaInferior` | `role="dialog"` + `aria-modal`, nome = título; foco preso dentro; Esc e véu fecham; foco volta para quem abriu |
+| `ProvedorToast` + `useToast()` | um toast por vez, 4 s, região `role="status"`; ação opcional ("Desfazer") |
+| `Esqueleto`, `EsqueletoCartao`, `EsqueletoLista` | blocos decorativos; a lista anuncia "Carregando…" uma vez |
+| `EstadoVazio` | ícone + frase + **uma** ação (obrigatória) |
+| `Selo`, `SeloReserva`, `SeloOferta`, `SeloGrupo` | textos e cores da seção 0 a partir dos estados do contrato |
+| `AmostraFita` | quadrado de cor (decorativo) **sempre** com nome da cor e data exata — `data` é obrigatória no tipo |
+
+Diferença consciente do protótipo: a ação do toast é **branca sublinhada**, não laranja —
+o laranja `#C2410C` sobre o fundo `ink` não chega ao contraste de 4,5:1 exigido na seção 0.
+
 ## Estrutura
 
 ```
@@ -92,6 +112,9 @@ frontend/
     ├── main.tsx          # monta o React; importa fonte, tokens e base
     ├── App.tsx           # placeholder (a casca entra na F3)
     ├── api/              # cliente da API: tipos, interface, config, http/, mock/
+    ├── componentes/      # componentes base (F2) + toast/
+    ├── galeria/          # vitrine dos componentes (temporária, até a F3)
+    ├── util/             # classes(), formatar (datas)
     ├── estilos/          # tokens.css e base.css
     └── test/setup.ts     # comparadores do jest-dom + limpeza entre testes
 ```

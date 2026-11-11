@@ -1,0 +1,60 @@
+.amostra {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cor {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+}
+
+.linha .cor {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+}
+
+.texto {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+.texto strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.vermelho {
+  background: var(--fita-vermelho);
+  border-color: var(--fita-vermelho);
+}
+
+.amarelo {
+  background: var(--fita-amarelo);
+  border-color: var(--fita-amarelo);
+}
+
+.verde {
+  background: var(--fita-verde);
+  border-color: var(--fita-verde);
+}
+
+.azul {
+  background: var(--fita-azul);
+  border-color: var(--fita-azul);
+}
+
+/* Branco precisa de borda para aparecer no fundo claro. */
+.branco {
+  background: var(--fita-branco);
+  border-color: var(--fita-branco-borda);
+}
+
+.preto {
+  background: var(--fita-preto);
+  border-color: var(--fita-preto);
+}

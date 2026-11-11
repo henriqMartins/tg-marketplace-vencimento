@@ -42,6 +42,7 @@
   --chart-expirada: #e8913a;
 
   --veu: rgba(27, 31, 28, 0.45); /* fundo atrás da folha inferior */
+  --desabilitado-bg: #d8d5cc; /* botão desabilitado (artboard Componentes) */
 
   /* ---------- Fitas (uma cor por bimestre de vencimento) ----------
    * A amostra aparece SEMPRE com o nome da cor e a data exata. */
@@ -92,7 +93,6 @@
   --chip-altura: 38px; /* 36–40 */
   --puxador-largura: 40px;
   --puxador-altura: 4px;
-  --toast-duracao-ms: 4000;
 
   /* Layout */
   --largura-celular: 390px;

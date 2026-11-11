@@ -1,0 +1,30 @@
+.galeria {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.titulo {
+  font: var(--texto-sobrelinha);
+  letter-spacing: var(--sobrelinha-espacamento);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.legenda {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

@@ -1,0 +1,53 @@
+.regiao {
+  position: fixed;
+  left: 0;
+  right: 0;
+  /* --espaco-inferior: a casca (F3) reserva a altura da navegação inferior. */
+  bottom: calc(16px + var(--espaco-inferior, 0px) + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--margem-lateral);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+  padding: 12px 14px;
+  border-radius: var(--raio-campo);
+  background: var(--ink);
+  color: #fff;
+  font: var(--texto-rotulo);
+  pointer-events: auto;
+  animation: aparecer 0.2s ease-out;
+}
+
+/* Branco sublinhado: o laranja do protótipo sobre o fundo ink não chega a 4,5:1. */
+.acao {
+  min-height: var(--toque-minimo);
+  padding: 0 4px;
+  border: none;
+  background: none;
+  color: #fff;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@keyframes aparecer {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}

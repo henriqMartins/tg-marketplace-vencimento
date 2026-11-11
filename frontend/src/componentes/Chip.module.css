@@ -1,0 +1,28 @@
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--chip-altura);
+  padding: 0 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-pilula);
+  background: var(--surface);
+  color: var(--ink);
+  font: var(--texto-rotulo);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Chip tem 36–40 px, mas a área de toque chega aos 44 px. */
+.chip::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
