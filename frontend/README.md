@@ -8,7 +8,17 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | Etapa | Situação |
 |---|---|
 | F0 · Esqueleto (Vite + React + TS, Vitest, fonte, tokens) | ✅ |
-| F1 · Contrato + mock | — |
+| F1 · Contrato + mock (tipos A–G; mock dos grupos A e B) | ✅ |
+| F2 · Componentes | — |
+
+## Decisões do frontend
+
+| Data | Decisão |
+|---|---|
+| 10/11/2026 | Estilo com CSS Modules + variáveis CSS; fonte hospedada no app (`@fontsource`) |
+| 11/11/2026 | Mock por grupo: A e B na F1; C–G junto com as telas deles (F6–F8) |
+| 11/11/2026 | Datas do mock relativas ao momento em que o app abre (não fixas em 22/10) |
+| 11/11/2026 | TanStack Query para buscar dados (recarga de 30 s, nova tentativa, cache) e React Router — entram na F3 |
 
 ## Comandos
 
@@ -39,6 +49,39 @@ Requer Node 24+ (testado com Node 24.11 / npm 11.6). Dentro de `frontend/`:
   decidido 10/11/2026), para funcionar offline na PWA. Um arquivo variável cobre os
   pesos 400–800; o navegador só baixa o subconjunto latino.
 
+## Cliente da API (`src/api/`)
+
+As telas falam só com a interface `ClienteApi` ([`cliente.ts`](src/api/cliente.ts)), dividida
+pelos grupos do contrato: `acesso` (A), `consumidor` (B), `operacao` (C), `lotes` (D),
+`configuracao` (E), `gestor` (F), `projecao` (G). Os tipos em [`tipos.ts`](src/api/tipos.ts)
+espelham `docs/api/contrato.md` com os mesmos nomes de campo.
+
+- **Quem atende cada grupo:** variável `VITE_API` (ver [`.env.example`](.env.example)):
+  `mock` (padrão), `http` ou letras, ex.: `A,B` = só A e B na API real.
+  Grupo marcado como `http` sem implementação real → erro na hora de abrir o app
+  (nunca cai no mock em silêncio).
+- **Erros:** os métodos rejeitam com `ErroApi` (`status`, `codigo`, `message` = frase para a
+  pessoa, `corpo`). `status 0` = sem resposta (servidor acordando / sem rede).
+  Exceção: `consumidor.reservar` devolve a recusa (409) como resultado `{status: 'recusada', …}`.
+- **Base http:** [`http/requisitar.ts`](src/api/http/requisitar.ts) põe o token
+  (`Authorization: Token …`), envia/lê JSON e converte erros. As implementações http de cada
+  grupo entram quando o grupo virar ✅ no contrato (lista `FABRICAS_HTTP` em `index.ts`).
+
+### Mock
+
+- Estado em memória a partir do `seed()` do protótipo ([`mock/semente.ts`](src/api/mock/semente.ts)),
+  com datas relativas a "agora" e atraso artificial (`VITE_MOCK_ATRASO_MS`, padrão 400 ms).
+- O que só o backend calcula (parcial, `expira_em`, expiração, fim, fita, código) é **fingido**
+  em [`mock/regras-fingidas.ts`](src/api/mock/regras-fingidas.ts), isolado.
+- **Nenhuma tela importa o mock:** o oxlint barra (`no-restricted-imports`); só `src/api/index.ts` pode.
+- Grupos C–G ainda sem mock: qualquer chamada rejeita dizendo em que etapa entra.
+
+| Usuário do mock | E-mail | Senha | Papel |
+|---|---|---|---|
+| Ana Souza | `ana@email.com` | `12345678` | consumidora (tem a reserva ativa 31, código 482917) |
+| Carlos Lima | `carlos@vilanova.com.br` | `12345678` | responsável do Mercadinho Vila Nova |
+| Juliana Prado | `juliana.prado@email.com` | `12345678` | funcionária do Mercadinho Vila Nova |
+
 ## Estrutura
 
 ```
@@ -48,6 +91,7 @@ frontend/
 └── src/
     ├── main.tsx          # monta o React; importa fonte, tokens e base
     ├── App.tsx           # placeholder (a casca entra na F3)
+    ├── api/              # cliente da API: tipos, interface, config, http/, mock/
     ├── estilos/          # tokens.css e base.css
     └── test/setup.ts     # comparadores do jest-dom + limpeza entre testes
 ```
