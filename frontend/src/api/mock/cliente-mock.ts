@@ -14,6 +14,7 @@ import type {
   ApiLotes,
   ApiOperacao,
   ApiProjecao,
+  ApiServidor,
   ClienteApi,
 } from '../cliente'
 import { ErroApi, mensagemPadrao } from '../erros'
@@ -132,6 +133,12 @@ export function criarClienteMock({ obterToken, agora = () => new Date(), atrasoM
     // Reserva de outra pessoa também dá 404 (não revela que existe).
     if (!r) throw erro(404, 'nao_encontrada', 'Reserva não encontrada.')
     return r
+  }
+
+  // ---------- /health ----------
+
+  const servidor: ApiServidor = {
+    saude: () => responder(() => undefined),
   }
 
   // ---------- A · Acesso ----------
@@ -277,6 +284,7 @@ export function criarClienteMock({ obterToken, agora = () => new Date(), atrasoM
   }
 
   return {
+    servidor,
     acesso,
     consumidor,
     operacao: pendente<ApiOperacao>('operacao', 'F6'),

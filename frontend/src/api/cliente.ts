@@ -125,7 +125,13 @@ export interface ApiProjecao {
   projecao(lojaId: number, filtros?: FiltrosProjecao): Promise<Projecao>
 }
 
+/** Fora dos grupos: GET /health (convenções do contrato) — "o servidor está acordado?". */
+export interface ApiServidor {
+  saude(): Promise<void>
+}
+
 export interface ClienteApi {
+  servidor: ApiServidor
   acesso: ApiAcesso
   consumidor: ApiConsumidor
   operacao: ApiOperacao

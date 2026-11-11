@@ -10,6 +10,8 @@ import { EstadoVazio } from './EstadoVazio'
 import { IconeSacola, IconeVoltar } from './icones'
 import { SeloGrupo, SeloOferta, SeloReserva } from './Selo'
 import { formatarData, formatarDataCurta } from '../util/formatar'
+import { ErroApi } from '../api'
+import { MensagemErro } from './Mensagem'
 
 describe('Botao', () => {
   it('é type="button" por padrão (não envia formulário sem querer)', () => {
@@ -106,5 +108,13 @@ describe('formatar', () => {
     expect(formatarData('2026-10-28')).toBe('28/10/2026')
     expect(formatarData('2026-10-27T23:59:00-03:00')).toBe('27/10/2026')
     expect(formatarDataCurta('2026-10-28')).toBe('28/10')
+  })
+})
+
+describe('Mensagem', () => {
+  it('erro da API vira a frase do contrato, anunciada com role="alert"', () => {
+    render(<MensagemErro erro={new ErroApi(409, 'acima_do_livre', 'Só há 6 unidades livres.')} />)
+    expect(screen.getByRole('alert')).toHaveTextContent('Só há 6 unidades livres.')
+    expect(screen.getByRole('alert')).not.toHaveTextContent('409')
   })
 })

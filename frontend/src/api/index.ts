@@ -34,6 +34,7 @@ export function criarCliente({ config, obterToken, baseUrl, atrasoMockMs, agora 
   const mock = criarClienteMock({ obterToken, agora, atrasoMs: atrasoMockMs })
   // Começa com tudo no mock (sem os ganchos de teste dele) e troca os grupos marcados como http.
   const cliente: ClienteApi = {
+    servidor: mock.servidor,
     acesso: mock.acesso,
     consumidor: mock.consumidor,
     operacao: mock.operacao,
@@ -54,6 +55,11 @@ export function criarCliente({ config, obterToken, baseUrl, atrasoMockMs, agora 
     }
     requisitar ??= criarRequisitar({ baseUrl, obterToken })
     Object.assign(cliente, { [PARTE_DO_GRUPO[grupo]]: fabrica(requisitar) })
+  }
+  // /health vai para a API real assim que algum grupo for real.
+  if (requisitar) {
+    const req = requisitar
+    cliente.servidor = { saude: () => req<void>('GET', '/health') }
   }
   return cliente
 }
