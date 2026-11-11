@@ -26,4 +26,5 @@ urlpatterns = [
     path('health', views.health, name='health'),
     path('tarefas/varrer', ofertas_views.varrer, name='varrer'),
     path('api/', include('contas.urls')),          # grupo A do contrato (acesso)
+    path('api/', include('ofertas.urls')),         # grupo B do contrato (consumidor)
 ]

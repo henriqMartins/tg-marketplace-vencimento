@@ -46,6 +46,11 @@ ALLOWED_HOSTS = [h.strip() for h in
 # Token do endpoint de varredura (/tarefas/varrer). Vazio = endpoint recusa sempre.
 CRON_TOKEN = os.environ.get("CRON_TOKEN", "")
 
+# CORS: só estes endereços (o frontend) podem chamar a API pelo navegador.
+# Ex.: "http://localhost:5173,https://tg.vercel.app". Vazio = nenhum site de fora.
+CORS_ALLOWED_ORIGINS = [o.strip() for o in
+                        os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",") if o.strip()]
+
 
 # Application definition
 
@@ -58,6 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',     # o "crachá": tabela de tokens do DRF
+    'corsheaders',                  # CORS (decidido 11/11/2026)
     'contas',
     'ofertas',
 ]
@@ -75,6 +81,7 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'contas.Usuario'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',      # tem de vir antes de quem responde
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

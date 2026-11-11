@@ -60,12 +60,16 @@ Legenda: ✅ existe · 🚧 planejado (ainda não existe)
 │       ├── models.py               tabelas e travas do banco
 │       ├── servico.py              os 5 passos: transação → trava → reconstitui → regra → grava; varredura
 │       ├── views.py                endpoint da varredura (POST /tarefas/varrer, com token)
+│       ├── api_consumidor.py       rotas do consumidor (vitrine, reservar, minhas reservas, cancelar)
+│       ├── consultas.py            leitura da vitrine no SQL, com a distância por Haversine
+│       ├── apresentacao.py         monta o JSON no formato do contrato
 │       ├── fita.py                 cor da fita pela validade (bimestre → cor)
 │       ├── test_fita.py            os 12 meses e as viradas de bimestre e de ano
 │       ├── tests.py                testes das travas do banco
 │       ├── test_servico.py         testes do serviço
 │       ├── test_concorrencia.py    N pessoas ao mesmo tempo pela última unidade
-│       └── test_varredura.py       varredura idempotente e endpoint protegido
+│       ├── test_varredura.py       varredura idempotente e endpoint protegido
+│       └── test_api_consumidor.py  rotas do consumidor, Haversine e CORS
 ├── docs/
 │   ├── colinha-python.md     ✅ colinha de Python com exemplos do projeto
 │   ├── api/contrato.md       ✅ contrato da API: rotas, entradas, saídas (dono: backend)
@@ -283,6 +287,11 @@ $env:CONTROLE_NEGATIVO="1"; python manage.py test ofertas.test_concorrencia.Test
 **Servidor local:** `python manage.py runserver` (em `backend/`) → `http://localhost:8000/health`
 responde `{"status": "ok", "banco": "ok"}` (ou HTTP 503 se o banco estiver fora).
 
+> **"You don't have permission to access that port"?** O Windows às vezes reserva uma
+> faixa de portas para o Hyper-V/WSL (em 11/11/2026 era 7906–8005, que inclui a 8000).
+> Veja com `netsh interface ipv4 show excludedportrange protocol=tcp` e use outra porta,
+> ex.: `python manage.py runserver 8765`. A faixa pode mudar depois de reiniciar.
+
 **Varredura** (a "ronda" diária: devolve reservas vencidas e encerra ofertas que passaram
 do fim). Exige `CRON_TOKEN` no `.env`; sem ele, o endpoint responde 503 sempre.
 
@@ -306,6 +315,19 @@ curl.exe http://localhost:8000/api/eu -H "Authorization: Token <chave>"
 
 Sem crachá numa rota protegida → 401; com crachá, mas sem papel na loja → 403. Erros
 sempre como `{"erro": "<frase>", "codigo": "<identificador>"}`.
+
+**Consumidor** (grupo B do contrato): vitrine e detalhe são públicos; reservar, minhas
+reservas, ver e cancelar exigem o crachá.
+
+```powershell
+curl.exe "http://localhost:8000/api/ofertas?lat=-20.8197&lng=-49.3794&categoria=laticinios"
+curl.exe -X POST http://localhost:8000/api/ofertas/1/reservas -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"pedido\":2}'
+# → 201 {"status": "confirmada" | "parcial", "reserva": {...}}  ·  409 {"status": "recusada", ...}
+```
+
+A vitrine ordena por distância (Haversine calculado no PostgreSQL) quando recebe `lat` e
+`lng`, e não grava a localização. Reserva de outra pessoa responde 404. O navegador só
+aceita chamadas vindas dos endereços em `CORS_ALLOWED_ORIGINS` (`.env`).
 
 **Rodar a simulação:**
 
@@ -365,12 +387,12 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 05/11/2026 | Backend (etapa 5): varredura idempotente + endpoint `POST /tarefas/varrer` protegido por `CRON_TOKEN` | 11 testes (rodar 2× não devolve em dobro; oferta travada é pulada; 401/403/405/503) · backend: 55 testes ok |
 | 11/11/2026 | Backend (etapa 6): acesso — conta, login por e-mail, sair, "eu"; token do DRF; porteiros `EhDaLoja` e `EhResponsavel`; erros no formato do contrato | 16 testes (e-mail repetido com maiúscula, senha guardada só como hash, login errado sem revelar a conta, funcionário barrado no painel, vínculo de outra loja → 403) · backend: 71 ok + 1 pulado |
 | 11/11/2026 | Backend (etapa 7): colunas do contrato — categoria do produto (lista única), janela padrão e antecedência do aviso na loja, `encerrada_em` e `retirada_por` na reserva; margem limitada a 0–7 dias; cor da fita calculada pela validade | 16 testes novos (expirada conta na hora em que **venceu**, não na que foi processada; travas novas; fita nos 12 meses) · migração aplicada, desfeita e reaplicada · backend: 87 ok + 1 pulado |
+| 11/11/2026 | Backend (etapa 8): rotas do consumidor (grupo B) — vitrine com Haversine em SQL e filtros, detalhe, reservar (201 confirmada/parcial, 409 recusada), minhas reservas, ver e cancelar; CORS por variável de ambiente | 25 testes (distância igual à conta em Python; livre da vitrine desconta vencidas sem gravar; reserva de outra pessoa → 404; leitura expira a vencida antes de responder; CORS só para o frontend) · conferido ao vivo · backend: 112 ok + 1 pulado |
 
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Backend (etapa 8): endpoints do consumidor (vitrine, oferta, reservar, cancelar, minhas reservas) + CORS |
 | ⏳ | Backend (etapa 9): endpoints da operação da loja (retirada, ajuste, ofertas, resumo do dia) |
 | ⏳ | Backend (etapa 10): lote, fita, aviso e publicação + configuração da loja |
 | ⏳ | Backend (etapa 11): indicadores dos painéis e histórico |

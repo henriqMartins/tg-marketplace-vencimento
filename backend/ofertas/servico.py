@@ -228,6 +228,22 @@ def ajustar(oferta_id: int, autor, quantidade: int, motivo: str,
                                      motivo=motivo.strip(), criado_em=data(h))
 
 
+def expirar(oferta_id: int, agora: Optional[datetime] = None) -> int:
+    """
+    Expira as reservas vencidas de UMA oferta e devolve ao livre (regra 6).
+    Usado antes de mostrar reservas ao consumidor: a tela nunca vê "reservada"
+    numa reserva que já venceu. Devolve quantas expiraram.
+    """
+    h = _horas_agora(agora)
+    with transaction.atomic():
+        linha = _travar(oferta_id)
+        oferta = _carregar(linha)
+        expiradas = oferta.expirar_vencidas(h)
+        if expiradas:
+            _salvar(linha, oferta, h)
+        return len(expiradas)
+
+
 def varrer(agora: Optional[datetime] = None) -> dict:
     """
     A "ronda do vigia" (regra 6): devolve ao livre as reservas vencidas e

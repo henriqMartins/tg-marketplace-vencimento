@@ -11,7 +11,7 @@ Status de cada grupo:
 | Grupo | Telas | Status | Etapa do backend |
 |---|---|---|---|
 | A · Acesso | A1–A5, C9 | ✅ | 6 |
-| B · Consumidor | C2–C8 | 📝 | 8 |
+| B · Consumidor | C2–C8 | ✅ | 8 |
 | C · Operação da loja | L1, L9–L13 | 📝 | 9 |
 | D · Lote, fita e aviso | L2–L8, L4/G5 | 📝 | 10 |
 | E · Configuração da loja | L14/G6 | 📝 | 10 |
@@ -92,7 +92,20 @@ senha errada (não revela quem tem conta).
 Sem vínculos = consumidor. "Esqueci minha senha" fica **para depois de 09/11** (exige
 envio de e-mail): o link da A2 só orienta a pessoa, sem chamar a API.
 
-## B · Consumidor 📝
+## B · Consumidor ✅
+
+Pronto em 11/11/2026. Detalhes que valem para o mock:
+- A vitrine **não lista ofertas esgotadas** (`livre` 0) nem encerradas; o detalhe
+  `GET /api/ofertas/{id}` responde para ambas (decidido 11/11/2026).
+- Filtro inválido (`categoria`, `faixa_desconto`, `lat`/`lng` que não são número) →
+  `400 parametro_invalido`. O mesmo para `estado` inválido em `minhas-reservas`.
+- `GET /api/minhas-reservas` **sem** `estado` devolve as ativas (por `expira_em`) e
+  depois as encerradas (por `encerrada_em` desc.).
+- Antes de responder reservas, o backend expira as vencidas: a tela nunca recebe
+  `reservada` numa reserva que já venceu.
+- Loja sem coordenada aparece no fim da lista ordenada por distância, com `distancia_km: null`.
+- **CORS:** a API só aceita chamadas do navegador vindas dos endereços em
+  `CORS_ALLOWED_ORIGINS` (local: `http://localhost:5173`).
 
 ### `GET /api/ofertas` — vitrine (pública: não exige login)
 Parâmetros, todos opcionais: `lat`, `lng` (coordenada já convertida **no navegador**; sem
