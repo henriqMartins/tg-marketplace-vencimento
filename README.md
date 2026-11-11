@@ -55,7 +55,7 @@ Legenda: ✅ existe · 🚧 planejado (ainda não existe)
 ├── spikes/spike_django/      ✅ prova dos 3 critérios do framework (referência, não é produção)
 ├── backend/                  ✅ API Django + DRF (vira a imagem Docker) — em construção
 │   ├── config/                  configuração (só por variável de ambiente) e /health
-│   ├── contas/                  usuário próprio (login único)
+│   ├── contas/                  usuário (login único por e-mail), crachá (token), porteiros por papel
 │   └── ofertas/                 Loja, Vínculo, Produto, Oferta, Reserva, Ajuste, Recusa
 │       ├── models.py               tabelas e travas do banco
 │       ├── servico.py              os 5 passos: transação → trava → reconstitui → regra → grava; varredura
@@ -293,6 +293,18 @@ Sem token → 401 · token errado → 403 · GET → 405. Rodar duas vezes segui
 nada em dobro (idempotente). Oferta sendo usada por outra operação naquele instante é
 pulada e entra na próxima ronda.
 
+**Acesso** (grupo A do [contrato da API](docs/api/contrato.md)): conta, login, sair e "eu".
+O "crachá" é o token do DRF, enviado em `Authorization: Token <chave>`.
+
+```powershell
+curl.exe -X POST http://localhost:8000/api/auth/conta -H "Content-Type: application/json" -d '{\"nome\":\"Ana Souza\",\"email\":\"ana@email.com\",\"senha\":\"senha-boa-123\",\"aceite_termos\":true}'
+# → 201 {"token": "<chave>", "usuario": {"id": 1, "nome": "Ana Souza", "email": "ana@email.com", "vinculos": []}}
+curl.exe http://localhost:8000/api/eu -H "Authorization: Token <chave>"
+```
+
+Sem crachá numa rota protegida → 401; com crachá, mas sem papel na loja → 403. Erros
+sempre como `{"erro": "<frase>", "codigo": "<identificador>"}`.
+
 **Rodar a simulação:**
 
 ```powershell
@@ -314,10 +326,14 @@ Regra da casa: **nenhum teste existente pode quebrar.**
 - Integração com PDV, importação de planilha, pagamento online, entrega, WhatsApp.
 
 **Decisões ainda em aberto:**
-- Login do consumidor e tipo de token da API (recomendação até aqui: token do próprio DRF).
-- Permissões de cada papel (responsável, funcionário) — etapa 6.
-- Serviço de push para a notificação de oferta nova.
-- Serviço que converte CEP/endereço em coordenada.
+- Serviço que converte CEP/endereço em coordenada (no navegador).
+- Lote/aviso: o que acontece quando o lojista não vai publicar; de onde vem o preço
+  normal sugerido; lista única de categorias.
+
+**Decididas recentemente:** login por e-mail e senha com token do DRF; "esqueci minha
+senha" fica para depois; permissões por papel (funcionário: operação da loja;
+responsável: tudo + configurações, equipe e painéis; consumidor: só as próprias
+reservas); push no padrão Web Push, depois de 09/11.
 
 ---
 
@@ -344,14 +360,13 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 23/10/2026 | Backend (etapa 2): modelos e travas do banco; papéis por vínculo; margem por loja/produto | 26 testes; migrações aplicadas, desfeitas e reaplicadas |
 | 23/10/2026 | Backend (etapa 3): serviço de reserva (5 passos com `select_for_update()`), código de retirada único por loja entre ativas | 41 testes |
 | 26/10/2026 | Backend (etapa 4): teste de concorrência + controle negativo | 20 clientes × 5 rodadas: 1 reserva e 19 recusas em todas; **sem a trava, 20 de 20 receberam "reservado" pela mesma unidade** em todas as rodadas · backend: 44 testes ok |
-
 | 05/11/2026 | Backend (etapa 5): varredura idempotente + endpoint `POST /tarefas/varrer` protegido por `CRON_TOKEN` | 11 testes (rodar 2× não devolve em dobro; oferta travada é pulada; 401/403/405/503) · backend: 55 testes ok |
+| 11/11/2026 | Backend (etapa 6): acesso — conta, login por e-mail, sair, "eu"; token do DRF; porteiros `EhDaLoja` e `EhResponsavel`; erros no formato do contrato | 16 testes (e-mail repetido com maiúscula, senha guardada só como hash, login errado sem revelar a conta, funcionário barrado no painel, vínculo de outra loja → 403) · backend: 71 ok + 1 pulado |
 
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Backend (etapa 6): login por e-mail e senha, token e permissões por papel |
 | ⏳ | Backend (etapa 7): migração com as colunas que faltam (categoria, janela padrão, antecedência, `encerrada_em`, `retirada_por`) |
 | ⏳ | Backend (etapa 8): endpoints do consumidor (vitrine, oferta, reservar, cancelar, minhas reservas) + CORS |
 | ⏳ | Backend (etapa 9): endpoints da operação da loja (retirada, ajuste, ofertas, resumo do dia) |

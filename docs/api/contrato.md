@@ -10,7 +10,7 @@ Status de cada grupo:
 
 | Grupo | Telas | Status | Etapa do backend |
 |---|---|---|---|
-| A · Acesso | A1–A5, C9 | 📝 | 6 |
+| A · Acesso | A1–A5, C9 | ✅ | 6 |
 | B · Consumidor | C2–C8 | 📝 | 8 |
 | C · Operação da loja | L1, L9–L13 | 📝 | 9 |
 | D · Lote, fita e aviso | L2–L8, L4/G5 | 📝 | 10 |
@@ -25,8 +25,8 @@ Status de cada grupo:
 
 - **Prefixo:** todas as rotas de tela começam com `/api/`. Fora dele só ficam `/health`
   (servidor acordado?) e `/tarefas/varrer` (agendamento diário).
-- **Autenticação:** cabeçalho `Authorization: Token <chave>` (token do DRF — tipo de
-  token ainda a confirmar na etapa 6; o formato do cabeçalho pode mudar só aqui).
+- **Autenticação:** cabeçalho `Authorization: Token <chave>` (token do DRF, confirmado
+  em 06/11/2026; não expira sozinho — `POST /api/auth/sair` o invalida).
   Sem token numa rota protegida → `401`. Com token, mas sem papel → `403`.
 - **Datas e horas:** ISO 8601 com fuso, ex.: `"2026-10-22T20:00:00-03:00"`.
   Datas sem hora (validade): `"2026-10-28"`. A tela formata; não calcula.
@@ -68,7 +68,12 @@ Status de cada grupo:
 
 ---
 
-## A · Acesso 📝
+## A · Acesso ✅
+
+Pronto em 11/11/2026. Além dos erros da tabela, a criação de conta também pode
+devolver `400 sem_nome` e `400 email_invalido`. E-mail não diferencia maiúsculas
+(`Ana@x.com` = `ana@x.com`). Login errado responde igual para e-mail inexistente e
+senha errada (não revela quem tem conta).
 
 | Método e rota | Entrada | Saída | Erros |
 |---|---|---|---|
@@ -84,7 +89,8 @@ Status de cada grupo:
   "vinculos": [ { "loja": { "id": 1, "nome": "Mercadinho Vila Nova" }, "papel": "responsavel" } ]
 }
 ```
-Sem vínculos = consumidor. "Esqueci minha senha" **ainda em aberto** (exige envio de e-mail).
+Sem vínculos = consumidor. "Esqueci minha senha" fica **para depois de 09/11** (exige
+envio de e-mail): o link da A2 só orienta a pessoa, sem chamar a API.
 
 ## B · Consumidor 📝
 

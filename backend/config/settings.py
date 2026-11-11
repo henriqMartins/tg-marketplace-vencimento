@@ -57,9 +57,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',     # o "crachá": tabela de tokens do DRF
     'contas',
     'ofertas',
 ]
+
+REST_FRAMEWORK = {
+    # Crachá no cabeçalho:  Authorization: Token <chave>  (decidido 06/11/2026)
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.TokenAuthentication"],
+    # Padrão FECHADO: toda rota exige login, salvo as que liberam de propósito.
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "EXCEPTION_HANDLER": "config.erros.tratar_erro",
+}
 
 # Usuário próprio desde o início: trocar depois que as tabelas existem é uma das
 # reformas mais difíceis do Django. Login único; papéis vêm do Vinculo (ofertas).
