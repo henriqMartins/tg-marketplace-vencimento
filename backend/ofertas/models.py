@@ -20,6 +20,20 @@ import dominio
 ESTADOS_OFERTA = [(e.value, e.value) for e in dominio.EstadoOferta]
 ESTADOS_RESERVA = [(e.value, e.value) for e in dominio.EstadoReserva]
 
+# Contrato: margem de 0 a 7 dias; janela padrão só nestas opções.
+MARGEM_MAXIMA = timedelta(days=7)
+JANELAS_PERMITIDAS = [timedelta(hours=h) for h in (1, 2, 4, 8, 12, 24)]
+
+
+class Categoria(models.TextChoices):
+    """Lista ÚNICA do contrato, a mesma na vitrine (C2) e no cadastro (L2)."""
+    MERCEARIA = "mercearia", "Mercearia"
+    ENLATADOS = "enlatados", "Enlatados"
+    LATICINIOS = "laticinios", "Laticínios"
+    LEITE = "leite", "Leite"
+    FRIOS = "frios", "Frios"
+    DOCES = "doces", "Doces"
+
 
 class Loja(models.Model):
     nome = models.CharField(max_length=120)
@@ -29,11 +43,18 @@ class Loja(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     # Margem padrão da loja; o produto pode ter a própria (decidido 23/10/2026).
     margem_fim = models.DurationField(default=timedelta(days=1))
+    # Janela que já vem preenchida ao publicar (L7); o lojista pode trocar na oferta.
+    janela_padrao = models.DurationField(default=timedelta(hours=4))
+    # Quantos dias antes da validade o aviso aparece para o lojista (L5).
+    antecedencia_aviso_dias = models.PositiveSmallIntegerField(default=10)
 
     class Meta:
         constraints = [
-            models.CheckConstraint(condition=Q(margem_fim__gte=timedelta(0)),
-                                   name="loja_margem_nao_negativa"),
+            models.CheckConstraint(
+                condition=Q(margem_fim__gte=timedelta(0)) & Q(margem_fim__lte=MARGEM_MAXIMA),
+                name="loja_margem_de_0_a_7_dias"),
+            models.CheckConstraint(condition=Q(janela_padrao__in=JANELAS_PERMITIDAS),
+                                   name="loja_janela_padrao_permitida"),
         ]
 
     def __str__(self):
@@ -68,13 +89,20 @@ class Vinculo(models.Model):
 class Produto(models.Model):
     loja = models.ForeignKey(Loja, on_delete=models.PROTECT, related_name="produtos")
     nome = models.CharField(max_length=120)
+    # A API exige a categoria ao cadastrar; o padrão só cobre linhas antigas e testes.
+    categoria = models.CharField(max_length=12, choices=Categoria.choices,
+                                 default=Categoria.MERCEARIA)
     # Opcional: vazio (None) = usa a margem da loja.
     margem_fim = models.DurationField(null=True, blank=True)
 
     class Meta:
         constraints = [
-            models.CheckConstraint(condition=Q(margem_fim__gte=timedelta(0)),
-                                   name="produto_margem_nao_negativa"),
+            # Vazio (NULL) passa: "usa a da loja". Preenchida: de 0 a 7 dias.
+            models.CheckConstraint(
+                condition=Q(margem_fim__gte=timedelta(0)) & Q(margem_fim__lte=MARGEM_MAXIMA),
+                name="produto_margem_de_0_a_7_dias"),
+            models.CheckConstraint(condition=Q(categoria__in=Categoria.values),
+                                   name="produto_categoria_valida"),
         ]
 
     def margem_efetiva(self) -> timedelta:
@@ -140,9 +168,26 @@ class Reserva(models.Model):
     expira_em = models.DateTimeField(db_index=True)   # fonte oficial da expiração
     estado = models.CharField(max_length=10, choices=ESTADOS_RESERVA,
                               default=dominio.EstadoReserva.RESERVADA.value)
+    # Quando saiu de "reservada". Expirada: a hora em que VENCEU (expira_em), não a
+    # hora em que o sistema percebeu (decidido 11/11/2026) — o painel conta no dia certo.
+    encerrada_em = models.DateTimeField(null=True, blank=True)
+    # Quem digitou o código no balcão (L13: "Retirada por Carlos Lima").
+    retirada_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                                     null=True, blank=True, related_name="retiradas_feitas")
 
     class Meta:
         constraints = [
+            # Ativa NÃO tem encerrada_em; encerrada TEM.
+            models.CheckConstraint(
+                condition=(Q(estado=dominio.EstadoReserva.RESERVADA.value, encerrada_em__isnull=True)
+                           | (~Q(estado=dominio.EstadoReserva.RESERVADA.value)
+                              & Q(encerrada_em__isnull=False))),
+                name="reserva_encerrada_em_coerente"),
+            # Só reserva retirada tem quem retirou.
+            models.CheckConstraint(
+                condition=Q(retirada_por__isnull=True)
+                          | Q(estado=dominio.EstadoReserva.RETIRADA.value),
+                name="reserva_retirada_por_so_se_retirada"),
             models.UniqueConstraint(fields=["oferta", "numero"],
                                     name="reserva_numero_unico_por_oferta"),
             models.CheckConstraint(condition=Q(quantidade__gte=1),

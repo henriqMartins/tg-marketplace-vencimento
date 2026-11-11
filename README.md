@@ -60,6 +60,8 @@ Legenda: ✅ existe · 🚧 planejado (ainda não existe)
 │       ├── models.py               tabelas e travas do banco
 │       ├── servico.py              os 5 passos: transação → trava → reconstitui → regra → grava; varredura
 │       ├── views.py                endpoint da varredura (POST /tarefas/varrer, com token)
+│       ├── fita.py                 cor da fita pela validade (bimestre → cor)
+│       ├── test_fita.py            os 12 meses e as viradas de bimestre e de ano
 │       ├── tests.py                testes das travas do banco
 │       ├── test_servico.py         testes do serviço
 │       ├── test_concorrencia.py    N pessoas ao mesmo tempo pela última unidade
@@ -362,12 +364,12 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 26/10/2026 | Backend (etapa 4): teste de concorrência + controle negativo | 20 clientes × 5 rodadas: 1 reserva e 19 recusas em todas; **sem a trava, 20 de 20 receberam "reservado" pela mesma unidade** em todas as rodadas · backend: 44 testes ok |
 | 05/11/2026 | Backend (etapa 5): varredura idempotente + endpoint `POST /tarefas/varrer` protegido por `CRON_TOKEN` | 11 testes (rodar 2× não devolve em dobro; oferta travada é pulada; 401/403/405/503) · backend: 55 testes ok |
 | 11/11/2026 | Backend (etapa 6): acesso — conta, login por e-mail, sair, "eu"; token do DRF; porteiros `EhDaLoja` e `EhResponsavel`; erros no formato do contrato | 16 testes (e-mail repetido com maiúscula, senha guardada só como hash, login errado sem revelar a conta, funcionário barrado no painel, vínculo de outra loja → 403) · backend: 71 ok + 1 pulado |
+| 11/11/2026 | Backend (etapa 7): colunas do contrato — categoria do produto (lista única), janela padrão e antecedência do aviso na loja, `encerrada_em` e `retirada_por` na reserva; margem limitada a 0–7 dias; cor da fita calculada pela validade | 16 testes novos (expirada conta na hora em que **venceu**, não na que foi processada; travas novas; fita nos 12 meses) · migração aplicada, desfeita e reaplicada · backend: 87 ok + 1 pulado |
 
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Backend (etapa 7): migração com as colunas que faltam (categoria, janela padrão, antecedência, `encerrada_em`, `retirada_por`) |
 | ⏳ | Backend (etapa 8): endpoints do consumidor (vitrine, oferta, reservar, cancelar, minhas reservas) + CORS |
 | ⏳ | Backend (etapa 9): endpoints da operação da loja (retirada, ajuste, ofertas, resumo do dia) |
 | ⏳ | Backend (etapa 10): lote, fita, aviso e publicação + configuração da loja |

@@ -91,11 +91,31 @@ def _carregar(linha: Oferta) -> dominio.Oferta:
     )
 
 
-def _salvar(linha: Oferta, oferta: dominio.Oferta, consumidor=None) -> None:
+def _encerrada_em(r: dominio.Reserva, h: float) -> Optional[datetime]:
+    """
+    Quando a reserva saiu de "reservada". Ativa: nenhum.
+    Expirada: a hora em que VENCEU (expira_em), não a da operação que percebeu —
+    com a expiração preguiçosa, isso pode ser bem depois (decidido 11/11/2026).
+    Retirada e cancelada: a hora da operação.
+    """
+    # 📖 ESTUDAR: a mesma reserva expirada às 20:00 pode ser processada só às 9:00
+    # do dia seguinte. Se gravássemos a hora da operação, o painel "por período"
+    # contaria a expiração no dia errado.
+    if r.estado is dominio.EstadoReserva.RESERVADA:
+        return None
+    if r.estado is dominio.EstadoReserva.EXPIRADA:
+        return data(r.expira_em)
+    return data(h)
+
+
+def _salvar(linha: Oferta, oferta: dominio.Oferta, h: float,
+            consumidor=None, operador=None) -> None:
     """
     Passo 5: copia o resultado do domínio para o banco.
+    `h` é o "agora" da operação (para o encerrada_em).
     `consumidor` só é usado se a operação CRIOU uma reserva (o domínio não
     sabe quem é o cliente; o banco precisa saber).
+    `operador` é quem digitou o código, gravado na reserva retirada.
     """
     linha.livre = oferta.livre
     linha.retirado = oferta.retirado
@@ -105,14 +125,20 @@ def _salvar(linha: Oferta, oferta: dominio.Oferta, consumidor=None) -> None:
     linha.save(update_fields=["livre", "retirado", "ajustado", "perda", "estado"])
 
     for r in oferta.reservas.values():
+        retirada = r.estado is dominio.EstadoReserva.RETIRADA
         Reserva.objects.update_or_create(
             oferta=linha, numero=r.id,
-            defaults={"estado": r.estado.value},              # já existia: só o estado muda
+            defaults={                                         # já existia: estado e desfecho
+                "estado": r.estado.value,
+                "encerrada_em": _encerrada_em(r, h),
+                "retirada_por": operador if retirada else None,
+            },
             create_defaults={                                  # é nova: grava tudo
                 "estado": r.estado.value, "loja_id": linha.produto.loja_id,
                 "consumidor": consumidor, "quantidade": r.quantidade,
                 "pedido": r.pedido, "codigo": r.codigo,
                 "criada_em": data(r.criada_em), "expira_em": data(r.expira_em),
+                "encerrada_em": _encerrada_em(r, h),
             },
         )
 
@@ -146,7 +172,7 @@ def _reservar(oferta_id, consumidor, pedido, agora):
         linha = _travar(oferta_id)
         oferta = _carregar(linha)
         reserva = oferta.reservar(pedido, h)
-        _salvar(linha, oferta, consumidor=consumidor)
+        _salvar(linha, oferta, h, consumidor=consumidor)
         if reserva is None:                     # recusa total (livre = 0)
             Recusa.objects.create(oferta=linha, consumidor=consumidor,
                                   pedido=pedido, criada_em=data(h))
@@ -162,15 +188,17 @@ def cancelar(reserva_id: int, agora: Optional[datetime] = None) -> Reserva:
         linha = _travar(reserva.oferta_id)
         oferta = _carregar(linha)
         oferta.cancelar(reserva.numero, h)
-        _salvar(linha, oferta)
+        _salvar(linha, oferta, h)
         reserva.refresh_from_db()
         return reserva
 
 
-def retirar(loja_id: int, codigo: str, agora: Optional[datetime] = None) -> Reserva:
+def retirar(loja_id: int, codigo: str, operador,
+            agora: Optional[datetime] = None) -> Reserva:
     """
     O lojista digita o código na tela dele. O backend acha a reserva ATIVA
     daquela loja com esse código e aplica a retirada (tudo ou nada).
+    `operador` = quem está no balcão; fica gravado em retirada_por.
     """
     h = _horas_agora(agora)
     with transaction.atomic():
@@ -182,7 +210,7 @@ def retirar(loja_id: int, codigo: str, agora: Optional[datetime] = None) -> Rese
         oferta = _carregar(linha)
         # O domínio confere de novo, já com a trava: se venceu, recusa.
         oferta.retirar(reserva.numero, codigo, h)
-        _salvar(linha, oferta)
+        _salvar(linha, oferta, h, operador=operador)
         reserva.refresh_from_db()
         return reserva
 
@@ -195,7 +223,7 @@ def ajustar(oferta_id: int, autor, quantidade: int, motivo: str,
         linha = _travar(oferta_id)
         oferta = _carregar(linha)
         oferta.ajustar_estoque(quantidade, motivo, h)
-        _salvar(linha, oferta)
+        _salvar(linha, oferta, h)
         return Ajuste.objects.create(oferta=linha, autor=autor, quantidade=quantidade,
                                      motivo=motivo.strip(), criado_em=data(h))
 
@@ -235,7 +263,7 @@ def varrer(agora: Optional[datetime] = None) -> dict:
                     and h >= oferta.fim_da_oferta):
                 resumo["perda"] += oferta.encerrar(h)
                 resumo["encerradas"] += 1
-            _salvar(linha, oferta)
+            _salvar(linha, oferta, h)
     return resumo
 
 
@@ -246,7 +274,7 @@ def encerrar(oferta_id: int, agora: Optional[datetime] = None) -> int:
         linha = _travar(oferta_id)
         oferta = _carregar(linha)
         perda = oferta.encerrar(h)
-        _salvar(linha, oferta)
+        _salvar(linha, oferta, h)
         return perda
 
 
