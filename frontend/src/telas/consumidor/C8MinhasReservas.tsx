@@ -12,7 +12,7 @@ import { IconeReservas } from '../../componentes/icones'
 import { MensagemErro } from '../../componentes/Mensagem'
 import { SeloReserva } from '../../componentes/Selo'
 import { classes } from '../../util/classes'
-import { formatarHorario, formatarTempoRestante } from '../../util/formatar'
+import { comEm, formatarHorario, formatarTempoRestante } from '../../util/formatar'
 import styles from './Consumidor.module.css'
 
 const URGENTE_MS = 30 * 60_000
@@ -115,11 +115,9 @@ const VERBO = { retirada: 'Retirada', expirada: 'Expirou', cancelada: 'Cancelada
 
 function RodapeEncerrada({ reserva: r, agora }: { reserva: Reserva; agora: Date }) {
   if (r.estado === 'reservada' || !r.encerrada_em) return null
-  const quando = formatarHorario(r.encerrada_em, agora)
-  const relativo = quando.startsWith('hoje') || quando.startsWith('amanhã')
   return (
     <span className={styles.texto}>
-      {VERBO[r.estado]} {relativo ? quando : `em ${quando}`}
+      {VERBO[r.estado]} {comEm(formatarHorario(r.encerrada_em, agora))}
     </span>
   )
 }

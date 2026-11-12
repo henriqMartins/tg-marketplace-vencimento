@@ -202,7 +202,7 @@ describe('mock · vitrine', () => {
   })
 
   it('grupos ainda sem mock avisam a etapa', async () => {
-    await expect(api.operacao.resumoDoDia(1)).rejects.toThrow('etapa F6')
+    await expect(api.gestor.indicadores(1, '2026-10-01', '2026-10-31')).rejects.toThrow('etapa F7')
   })
 })
 
@@ -227,5 +227,66 @@ describe('mock · estado guardado entre recargas', () => {
 
     segunda.reiniciar()
     expect(criarClienteMock({ obterToken: () => token, agora: () => agora, persistencia }).estoqueDe(1).livre).toBe(6)
+  })
+})
+
+describe('mock · grupo C (operação da loja)', () => {
+  beforeEach(() => entrarComo('juliana.prado@email.com')) // funcionária da loja 1
+
+  it('resumo do dia conta reservas (PEDIDO-API 2): 4 aguardando, 2 expiram em 1 h, 3 ofertas ativas', async () => {
+    expect(await api.operacao.resumoDoDia(1)).toEqual({
+      loja: { id: 1, nome: 'Mercadinho Vila Nova', endereco: 'Rua das Palmeiras, 410 · Boa Vista' },
+      papel: 'funcionario',
+      aguardando_retirada: 4,
+      expiram_em_1h: 2,
+      ofertas_ativas: 3,
+      avisos_para_conferir: 5,
+    })
+  })
+
+  it('sem vínculo com a loja → 403', async () => {
+    await entrarComo('ana@email.com')
+    expect((await erroDe(api.operacao.resumoDoDia(1))).status).toBe(403)
+    await entrarComo('juliana.prado@email.com')
+    expect((await erroDe(api.operacao.resumoDoDia(2))).status).toBe(403)
+  })
+
+  it('detalhe da oferta: código mascarado para a loja (só o final)', async () => {
+    const oferta = await api.operacao.obterOferta(1, 1)
+    expect(oferta.reservas.map((r) => r.codigo_final)).toEqual(['118', '917', '204']) // 32 (16:52), 31, 33
+    expect(oferta.reservas[1]).not.toHaveProperty('codigo')
+    expect(oferta.estoque).toEqual({ separado: 12, livre: 6, reservado: 4, retirado: 2, ajustado: 0, perda: 0 })
+  })
+
+  it('ajuste: só tira do livre; acima do livre → 409 com o livre no corpo', async () => {
+    const e = await erroDe(api.operacao.ajustar(1, 1, { quantidade: 7, motivo: 'Danificada' }))
+    expect([e.status, e.codigo]).toEqual([409, 'acima_do_livre'])
+    expect(e.corpo).toMatchObject({ livre: 6 })
+
+    const { estoque } = await api.operacao.ajustar(1, 1, { quantidade: 2, motivo: 'Danificada' })
+    expect(estoque).toMatchObject({ livre: 4, ajustado: 2, reservado: 4 })
+    expect(conservacao(estoque)).toBe(estoque.separado)
+    expect((await erroDe(api.operacao.ajustar(1, 1, { quantidade: 1, motivo: ' ' }))).codigo).toBe('sem_motivo')
+  })
+
+  it('retirada por loja + código: prévia, confirmação e estoque conservado', async () => {
+    const previa = await api.operacao.previaRetirada(1, '482917')
+    expect(previa).toMatchObject({ codigo: '482917', total: '6.28', produto: 'Iogurte natural 170 g', fita: { cor: 'branco' } })
+    expect(previa.reserva).toMatchObject({ cliente: 'Ana S.', quantidade: 2, codigo_final: '917' })
+
+    const feita = await api.operacao.retirar(1, '482917')
+    expect(feita.retirada_por).toBe('Juliana Prado')
+    expect(feita.oferta.estoque).toMatchObject({ livre: 6, reservado: 2, retirado: 4 })
+    expect(conservacao(feita.oferta.estoque)).toBe(feita.oferta.estoque.separado)
+    // retirada não se repete
+    expect((await erroDe(api.operacao.retirar(1, '482917'))).codigo).toBe('nao_encontrada')
+  })
+
+  it('código de outra loja ou inexistente → 404; vencido agora há pouco → 409 venceu', async () => {
+    expect((await erroDe(api.operacao.previaRetirada(1, '208455'))).status).toBe(404) // reserva da loja 3
+    expect((await erroDe(api.operacao.previaRetirada(1, '000000'))).codigo).toBe('nao_encontrada')
+
+    agora = new Date('2026-10-22T19:45:00-03:00') // a 31 venceu às 19:42
+    expect((await erroDe(api.operacao.retirar(1, '482917'))).codigo).toBe('venceu')
   })
 })

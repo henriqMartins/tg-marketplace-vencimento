@@ -1,4 +1,7 @@
+import { useQuery } from '@tanstack/react-query'
 import { Outlet } from 'react-router'
+import { RECARGA_30S } from '../consultas'
+import { useApi } from '../contextos'
 import { IconeAvisos, IconeCasa, IconeLotes, IconeRetirada } from '../../componentes/icones'
 import { NavInferior } from '../../componentes/NavInferior'
 import { useLojaAtual } from '../loja'
@@ -12,8 +15,11 @@ import styles from './Layouts.module.css'
  *   resto → navegação inferior Início · Lotes · Avisos · Retirada.
  */
 export function LayoutLoja() {
+  const api = useApi()
   const { lojaId, papel } = useLojaAtual()
   const desktop = useEhDesktop()
+  // Mesmo cache da L1: o contador de avisos vem do resumo do dia.
+  const resumo = useQuery({ queryKey: ['resumo', lojaId], queryFn: () => api.operacao.resumoDoDia(lojaId), ...RECARGA_30S })
 
   if (desktop && papel === 'responsavel') return <LayoutGestor />
 
@@ -28,8 +34,13 @@ export function LayoutLoja() {
         itens={[
           { para: base, rotulo: 'Início', icone: <IconeCasa />, exato: true },
           { para: `${base}/lotes`, rotulo: 'Lotes', icone: <IconeLotes /> },
-          // O contador de avisos (resumo do dia, grupo C) entra na F6.
-          { para: `${base}/avisos`, rotulo: 'Avisos', icone: <IconeAvisos /> },
+          {
+            para: `${base}/avisos`,
+            rotulo: 'Avisos',
+            icone: <IconeAvisos />,
+            contador: resumo.data?.avisos_para_conferir,
+            rotuloContador: 'para conferir',
+          },
           { para: `${base}/retirada`, rotulo: 'Retirada', icone: <IconeRetirada /> },
         ]}
       />

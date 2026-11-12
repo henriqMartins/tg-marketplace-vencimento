@@ -163,3 +163,51 @@ export function IconeBusca({ tamanho }: PropsIcone) {
     </Icone>
   )
 }
+
+// ---------- Loja ----------
+
+export function IconeConfig({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+    </Icone>
+  )
+}
+
+export function IconeTrocar({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M7 4L3 8l4 4" />
+      <path d="M3 8h14" />
+      <path d="M17 20l4-4-4-4" />
+      <path d="M21 16H7" />
+    </Icone>
+  )
+}
+
+export function IconeEtiqueta({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </Icone>
+  )
+}
+
+export function IconePainel({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M3 3v18h18" />
+      <path d="M7 15v3M12 10v8M17 6v12" />
+    </Icone>
+  )
+}
+
+export function IconeMais({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M12 5v14M5 12h14" />
+    </Icone>
+  )
+}

@@ -15,7 +15,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F5a · Localização e vitrine (C1, C2, C3) | ✅ |
 | F5b · Reservar (C4–C7) | ✅ |
 | F5c · Minhas reservas e perfil (C8, C9) | ✅ |
-| F6 · Operação da loja (L1, L9–L13) | — |
+| F6a · Mock do grupo C + L1, L9, L10 | ✅ |
+| F6b · Ajuste e retirada (L11, L12, L13) | — |
 
 ## Decisões do frontend
 
@@ -34,6 +35,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 12/11/2026 | `/boas-vindas` (C1) pública; o local escolhido fica **só na memória** da aba |
 | 12/11/2026 | **PEDIDO-API 1** (aberto): `retirar_ate` em `GET /api/ofertas/{id}`, para a C4 mostrar "Retire até hoje, 20:00" sem calcular; simulado no mock; sem o campo, a C4 mostra a janela e o fim da oferta |
 | 12/11/2026 | Depois de cancelar, a reserva mostra o desfecho "Você cancelou…" (a especificação não define essa tela) |
+| 12/11/2026 | **PEDIDO-API 2** (aberto): `aguardando_retirada` conta **reservas** (clientes), não unidades |
+| 12/11/2026 | `avisos_para_conferir` no mock é fixo em 5 (o do protótipo) até o mock do grupo D (F8) |
 | 12/11/2026 | Push (C1 tela 2, C3, C9) **só desenhado**, botão "em breve" — grupo H depois de 09/11 |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 

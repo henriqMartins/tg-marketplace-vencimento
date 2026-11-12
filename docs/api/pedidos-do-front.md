@@ -36,3 +36,16 @@ código com `// PEDIDO-API n`.
 - Enquanto não houver: o mock simula (`// PEDIDO-API 1`); sem o campo, a C4 mostra só
   "janela de 4 h · oferta até 27/10, 23:59".
 - Decisão (preenchida no main): ...
+
+### 2 · O que conta `aguardando_retirada` no resumo do dia (aberto)
+- Tela: L1 (Início da loja) e L12 ("Validar retirada · N aguardando")
+- Grupo do contrato: C
+- O que falta: o contrato mostra `"aguardando_retirada": 6` sem dizer se conta **reservas** ou
+  **unidades**.
+- Por que a tela precisa: o número aparece como "clientes a atender no balcão"; os dois jeitos dão
+  valores diferentes (na semente: 4 reservas, 6 unidades).
+- Proposta de formato: **número de reservas** no estado `reservada` da loja (decidido no front em
+  12/11/2026), igual ao `expiram_em_1h`, que também conta reservas. Sem mudança de formato: só
+  deixar escrito no contrato.
+- Enquanto não houver: o mock conta reservas (`// PEDIDO-API 2`).
+- Decisão (preenchida no main): ...

@@ -55,3 +55,8 @@ export function formatarTempoRestante(ms: number): string {
   const min = minutos % 60
   return h > 0 ? `${h} h ${String(min).padStart(2, '0')} min` : `${min} min`
 }
+
+/** "hoje, 20:00" fica igual; "28/10, 20:00" vira "em 28/10, 20:00" (evita "em hoje"). */
+export function comEm(horario: string): string {
+  return horario.startsWith('hoje') || horario.startsWith('amanhã') ? horario : `em ${horario}`
+}

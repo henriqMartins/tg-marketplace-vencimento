@@ -42,6 +42,12 @@
 
   --chart-expirada: #e8913a;
 
+  /* Barra de estoque (L9, L10): sempre acompanhada do resumo em texto. */
+  --estoque-retirado: var(--primary-dark);
+  --estoque-reservado: #e9b23a;
+  --estoque-livre: #9cc9a0;
+  --estoque-perda: var(--danger-strong); /* perda e ajuste */
+
   --veu: rgba(27, 31, 28, 0.45); /* fundo atrás da folha inferior */
   --desabilitado-bg: #d8d5cc; /* botão desabilitado (artboard Componentes) */
 

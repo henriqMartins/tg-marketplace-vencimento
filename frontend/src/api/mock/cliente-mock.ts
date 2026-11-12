@@ -3,8 +3,8 @@
  * Segue o contrato (formatos, códigos de erro); as regras que só o backend tem
  * ficam fingidas em regras-fingidas.ts. Só src/api/index.ts importa este arquivo.
  *
- * Grupos prontos no mock: A (acesso) e B (consumidor).
- * C–G entram junto com as telas deles (F6–F8) — decidido 11/11/2026.
+ * Grupos prontos no mock: A (acesso), B (consumidor) e C (operação da loja).
+ * D–G entram junto com as telas deles (F7–F8) — decidido 11/11/2026.
  */
 import type {
   ApiAcesso,
@@ -18,7 +18,17 @@ import type {
   ClienteApi,
 } from '../cliente'
 import { ErroApi, mensagemPadrao } from '../erros'
-import type { Eu, Estoque, FaixaDesconto, LojaResumo, OfertaVitrine, Reserva, Sessao } from '../tipos'
+import type {
+  Eu,
+  Estoque,
+  FaixaDesconto,
+  LojaResumo,
+  OfertaLoja,
+  OfertaVitrine,
+  Reserva,
+  ReservaLoja,
+  Sessao,
+} from '../tipos'
 import { isoBrasilia } from './datas'
 import {
   calcularExpiraEm,
@@ -300,11 +310,164 @@ export function criarClienteMock({
       }),
   }
 
+  // ---------- C · Operação da loja ----------
+
+  /** Exige vínculo com a loja (funcionário ou responsável); sem vínculo, 403. */
+  function vinculoCom(lojaId: number) {
+    const usuario = usuarioLogado()
+    const vinculo = usuario.vinculos.find((v) => v.loja.id === lojaId)
+    if (!vinculo) throw erro(403, 'http_403', mensagemPadrao(403))
+    return { usuario, papel: vinculo.papel }
+  }
+
+  const ofertaDe = (r: ReservaMock) => banco.ofertas.find((o) => o.id === r.ofertaId)!
+  const lojaDaReserva = (r: ReservaMock) => ofertaDe(r).lojaId
+
+  function ofertaDaLoja(lojaId: number, ofertaId: number): OfertaMock {
+    const o = banco.ofertas.find((x) => x.id === ofertaId && x.lojaId === lojaId)
+    if (!o) throw erro(404, 'nao_encontrada', 'Oferta não encontrada.')
+    return o
+  }
+
+  const paraReservaLoja = (r: ReservaMock): ReservaLoja => ({
+    id: r.id,
+    codigo_final: r.codigo.slice(-3), // a loja nunca vê o código inteiro
+    quantidade: r.quantidade,
+    pedido: r.pedido,
+    estado: r.estado,
+    cliente: r.cliente,
+    criada_em: isoBrasilia(r.criada_em),
+    expira_em: isoBrasilia(r.expira_em),
+    encerrada_em: r.encerrada_em ? isoBrasilia(r.encerrada_em) : null,
+  })
+
+  const paraOfertaLoja = (o: OfertaMock): OfertaLoja => ({
+    id: o.id,
+    produto: o.produto,
+    fita: fitaDe(o.validade),
+    validade: o.validade,
+    preco: o.preco,
+    preco_original: o.preco_original,
+    desconto: o.desconto,
+    janela_horas: o.janela_horas,
+    inicio: isoBrasilia(o.inicio),
+    fim: isoBrasilia(o.fim),
+    estado: o.estado,
+    estoque: { ...o.estoque },
+  })
+
+  /** Retirada é por LOJA + CÓDIGO: só acha reserva ativa desta loja. */
+  const reservaAtivaPorCodigo = (lojaId: number, codigo: string) =>
+    banco.reservas.find((r) => r.estado === 'reservada' && r.codigo === codigo && lojaDaReserva(r) === lojaId)
+
+  const naoEncontrada = () => erro(404, 'nao_encontrada', 'Nenhuma reserva ativa com esse código nesta loja.')
+
+  const operacao: ApiOperacao = {
+    resumoDoDia: (lojaId) =>
+      responder(() => {
+        const { papel } = vinculoCom(lojaId)
+        const momento = agora().getTime()
+        const ativas = banco.reservas.filter((r) => r.estado === 'reservada' && lojaDaReserva(r) === lojaId)
+        return {
+          loja: lojaResumo(lojaId),
+          papel,
+          aguardando_retirada: ativas.length, // PEDIDO-API 2: conta RESERVAS (clientes), não unidades
+          expiram_em_1h: ativas.filter((r) => r.expira_em.getTime() - momento <= 3600_000).length,
+          ofertas_ativas: banco.ofertas.filter((o) => o.lojaId === lojaId && o.estado === 'ativa').length,
+          avisos_para_conferir: 5, // valor fixo do protótipo até o mock do grupo D (F8)
+        }
+      }),
+
+    listarOfertas: (lojaId, estado) =>
+      responder(() => {
+        vinculoCom(lojaId)
+        return banco.ofertas
+          .filter((o) => o.lojaId === lojaId && (!estado || o.estado === estado))
+          .sort((a, b) => (estado === 'encerrada' ? b.fim.getTime() - a.fim.getTime() : a.fim.getTime() - b.fim.getTime()))
+          .map(paraOfertaLoja)
+      }),
+
+    obterOferta: (lojaId, ofertaId) =>
+      responder(() => {
+        vinculoCom(lojaId)
+        const o = ofertaDaLoja(lojaId, ofertaId)
+        // Ativa: só as reservas aguardando. Encerrada: todas, com o estado final.
+        const reservas = banco.reservas
+          .filter((r) => r.ofertaId === o.id && (o.estado === 'encerrada' || r.estado === 'reservada'))
+          .sort((a, b) => a.expira_em.getTime() - b.expira_em.getTime())
+          .map(paraReservaLoja)
+        return { ...paraOfertaLoja(o), reservas }
+      }),
+
+    ajustar: (lojaId, ofertaId, { quantidade, motivo }) =>
+      responder(() => {
+        vinculoCom(lojaId)
+        const o = ofertaDaLoja(lojaId, ofertaId)
+        if (!motivo?.trim()) throw erro(400, 'sem_motivo', 'Informe o motivo do ajuste.')
+        if (o.estado !== 'ativa') throw erro(409, 'oferta_encerrada', 'Esta oferta já terminou.')
+        if (!Number.isInteger(quantidade) || quantidade < 1) {
+          throw erro(400, 'quantidade_invalida', 'Informe pelo menos 1 unidade.')
+        }
+        // Ajuste só reduz o LIVRE; unidade reservada está prometida a um cliente.
+        const livre = o.estoque.livre
+        if (quantidade > livre) {
+          throw erro(409, 'acima_do_livre', `Só há ${livre} ${livre === 1 ? 'unidade livre' : 'unidades livres'} agora.`, { livre })
+        }
+        o.estoque.livre -= quantidade
+        o.estoque.ajustado += quantidade
+        return { estoque: { ...o.estoque } }
+      }),
+
+    previaRetirada: (lojaId, codigo) =>
+      responder(() => {
+        vinculoCom(lojaId)
+        const r = reservaAtivaPorCodigo(lojaId, codigo)
+        if (!r) throw naoEncontrada()
+        const o = ofertaDe(r)
+        return {
+          reserva: paraReservaLoja(r),
+          codigo: r.codigo,
+          total: multiplicar(o.preco, r.quantidade),
+          produto: o.produto.nome,
+          fita: fitaDe(o.validade),
+        }
+      }),
+
+    retirar: (lojaId, codigo) =>
+      responder(() => {
+        const { usuario } = vinculoCom(lojaId)
+        const r = reservaAtivaPorCodigo(lojaId, codigo)
+        if (!r) {
+          // Venceu entre a busca (L13) e a confirmação: o mock considera "agora há pouco" = 30 min.
+          const venceu = banco.reservas.some(
+            (x) =>
+              x.estado === 'expirada' &&
+              x.codigo === codigo &&
+              lojaDaReserva(x) === lojaId &&
+              agora().getTime() - (x.encerrada_em?.getTime() ?? 0) < 30 * 60_000,
+          )
+          if (venceu) throw erro(409, 'venceu', 'O prazo desta reserva acabou. As unidades voltaram para a vitrine.')
+          throw naoEncontrada()
+        }
+        const o = ofertaDe(r)
+        r.estado = 'retirada'
+        r.encerrada_em = agora()
+        o.estoque.reservado -= r.quantidade
+        o.estoque.retirado += r.quantidade
+        return {
+          reserva: paraReservaLoja(r),
+          total: multiplicar(o.preco, r.quantidade),
+          retirada_por: usuario.nome,
+          oferta: { id: o.id, estoque: { ...o.estoque } },
+        }
+      }),
+  }
+
   return {
     servidor,
     acesso,
     consumidor,
-    operacao: pendente<ApiOperacao>('operacao', 'F6'),
+    operacao,
     lotes: pendente<ApiLotes>('lotes', 'F8'),
     configuracao: pendente<ApiConfiguracao>('configuracao', 'F8'),
     gestor: pendente<ApiGestor>('gestor', 'F7'),

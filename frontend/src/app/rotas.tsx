@@ -22,6 +22,9 @@ import { C5Resultado } from '../telas/consumidor/C5Resultado'
 import { C6Reserva } from '../telas/consumidor/C6Reserva'
 import { C8MinhasReservas } from '../telas/consumidor/C8MinhasReservas'
 import { C9Perfil } from '../telas/consumidor/C9Perfil'
+import { L1Inicio } from '../telas/loja/L1Inicio'
+import { L9Ofertas } from '../telas/loja/L9Ofertas'
+import { L10Oferta } from '../telas/loja/L10Oferta'
 
 const tela = (path: string | undefined, codigo: string, titulo: string, etapa: string, larga = false): RouteObject => ({
   ...(path === undefined ? { index: true } : { path }),
@@ -72,15 +75,15 @@ export const rotas: RouteObject[] = [
               {
                 element: <LayoutLoja />,
                 children: [
-                  tela(undefined, 'L1', 'Início da loja', 'F6'),
+                  { index: true, element: <L1Inicio /> },
                   tela('produtos/novo', 'L2', 'Novo produto', 'F8'),
                   tela('lotes/novo', 'L3', 'Cadastro do lote', 'F8'),
                   tela('lotes', 'L4 / G5', 'Lotes e fitas', 'F8', true),
                   tela('avisos', 'L5', 'Avisos de validade', 'F8'),
                   tela('avisos/:avisoId', 'L6', 'Conferência na gôndola', 'F8'),
                   tela('avisos/:avisoId/publicar', 'L7', 'Revisar e publicar oferta', 'F8'),
-                  tela('ofertas', 'L9 / G4', 'Ofertas da loja', 'F6', true),
-                  tela('ofertas/:ofertaId', 'L10', 'Detalhe da oferta', 'F6'),
+                  { path: 'ofertas', element: <L9Ofertas />, handle: { largura: 'larga' } satisfies HandleRota }, // G4 (desktop) na F7
+                  { path: 'ofertas/:ofertaId', element: <L10Oferta /> },
                   tela('ofertas/:ofertaId/ajuste', 'L11', 'Ajuste de estoque', 'F6'),
                   tela('retirada', 'L12 / L13', 'Validar retirada', 'F6'),
                   {

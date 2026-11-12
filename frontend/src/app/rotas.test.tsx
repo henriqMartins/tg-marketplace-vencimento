@@ -55,7 +55,7 @@ describe('proteção por login e papel', () => {
 
   it('funcionária: opera a loja, mas não vê o painel', async () => {
     await abrir('/loja/1', { email: JULIANA })
-    expect(await screen.findByRole('heading', { name: 'Início da loja' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Mercadinho Vila Nova' })).toBeInTheDocument()
     screen.getByRole('link', { name: 'Retirada' }).click()
     expect(await screen.findByRole('heading', { name: 'Validar retirada' })).toBeInTheDocument()
   })
