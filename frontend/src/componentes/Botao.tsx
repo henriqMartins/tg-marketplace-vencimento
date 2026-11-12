@@ -2,7 +2,8 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { classes } from '../util/classes'
 import styles from './Botao.module.css'
 
-export type VarianteBotao = 'primario' | 'secundario' | 'perigo'
+/** perigoSolido: confirmação final de algo que não dá para desfazer ("Sim, cancelar"). */
+export type VarianteBotao = 'primario' | 'secundario' | 'perigo' | 'perigoSolido'
 
 export interface BotaoProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variante?: VarianteBotao

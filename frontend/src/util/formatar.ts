@@ -28,3 +28,30 @@ export function formatarDinheiro(valor: string): string {
 export function formatarDistancia(km: number): string {
   return `${km.toFixed(1).replace('.', ',')} km`
 }
+
+const FUSO = 'America/Sao_Paulo'
+const diaEm = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: FUSO }).format(d) // "2026-10-22"
+const horaEm = (d: Date) =>
+  new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(d)
+
+/**
+ * Horário vindo da API, no fuso de Brasília: "hoje, 20:00", "amanhã, 09:00" ou "28/10, 20:00".
+ * `agora` só decide a PALAVRA (hoje/amanhã); o horário é sempre o que a API mandou.
+ */
+export function formatarHorario(dataHora: string, agora: Date = new Date()): string {
+  const momento = new Date(dataHora)
+  const dia = diaEm(momento)
+  const hoje = diaEm(agora)
+  const amanha = diaEm(new Date(agora.getTime() + 24 * 3600_000))
+  const quando = dia === hoje ? 'hoje' : dia === amanha ? 'amanhã' : formatarDataCurta(dia)
+  return `${quando}, ${horaEm(momento)}`
+}
+
+/** Tempo até um prazo: "3 h 42 min", "52 min", "menos de 1 min". Só exibe; não decide nada. */
+export function formatarTempoRestante(ms: number): string {
+  if (ms < 60_000) return 'menos de 1 min'
+  const minutos = Math.floor(ms / 60_000)
+  const h = Math.floor(minutos / 60)
+  const min = minutos % 60
+  return h > 0 ? `${h} h ${String(min).padStart(2, '0')} min` : `${min} min`
+}

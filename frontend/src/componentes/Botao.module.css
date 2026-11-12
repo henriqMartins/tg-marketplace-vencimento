@@ -94,3 +94,14 @@
   background: var(--primary-soft);
   color: var(--primary-dark);
 }
+
+.perigoSolido {
+  height: var(--altura-botao-perigo);
+  background: var(--danger-strong);
+  color: #fff;
+  font-size: 16px;
+}
+
+.perigoSolido:hover:not(:disabled) {
+  background: var(--danger-text);
+}

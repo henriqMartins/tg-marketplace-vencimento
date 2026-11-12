@@ -130,6 +130,11 @@ export interface OfertaVitrine {
 /** GET /api/ofertas/{id}: a mesma oferta + o estado (campo extra só nesta rota). */
 export interface OfertaPublica extends OfertaVitrine {
   estado: EstadoOferta
+  /**
+   * PEDIDO-API 1 (aberto, docs/api/pedidos-do-front.md): limite de retirada SE reservar agora,
+   * mín(agora + janela, fim), calculado pelo backend. Opcional até o pedido ser aceito.
+   */
+  retirar_ate?: DataHora | null
 }
 
 /** Reserva na visão do consumidor (dono). */

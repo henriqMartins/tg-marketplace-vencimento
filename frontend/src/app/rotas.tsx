@@ -17,6 +17,9 @@ import { TelaEntrar } from '../telas/acesso/TelaEntrar'
 import { TelaEscolher } from '../telas/acesso/TelaEscolher'
 import { C1Local } from '../telas/consumidor/C1Local'
 import { C2Vitrine } from '../telas/consumidor/C2Vitrine'
+import { C4Oferta } from '../telas/consumidor/C4Oferta'
+import { C5Resultado } from '../telas/consumidor/C5Resultado'
+import { C6Reserva } from '../telas/consumidor/C6Reserva'
 
 const tela = (path: string | undefined, codigo: string, titulo: string, etapa: string, larga = false): RouteObject => ({
   ...(path === undefined ? { index: true } : { path }),
@@ -43,13 +46,13 @@ export const rotas: RouteObject[] = [
         element: <LayoutConsumidor />,
         children: [
           { path: 'vitrine', element: <C2Vitrine /> },
-          tela('oferta/:ofertaId', 'C4', 'Reserva da quantidade', 'F5'),
+          { path: 'oferta/:ofertaId', element: <C4Oferta /> },
           {
             element: <ExigeLogin />,
             children: [
-              tela('reserva/:id/resultado', 'C5', 'Resultado da reserva', 'F5'),
+              { path: 'reserva/:id/resultado', element: <C5Resultado /> },
               tela('reservas', 'C8', 'Minhas reservas', 'F5'),
-              tela('reservas/:id', 'C6 / C7', 'Código de retirada', 'F5'),
+              { path: 'reservas/:id', element: <C6Reserva /> },
               tela('perfil', 'C9', 'Perfil e preferências', 'F5'),
             ],
           },

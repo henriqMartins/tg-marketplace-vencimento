@@ -218,7 +218,12 @@ export function criarClienteMock({
       responder(() => {
         const o = banco.ofertas.find((x) => x.id === id)
         if (!o) throw erro(404, 'nao_encontrada', 'Oferta não encontrada.')
-        return { ...paraOfertaVitrine(o, false), estado: o.estado }
+        return {
+          ...paraOfertaVitrine(o, false),
+          estado: o.estado,
+          // PEDIDO-API 1: simulado aqui, com a mesma conta do expira_em da reserva.
+          retirar_ate: o.estado === 'ativa' ? isoBrasilia(calcularExpiraEm(agora(), o.janela_horas, o.fim)) : null,
+        }
       }),
 
     reservar: (ofertaId, pedido) =>

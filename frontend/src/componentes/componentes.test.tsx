@@ -9,7 +9,8 @@ import { EsqueletoLista } from './Esqueleto'
 import { EstadoVazio } from './EstadoVazio'
 import { IconeSacola, IconeVoltar } from './icones'
 import { SeloGrupo, SeloOferta, SeloReserva } from './Selo'
-import { formatarData, formatarDataCurta, formatarDinheiro, formatarDistancia } from '../util/formatar'
+import { formatarData, formatarDataCurta, formatarDinheiro, formatarDistancia, formatarHorario, formatarTempoRestante } from '../util/formatar'
+import { previaTotal } from '../util/dinheiro'
 import { ErroApi } from '../api'
 import { MensagemErro } from './Mensagem'
 
@@ -126,5 +127,24 @@ describe('formatar dinheiro e distância', () => {
     expect(formatarDinheiro('0.10')).toBe('R$ 0,10')
     expect(formatarDistancia(0.4)).toBe('0,4 km')
     expect(formatarDistancia(12.25)).toBe('12,3 km')
+  })
+})
+
+describe('formatar horário e tempo restante', () => {
+  const agora = new Date('2026-10-22T16:00:00-03:00')
+  it('hoje / amanhã / data, sempre no horário de Brasília', () => {
+    expect(formatarHorario('2026-10-22T20:00:00-03:00', agora)).toBe('hoje, 20:00')
+    expect(formatarHorario('2026-10-23T23:00:00Z', agora)).toBe('amanhã, 20:00') // UTC → Brasília
+    expect(formatarHorario('2026-10-27T23:59:00-03:00', agora)).toBe('27/10, 23:59')
+  })
+  it('tempo restante', () => {
+    expect(formatarTempoRestante((3 * 60 + 42) * 60_000)).toBe('3 h 42 min')
+    expect(formatarTempoRestante(52 * 60_000 + 30_000)).toBe('52 min')
+    expect(formatarTempoRestante(20_000)).toBe('menos de 1 min')
+  })
+  it('prévia do total em centavos (sem erro de arredondamento)', () => {
+    expect(previaTotal('3.14', 2)).toBe('6.28')
+    expect(previaTotal('0.10', 3)).toBe('0.30') // 0.1 * 3 em número daria 0.30000000000000004
+    expect(previaTotal('13.99', 1)).toBe('13.99')
   })
 })

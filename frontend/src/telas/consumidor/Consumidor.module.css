@@ -171,3 +171,168 @@
   padding: 0;
   list-style: none;
 }
+
+.rotulo {
+  font: var(--texto-rotulo);
+}
+
+.sobrelinha {
+  font: var(--texto-sobrelinha);
+  letter-spacing: var(--sobrelinha-espacamento);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- C4 ---------- */
+
+.c4 {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.imagemGrande {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 165px;
+  border-radius: var(--raio-destaque);
+  background: var(--placeholder);
+  color: var(--placeholder-icon);
+}
+
+.voltarRedondo {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.seloImagem {
+  position: absolute;
+  top: 16px;
+  right: 14px;
+}
+
+.tituloProduto {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.loja {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.linhaQuantidade {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.cartaoJanela {
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ---------- C5 / C7 ---------- */
+
+.resultado {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding-top: 24px;
+  text-align: center;
+}
+
+.circuloResultado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.circuloSucesso {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.circuloAtencao {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.circuloErro {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.cartaoDetalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+  text-align: left;
+}
+
+/* ---------- C6 ---------- */
+
+.reserva {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cartaoCodigo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-destaque);
+  background: var(--surface);
+  text-align: center;
+}
+
+.cartaoCodigo > button {
+  align-self: stretch;
+}
+
+.contagemRegressiva {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.contagemRegressiva.urgente {
+  color: var(--urgent);
+}
+
+.instrucao {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.economia {
+  font-weight: 800;
+  color: var(--success-text);
+}

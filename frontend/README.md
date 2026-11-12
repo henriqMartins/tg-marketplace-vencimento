@@ -13,7 +13,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F3 · Casca (sessão, consultas, faixa do servidor, rotas, layouts, proteção, A1) | ✅ |
 | F4 · Acesso (A2 entrar, A3 criar conta, A4 escolher, A5 entrar no computador) | ✅ |
 | F5a · Localização e vitrine (C1, C2, C3) | ✅ |
-| F5b · Reservar (C4–C7) | — |
+| F5b · Reservar (C4–C7) | ✅ |
 | F5c · Minhas reservas e perfil (C8, C9) | — |
 
 ## Decisões do frontend
@@ -31,6 +31,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 11/11/2026 | Estado do mock guardado no `sessionStorage` (recarregar mantém login e reservas; fechar a aba recomeça) |
 | 12/11/2026 | CEP → coordenada pela **AwesomeAPI** (testada: coordenada de rua, 404 para CEP inexistente, CORS liberado, sem chave; a BrasilAPI devolveu o centro da cidade e a ViaCEP não traz coordenada) |
 | 12/11/2026 | `/boas-vindas` (C1) pública; o local escolhido fica **só na memória** da aba |
+| 12/11/2026 | **PEDIDO-API 1** (aberto): `retirar_ate` em `GET /api/ofertas/{id}`, para a C4 mostrar "Retire até hoje, 20:00" sem calcular; simulado no mock; sem o campo, a C4 mostra a janela e o fim da oferta |
+| 12/11/2026 | Depois de cancelar, a reserva mostra o desfecho "Você cancelou…" (a especificação não define essa tela) |
 | 12/11/2026 | Push (C1 tela 2, C3, C9) **só desenhado**, botão "em breve" — grupo H depois de 09/11 |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
