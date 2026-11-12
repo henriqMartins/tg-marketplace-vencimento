@@ -1,0 +1,82 @@
+.cartao {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.cartao:hover {
+  border-color: var(--line-strong);
+}
+
+.imagem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 84px;
+  height: 84px;
+  border-radius: var(--raio-campo);
+  background: var(--placeholder);
+  color: var(--placeholder-icon);
+}
+
+.seloNaImagem {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+}
+
+.desconto {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--discount);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.descontoGrande {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.nome {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.loja {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+.preco {
+  font-weight: 800;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.original {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.rodape {
+  font-size: 13px;
+}

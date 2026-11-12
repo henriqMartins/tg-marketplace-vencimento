@@ -1,0 +1,173 @@
+/* Estilos comuns das telas do consumidor (C1–C9). */
+
+.texto {
+  color: var(--muted);
+}
+
+.tituloLista {
+  font: var(--texto-titulo-lista);
+}
+
+.tituloTela {
+  font: var(--texto-titulo-tela);
+}
+
+.pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linkBotao {
+  align-self: center;
+  min-height: var(--toque-minimo);
+  padding: 0 8px;
+  border: none;
+  background: none;
+  color: var(--primary);
+  font: var(--texto-rotulo);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.nota {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+/* ---------- C1 ---------- */
+
+.paginaC1 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 56px 20px 32px;
+}
+
+.circulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.divisor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font: var(--texto-legenda);
+}
+
+.divisor::before,
+.divisor::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--line);
+}
+
+.formCep {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.campoCep {
+  flex: 1;
+}
+
+.botaoBuscar {
+  margin-top: 26px; /* alinha com a caixa do campo (abaixo do rótulo) */
+}
+
+/* ---------- C2 ---------- */
+
+.vitrine {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cabecalhoVitrine {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.botaoLocal {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  min-height: var(--toque-minimo);
+  color: var(--ink);
+  font: var(--texto-rotulo);
+  text-decoration: none;
+}
+
+.botaoLocal svg {
+  color: var(--primary);
+}
+
+.busca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.busca:focus-within {
+  border: 2px solid var(--primary);
+}
+
+.busca input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+/* Linha rolável de chips, sem barra visível. */
+.chips {
+  display: flex;
+  gap: 8px;
+  margin: 0 calc(-1 * var(--margem-lateral));
+  padding: 4px var(--margem-lateral);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.contagem {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

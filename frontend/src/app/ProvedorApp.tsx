@@ -2,6 +2,9 @@ import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { criarClienteDoAmbiente, type ClienteApi } from '../api'
 import { ProvedorToast } from '../componentes/toast/ProvedorToast'
+import type { BuscarCep } from '../localizacao/cep'
+import type { ObterPosicao } from '../localizacao/posicao'
+import { ProvedorLocal } from '../localizacao/ProvedorLocal'
 import { criarClienteConsultas } from './consultas'
 import { ContextoApi } from './contextos'
 import { criarArmazemSessao, type ArmazemSessao } from './sessao/armazem'
@@ -13,9 +16,11 @@ export interface ProvedorAppProps {
   armazem?: ArmazemSessao
   cliente?: ClienteApi
   consultas?: QueryClient
+  buscarCep?: BuscarCep
+  obterPosicao?: ObterPosicao
 }
 
-/** Tudo que as telas precisam por perto: API, consultas, sessão e toast. */
+/** Tudo que as telas precisam por perto: API, consultas, sessão, local escolhido e toast. */
 export function ProvedorApp({ children, ...pecas }: ProvedorAppProps) {
   const [armazem] = useState(() => pecas.armazem ?? criarArmazemSessao())
   const [cliente] = useState(() => pecas.cliente ?? criarClienteDoAmbiente(armazem.obterToken))
@@ -25,7 +30,9 @@ export function ProvedorApp({ children, ...pecas }: ProvedorAppProps) {
     <QueryClientProvider client={consultas}>
       <ContextoApi.Provider value={cliente}>
         <ProvedorSessao armazem={armazem}>
-          <ProvedorToast>{children}</ProvedorToast>
+          <ProvedorLocal buscarCep={pecas.buscarCep} obterPosicao={pecas.obterPosicao}>
+            <ProvedorToast>{children}</ProvedorToast>
+          </ProvedorLocal>
         </ProvedorSessao>
       </ContextoApi.Provider>
     </QueryClientProvider>

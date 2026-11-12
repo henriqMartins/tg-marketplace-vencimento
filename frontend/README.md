@@ -12,7 +12,9 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F2 · Componentes (botão, contador, chip, folha, toast, esqueleto, vazio, selo, fita) | ✅ |
 | F3 · Casca (sessão, consultas, faixa do servidor, rotas, layouts, proteção, A1) | ✅ |
 | F4 · Acesso (A2 entrar, A3 criar conta, A4 escolher, A5 entrar no computador) | ✅ |
-| F5 · Consumidor (C1–C9) | — |
+| F5a · Localização e vitrine (C1, C2, C3) | ✅ |
+| F5b · Reservar (C4–C7) | — |
+| F5c · Minhas reservas e perfil (C8, C9) | — |
 
 ## Decisões do frontend
 
@@ -27,6 +29,9 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 11/11/2026 | Visitante: navegação inferior Vitrine · Entrar |
 | 11/11/2026 | "Esqueci minha senha" **fora da tela** até a recuperação existir (em aberto no contrato) |
 | 11/11/2026 | Estado do mock guardado no `sessionStorage` (recarregar mantém login e reservas; fechar a aba recomeça) |
+| 12/11/2026 | CEP → coordenada pela **AwesomeAPI** (testada: coordenada de rua, 404 para CEP inexistente, CORS liberado, sem chave; a BrasilAPI devolveu o centro da cidade e a ViaCEP não traz coordenada) |
+| 12/11/2026 | `/boas-vindas` (C1) pública; o local escolhido fica **só na memória** da aba |
+| 12/11/2026 | Push (C1 tela 2, C3, C9) **só desenhado**, botão "em breve" — grupo H depois de 09/11 |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
@@ -120,6 +125,14 @@ Depois de criar conta → `/boas-vindas` (C1), levando o `?voltar`.
 `npm run dev`, abra `/` e entre com um usuário da tabela acima. O mock guarda reservas e login
 **na aba** (`sessionStorage`): recarregar mantém tudo; fechar a aba recomeça da semente. Para
 zerar sem fechar a aba: `/dev/componentes` → "Reiniciar dados do mock".
+
+## Localização (`src/localizacao/`)
+
+- `cep.ts`: CEP → `{lat, lng, bairro}` na AwesomeAPI, no navegador. Erros: `invalido`, `nao_encontrado`,
+  `sem_conexao`. Trocar de serviço = mexer só aqui.
+- `posicao.ts`: `navigator.geolocation` em Promise (`negada` / `indisponivel`).
+- `ProvedorLocal`: guarda o local na memória (recarregar = sem local, vitrine sem ordem de distância).
+  Os dois serviços entram por injeção: nos testes são falsos (nenhum teste chama a internet).
 
 ## Componentes (`src/componentes/`)
 

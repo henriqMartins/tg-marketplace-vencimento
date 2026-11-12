@@ -15,6 +15,8 @@ import { TelaEmConstrucao } from './telas/TelaEmConstrucao'
 import { TelaCriarConta } from '../telas/acesso/TelaCriarConta'
 import { TelaEntrar } from '../telas/acesso/TelaEntrar'
 import { TelaEscolher } from '../telas/acesso/TelaEscolher'
+import { C1Local } from '../telas/consumidor/C1Local'
+import { C2Vitrine } from '../telas/consumidor/C2Vitrine'
 
 const tela = (path: string | undefined, codigo: string, titulo: string, etapa: string, larga = false): RouteObject => ({
   ...(path === undefined ? { index: true } : { path }),
@@ -33,17 +35,18 @@ export const rotas: RouteObject[] = [
       { element: <SoVisitante />, children: [{ path: 'entrar', element: <TelaEntrar /> }] },
       { element: <SoVisitante destino="boas-vindas" />, children: [{ path: 'criar-conta', element: <TelaCriarConta /> }] },
       { element: <ExigeLogin />, children: [{ path: 'escolher', element: <TelaEscolher /> }] },
+      // C1 é pública (o visitante também escolhe o local) e ocupa a tela toda.
+      { path: 'boas-vindas', element: <C1Local /> },
 
       // ---------- Consumidor (vitrine e oferta abertas ao visitante) ----------
       {
         element: <LayoutConsumidor />,
         children: [
-          tela('vitrine', 'C2 / C3', 'Vitrine', 'F5'),
+          { path: 'vitrine', element: <C2Vitrine /> },
           tela('oferta/:ofertaId', 'C4', 'Reserva da quantidade', 'F5'),
           {
             element: <ExigeLogin />,
             children: [
-              tela('boas-vindas', 'C1', 'Ofertas perto de você', 'F5'),
               tela('reserva/:id/resultado', 'C5', 'Resultado da reserva', 'F5'),
               tela('reservas', 'C8', 'Minhas reservas', 'F5'),
               tela('reservas/:id', 'C6 / C7', 'Código de retirada', 'F5'),

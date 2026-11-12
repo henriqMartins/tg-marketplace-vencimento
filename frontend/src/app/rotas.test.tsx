@@ -45,7 +45,7 @@ describe('proteção por login e papel', () => {
 
   it('visitante vê a vitrine (sem login)', async () => {
     await abrir('/vitrine')
-    expect(await screen.findByRole('heading', { name: 'Vitrine' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Ofertas perto de você' })).toBeInTheDocument()
   })
 
   it('consumidora numa loja → "Sem acesso"', async () => {

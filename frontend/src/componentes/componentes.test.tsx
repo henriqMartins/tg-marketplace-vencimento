@@ -9,7 +9,7 @@ import { EsqueletoLista } from './Esqueleto'
 import { EstadoVazio } from './EstadoVazio'
 import { IconeSacola, IconeVoltar } from './icones'
 import { SeloGrupo, SeloOferta, SeloReserva } from './Selo'
-import { formatarData, formatarDataCurta } from '../util/formatar'
+import { formatarData, formatarDataCurta, formatarDinheiro, formatarDistancia } from '../util/formatar'
 import { ErroApi } from '../api'
 import { MensagemErro } from './Mensagem'
 
@@ -116,5 +116,15 @@ describe('Mensagem', () => {
     render(<MensagemErro erro={new ErroApi(409, 'acima_do_livre', 'Só há 6 unidades livres.')} />)
     expect(screen.getByRole('alert')).toHaveTextContent('Só há 6 unidades livres.')
     expect(screen.getByRole('alert')).not.toHaveTextContent('409')
+  })
+})
+
+describe('formatar dinheiro e distância', () => {
+  it('texto da API → R$ com vírgula e milhar, sem conta decimal', () => {
+    expect(formatarDinheiro('3.14')).toBe('R$ 3,14')
+    expect(formatarDinheiro('1234.50')).toBe('R$ 1.234,50')
+    expect(formatarDinheiro('0.10')).toBe('R$ 0,10')
+    expect(formatarDistancia(0.4)).toBe('0,4 km')
+    expect(formatarDistancia(12.25)).toBe('12,3 km')
   })
 })
