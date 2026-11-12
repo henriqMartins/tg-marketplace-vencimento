@@ -2,8 +2,8 @@ import { useEffect, useLayoutEffect, useRef, type MouseEvent, type PointerEvent 
 import { classes } from '../util/classes'
 import styles from './Contador.module.css'
 
-/** 60 px (consumidor, C4), 72 px (cadastro do lote, L3), 96 px (conferência na gôndola, L6). */
-export type TamanhoContador = 'consumidor' | 'cadastro' | 'conferencia'
+/** 60 px (consumidor, C4), 72 px (cadastro do lote, L3), 80 px (ajuste, L11), 96 px (conferência, L6). */
+export type TamanhoContador = 'consumidor' | 'cadastro' | 'ajuste' | 'conferencia'
 
 export interface ContadorProps {
   valor: number

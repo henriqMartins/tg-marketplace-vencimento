@@ -81,8 +81,7 @@ export function L1Inicio() {
         <Link to={`${base}/painel`} className={styles.faixaPainel}>
           <IconePainel />
           <span>
-            <strong>Painel e projeção</strong>
-            <span className={styles.detalheAtalho}> (melhor no computador)</span>
+            <strong>Painel e projeção</strong> <span className={styles.detalheAtalho}>(melhor no computador)</span>
           </span>
         </Link>
       )}

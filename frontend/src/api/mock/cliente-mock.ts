@@ -430,6 +430,7 @@ export function criarClienteMock({
           total: multiplicar(o.preco, r.quantidade),
           produto: o.produto.nome,
           fita: fitaDe(o.validade),
+          validade: o.validade, // PEDIDO-API 3
         }
       }),
 

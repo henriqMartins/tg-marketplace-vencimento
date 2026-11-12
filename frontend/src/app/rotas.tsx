@@ -25,6 +25,8 @@ import { C9Perfil } from '../telas/consumidor/C9Perfil'
 import { L1Inicio } from '../telas/loja/L1Inicio'
 import { L9Ofertas } from '../telas/loja/L9Ofertas'
 import { L10Oferta } from '../telas/loja/L10Oferta'
+import { L11Ajuste } from '../telas/loja/L11Ajuste'
+import { L12Retirada } from '../telas/loja/L12Retirada'
 
 const tela = (path: string | undefined, codigo: string, titulo: string, etapa: string, larga = false): RouteObject => ({
   ...(path === undefined ? { index: true } : { path }),
@@ -84,8 +86,8 @@ export const rotas: RouteObject[] = [
                   tela('avisos/:avisoId/publicar', 'L7', 'Revisar e publicar oferta', 'F8'),
                   { path: 'ofertas', element: <L9Ofertas />, handle: { largura: 'larga' } satisfies HandleRota }, // G4 (desktop) na F7
                   { path: 'ofertas/:ofertaId', element: <L10Oferta /> },
-                  tela('ofertas/:ofertaId/ajuste', 'L11', 'Ajuste de estoque', 'F6'),
-                  tela('retirada', 'L12 / L13', 'Validar retirada', 'F6'),
+                  { path: 'ofertas/:ofertaId/ajuste', element: <L11Ajuste /> },
+                  { path: 'retirada', element: <L12Retirada /> },
                   {
                     // Só o responsável (L14 e G1–G6).
                     element: <ExigeVinculo papel="responsavel" />,

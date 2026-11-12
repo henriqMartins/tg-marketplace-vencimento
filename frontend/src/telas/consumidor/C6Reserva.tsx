@@ -76,7 +76,12 @@ function Codigo({ reserva: r, conferirAgora }: { reserva: Reserva; conferirAgora
           <strong>
             {r.quantidade} × {r.oferta.produto.nome}
           </strong>
-          {r.quantidade < r.pedido && <span className={styles.texto}> (pediu {r.pedido})</span>}
+          {r.quantidade < r.pedido && (
+            <>
+              {' '}
+              <span className={styles.texto}>(pediu {r.pedido})</span>
+            </>
+          )}
         </p>
         <p>
           A pagar na loja: <strong>{formatarDinheiro(r.total)}</strong>

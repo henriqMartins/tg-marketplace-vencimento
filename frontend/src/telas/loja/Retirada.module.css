@@ -1,0 +1,140 @@
+.tela {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.centro {
+  text-align: center;
+}
+
+.titulo {
+  font: var(--texto-titulo-tela);
+}
+
+.aguardando {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.texto {
+  color: var(--muted);
+}
+
+/* ---------- L12 ---------- */
+
+.caixas {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.caixa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 64px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  font-size: 32px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.fimGrupo {
+  margin-right: 10px;
+}
+
+/* Caixa da vez: borda primary de 2 px + anel primary-soft. */
+.atual {
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.teclado {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tecla {
+  height: 64px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-botao);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 26px;
+  font-weight: 700;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.tecla:active:not(:disabled) {
+  background: var(--primary-soft);
+}
+
+.tecla:disabled {
+  opacity: 0.4;
+}
+
+.teclaAcao {
+  font-size: 16px;
+  background: var(--bg);
+}
+
+/* ---------- L13 ---------- */
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+  text-align: left;
+}
+
+.codigo {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cobrar {
+  font-size: 18px;
+}
+
+.cobrar strong {
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.causas {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.aviso {
+  font-weight: 800;
+  color: var(--danger-strong);
+}
+
+.circulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--success-bg);
+  color: var(--success-text);
+  font-size: 34px;
+  font-weight: 800;
+}

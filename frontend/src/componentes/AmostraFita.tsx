@@ -1,16 +1,8 @@
-import type { CorFita, Data, Fita } from '../api/tipos'
+import type { Data, Fita } from '../api/tipos'
 import { classes } from '../util/classes'
+import { nomeDaCor } from '../util/fita'
 import { formatarData } from '../util/formatar'
 import styles from './AmostraFita.module.css'
-
-const NOME_DA_COR: Record<CorFita, string> = {
-  vermelho: 'Vermelho',
-  amarelo: 'Amarelo',
-  verde: 'Verde',
-  azul: 'Azul',
-  branco: 'Branco',
-  preto: 'Preto',
-}
 
 export interface AmostraFitaProps {
   /** Vem pronta da API (a cor é calculada só no backend). */
@@ -28,7 +20,7 @@ export function AmostraFita({ fita, data, rotuloData = 'vence', tamanho = 'lista
     <span className={classes(styles.amostra, styles[tamanho])}>
       <span className={classes(styles.cor, styles[fita.cor])} aria-hidden="true" />
       <span className={styles.texto}>
-        Fita <strong>{NOME_DA_COR[fita.cor]}</strong> · {rotuloData} {formatarData(data)}
+        Fita <strong>{nomeDaCor(fita.cor)}</strong> · {rotuloData} {formatarData(data)}
       </span>
     </span>
   )

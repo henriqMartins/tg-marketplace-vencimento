@@ -233,6 +233,8 @@ export interface RetiradaPrevia {
   total: Dinheiro
   produto: string
   fita: Fita
+  /** PEDIDO-API 3 (aberto): validade, para a amostra da fita sair com a data exata. */
+  validade?: Data
 }
 
 export interface RetiradaFeita {

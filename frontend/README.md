@@ -16,7 +16,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F5b · Reservar (C4–C7) | ✅ |
 | F5c · Minhas reservas e perfil (C8, C9) | ✅ |
 | F6a · Mock do grupo C + L1, L9, L10 | ✅ |
-| F6b · Ajuste e retirada (L11, L12, L13) | — |
+| F6b · Ajuste e retirada (L11, L12, L13) | ✅ |
+| F7 · Gestor (G1, G3, G4, G2, G6) | — |
 
 ## Decisões do frontend
 
@@ -36,6 +37,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 12/11/2026 | **PEDIDO-API 1** (aberto): `retirar_ate` em `GET /api/ofertas/{id}`, para a C4 mostrar "Retire até hoje, 20:00" sem calcular; simulado no mock; sem o campo, a C4 mostra a janela e o fim da oferta |
 | 12/11/2026 | Depois de cancelar, a reserva mostra o desfecho "Você cancelou…" (a especificação não define essa tela) |
 | 12/11/2026 | **PEDIDO-API 2** (aberto): `aguardando_retirada` conta **reservas** (clientes), não unidades |
+| 12/11/2026 | **PEDIDO-API 3** (aberto): `validade` em `RetiradaPrevia`, para a amostra da fita da L13 sair com a data; sem o campo, a L13 mostra cor e bimestre |
+| 12/11/2026 | L12 também aceita o teclado físico (números, ⌫, Enter) no computador |
 | 12/11/2026 | `avisos_para_conferir` no mock é fixo em 5 (o do protótipo) até o mock do grupo D (F8) |
 | 12/11/2026 | Push (C1 tela 2, C3, C9) **só desenhado**, botão "em breve" — grupo H depois de 09/11 |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
@@ -147,7 +150,7 @@ Para ver todos no navegador: `npm run dev` e abra `/dev/componentes`.
 | Componente | Uso e garantias (testadas) |
 |---|---|
 | `Botao`, `BotaoIcone` | primário 56 px, secundário e perigo 52 px; `carregando` trava e mostra "Enviando…"; ícone exige `rotulo` (aria-label) |
-| `Contador` | tamanhos `consumidor` 60, `cadastro` 72, `conferencia` 96; respeita mín./máx. (botão a 40%); **nunca abre teclado** (sem `<input>`); segurar repete |
+| `Contador` | tamanhos `consumidor` 60, `cadastro` 72, `ajuste` 80, `conferencia` 96; respeita mín./máx. (botão a 40%); **nunca abre teclado** (sem `<input>`); segurar repete |
 | `Chip` | pílula com `aria-pressed`; área de toque de 44 px |
 | `FolhaInferior` | `role="dialog"` + `aria-modal`, nome = título; foco preso dentro; Esc e véu fecham; foco volta para quem abriu |
 | `ProvedorToast` + `useToast()` | um toast por vez, 4 s, região `role="status"`; ação opcional ("Desfazer") |

@@ -49,3 +49,15 @@ código com `// PEDIDO-API n`.
   deixar escrito no contrato.
 - Enquanto não houver: o mock conta reservas (`// PEDIDO-API 2`).
 - Decisão (preenchida no main): ...
+
+### 3 · `validade` na prévia da retirada (aberto)
+- Tela: L13 (Retirada — encontrada)
+- Grupo do contrato: C
+- O que falta: `RetiradaPrevia` traz a `fita`, mas não a `validade` do produto.
+- Por que a tela precisa: a L13 mostra a amostra da fita para o funcionário achar o item na área de
+  reservas, e a regra da especificação é que a amostra aparece **sempre com o nome da cor e a data
+  exata** (daltonismo, iluminação, colisão de ciclo).
+- Proposta de formato: `"validade": "2026-10-28"` em `RetiradaPrevia` (a mesma validade da oferta).
+- Enquanto não houver: o mock simula (`// PEDIDO-API 3`); sem o campo, a L13 mostra o nome da cor e o
+  bimestre ("Fita Branco · set–out 2026"), sem a amostra de cor.
+- Decisão (preenchida no main): ...
