@@ -20,6 +20,8 @@ import { C2Vitrine } from '../telas/consumidor/C2Vitrine'
 import { C4Oferta } from '../telas/consumidor/C4Oferta'
 import { C5Resultado } from '../telas/consumidor/C5Resultado'
 import { C6Reserva } from '../telas/consumidor/C6Reserva'
+import { C8MinhasReservas } from '../telas/consumidor/C8MinhasReservas'
+import { C9Perfil } from '../telas/consumidor/C9Perfil'
 
 const tela = (path: string | undefined, codigo: string, titulo: string, etapa: string, larga = false): RouteObject => ({
   ...(path === undefined ? { index: true } : { path }),
@@ -51,9 +53,9 @@ export const rotas: RouteObject[] = [
             element: <ExigeLogin />,
             children: [
               { path: 'reserva/:id/resultado', element: <C5Resultado /> },
-              tela('reservas', 'C8', 'Minhas reservas', 'F5'),
+              { path: 'reservas', element: <C8MinhasReservas /> },
               { path: 'reservas/:id', element: <C6Reserva /> },
-              tela('perfil', 'C9', 'Perfil e preferências', 'F5'),
+              { path: 'perfil', element: <C9Perfil /> },
             ],
           },
         ],

@@ -14,7 +14,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F4 · Acesso (A2 entrar, A3 criar conta, A4 escolher, A5 entrar no computador) | ✅ |
 | F5a · Localização e vitrine (C1, C2, C3) | ✅ |
 | F5b · Reservar (C4–C7) | ✅ |
-| F5c · Minhas reservas e perfil (C8, C9) | — |
+| F5c · Minhas reservas e perfil (C8, C9) | ✅ |
+| F6 · Operação da loja (L1, L9–L13) | — |
 
 ## Decisões do frontend
 
@@ -150,6 +151,11 @@ Para ver todos no navegador: `npm run dev` e abra `/dev/componentes`.
 | `Esqueleto`, `EsqueletoCartao`, `EsqueletoLista` | blocos decorativos; a lista anuncia "Carregando…" uma vez |
 | `EstadoVazio` | ícone + frase + **uma** ação (obrigatória) |
 | `Selo`, `SeloReserva`, `SeloOferta`, `SeloGrupo` | textos e cores da seção 0 a partir dos estados do contrato |
+| `CartaoOferta`, `SeloDesconto`, `Preco` | card da vitrine; preço original riscado lido como "antes" |
+| `CodigoRetirada` | 6 caixas (3 + 3); leitor de tela ouve os dígitos de uma vez; variante riscada (expirada) |
+| `Abas` | `tablist` com setas ← →; o painel usa `idAba`/`idPainel` (`abasIds.ts`) |
+| `Interruptor` | `role="switch"` com rótulo clicável |
+| `Campo`, `CampoSenha`, `CaixaSelecao` | rótulo + caixa de 52 px + dica + erro ligado por `aria-describedby`; mostrar senha |
 | `AmostraFita` | quadrado de cor (decorativo) **sempre** com nome da cor e data exata — `data` é obrigatória no tipo |
 
 Diferença consciente do protótipo: a ação do toast é **branca sublinhada**, não laranja —

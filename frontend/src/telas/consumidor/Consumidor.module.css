@@ -336,3 +336,124 @@
   font-weight: 800;
   color: var(--success-text);
 }
+
+/* ---------- C8 ---------- */
+
+.cartaoReserva {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.cartaoReserva:hover {
+  border-color: var(--line-strong);
+}
+
+.linhaTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nomeProduto {
+  font: var(--texto-titulo-card);
+}
+
+.separador {
+  border-top: 1px solid var(--line);
+  margin: 4px 0;
+}
+
+.codigoCartao {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tempoCartao {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.tempoCartao.urgente {
+  color: var(--urgent);
+}
+
+/* ---------- C9 ---------- */
+
+.cabecalhoPerfil {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.textosPerfil {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.secaoPerfil {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.linhaLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.linhaLink > svg {
+  color: var(--primary);
+}
+
+.linkForte {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--toque-minimo);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.linhaComoAbre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}

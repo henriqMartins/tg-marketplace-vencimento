@@ -1,0 +1,21 @@
+.abas {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+}
+
+.aba {
+  flex: 1;
+  min-height: var(--toque-minimo);
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--muted);
+  font: var(--texto-rotulo);
+}
+
+.aba[aria-selected='true'] {
+  border-bottom-color: var(--primary);
+  color: var(--ink);
+  font-weight: 800;
+}
