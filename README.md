@@ -329,6 +329,20 @@ A vitrine ordena por distância (Haversine calculado no PostgreSQL) quando receb
 `lng`, e não grava a localização. Reserva de outra pessoa responde 404. O navegador só
 aceita chamadas vindas dos endereços em `CORS_ALLOWED_ORIGINS` (`.env`).
 
+**Operação da loja** (grupo C do contrato): exige crachá **e** vínculo com a loja do
+endereço (funcionário ou responsável); sem vínculo → 403.
+
+```powershell
+curl.exe http://localhost:8000/api/lojas/1/resumo-do-dia -H "Authorization: Token <chave>"
+curl.exe -X POST http://localhost:8000/api/lojas/1/ofertas/1/ajustes -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"quantidade\":1,\"motivo\":\"Danificada\"}'
+curl.exe "http://localhost:8000/api/lojas/1/reservas/ativa?codigo=482917" -H "Authorization: Token <chave>"
+curl.exe -X POST http://localhost:8000/api/lojas/1/retiradas -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"codigo\":\"482917\"}'
+```
+
+A loja vê o código da reserva **mascarado** (só os 3 últimos dígitos): quem tem o código
+inteiro é o cliente, que o apresenta no balcão. Código vencido responde `409 venceu`;
+código que não existe, `404`.
+
 **Rodar a simulação:**
 
 ```powershell
@@ -388,15 +402,14 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 11/11/2026 | Backend (etapa 6): acesso — conta, login por e-mail, sair, "eu"; token do DRF; porteiros `EhDaLoja` e `EhResponsavel`; erros no formato do contrato | 16 testes (e-mail repetido com maiúscula, senha guardada só como hash, login errado sem revelar a conta, funcionário barrado no painel, vínculo de outra loja → 403) · backend: 71 ok + 1 pulado |
 | 11/11/2026 | Backend (etapa 7): colunas do contrato — categoria do produto (lista única), janela padrão e antecedência do aviso na loja, `encerrada_em` e `retirada_por` na reserva; margem limitada a 0–7 dias; cor da fita calculada pela validade | 16 testes novos (expirada conta na hora em que **venceu**, não na que foi processada; travas novas; fita nos 12 meses) · migração aplicada, desfeita e reaplicada · backend: 87 ok + 1 pulado |
 | 11/11/2026 | Backend (etapa 8): rotas do consumidor (grupo B) — vitrine com Haversine em SQL e filtros, detalhe, reservar (201 confirmada/parcial, 409 recusada), minhas reservas, ver e cancelar; CORS por variável de ambiente | 25 testes (distância igual à conta em Python; livre da vitrine desconta vencidas sem gravar; reserva de outra pessoa → 404; leitura expira a vencida antes de responder; CORS só para o frontend) · conferido ao vivo · backend: 112 ok + 1 pulado |
+| 12/11/2026 | Backend (etapa 9): rotas da operação da loja (grupo C) — resumo do dia, ofertas da loja com estoque, detalhe com reservas (código mascarado), ajuste e retirada no balcão; cada recusa do domínio ganhou um **código** (`acima_do_livre`, `venceu`...) que a API traduz; retirada vencida já grava a expiração | Domínio: 16 testes novos (50 ok). Backend: 31 testes da loja (sem vínculo → 403; oferta de outra loja → 404; código inteiro nunca vai para a loja; vencido → 409 mesmo depois da ronda) + **5 balcões com o mesmo código ao mesmo tempo: 1 retira, 4 recusados, nada em dobro** (5 rodadas) · backend: 146 ok + 1 pulado |
 
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Backend (etapa 9): endpoints da operação da loja (retirada, ajuste, ofertas, resumo do dia) |
 | ⏳ | Backend (etapa 10): lote, fita, aviso e publicação + configuração da loja |
 | ⏳ | Backend (etapa 11): indicadores dos painéis e histórico |
-| ⏳ | Backend (etapa 12): proximidade por Haversine em SQL |
 | ⏳ | Backend (etapa 13): projeção a partir do resumo de `resultados_n5000` |
 | ⏳ | Frontend (worktree `frontend`, etapas F0–F9 do `docs/frontend/BRIEFING-agente.md`), integrado por grupo do contrato |
 | ⏳ | **09/11/2026** — versão para a banca (artigo com os protótipos das telas) |

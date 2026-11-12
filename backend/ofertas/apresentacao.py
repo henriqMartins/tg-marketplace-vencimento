@@ -83,3 +83,80 @@ def reserva_consumidor(reserva) -> dict:
             "loja": loja_resumo(oferta.produto.loja),
         },
     }
+
+
+# ---------------------------------------------------------------- visão da loja
+
+def estoque(oferta) -> dict:
+    """Estoque do contrato. `reservado` vem da consulta (consultas.com_reservado)."""
+    return {"separado": oferta.separado, "livre": oferta.livre,
+            "reservado": oferta.reservado, "retirado": oferta.retirado,
+            "ajustado": oferta.ajustado, "perda": oferta.perda}
+
+
+def oferta_loja(oferta) -> dict:
+    """Oferta como a loja vê: com o estoque inteiro (L9, L10)."""
+    return {
+        "id": oferta.id,
+        "produto": produto_resumo(oferta.produto),
+        "fita": fita(oferta.validade),
+        "validade": oferta.validade.isoformat(),
+        "preco": dinheiro(oferta.preco),
+        "preco_original": dinheiro(oferta.preco_original),
+        "desconto": desconto(oferta),
+        "janela_horas": horas(oferta.janela),
+        "inicio": quando(oferta.inicio),
+        "fim": quando(oferta.fim),
+        "estado": oferta.estado,
+        "estoque": estoque(oferta),
+    }
+
+
+def cliente(usuario) -> str:
+    """
+    Nome curto do cliente para a loja: "Ana Souza" -> "Ana S.".
+    O balcão precisa reconhecer a pessoa, não o nome completo dela.
+    """
+    partes = (usuario.nome or "").split()
+    if not partes:
+        return "Cliente"
+    if len(partes) == 1:
+        return partes[0]
+    return f"{partes[0]} {partes[-1][0]}."
+
+
+def reserva_loja(reserva) -> dict:
+    """
+    ReservaLoja: o código vem MASCARADO (só os 3 últimos dígitos). Quem tem o
+    código inteiro é o cliente; é ele quem o apresenta no balcão. Se a tela da
+    loja mostrasse o código, qualquer funcionário poderia "retirar" sem o cliente.
+    """
+    return {
+        "id": reserva.id,
+        "codigo_final": reserva.codigo[-3:],
+        "quantidade": reserva.quantidade,
+        "pedido": reserva.pedido,
+        "estado": reserva.estado,
+        "cliente": cliente(reserva.consumidor),
+        "criada_em": quando(reserva.criada_em),
+        "expira_em": quando(reserva.expira_em),
+        "encerrada_em": quando(reserva.encerrada_em),
+    }
+
+
+def total(reserva) -> str:
+    return dinheiro(reserva.quantidade * reserva.oferta.preco)
+
+
+def retirada_previa(reserva) -> dict:
+    """RetiradaPrevia (L12): o que conferir antes de entregar."""
+    return {"reserva": reserva_loja(reserva), "codigo": reserva.codigo,
+            "total": total(reserva), "produto": reserva.oferta.produto.nome,
+            "fita": fita(reserva.oferta.validade)}
+
+
+def retirada_feita(reserva, oferta) -> dict:
+    """RetiradaFeita (L13). `oferta` já vem com o reservado calculado."""
+    return {"reserva": reserva_loja(reserva), "total": total(reserva),
+            "retirada_por": reserva.retirada_por.nome or reserva.retirada_por.email,
+            "oferta": {"id": oferta.id, "estoque": estoque(oferta)}}

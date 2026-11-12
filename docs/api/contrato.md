@@ -168,8 +168,24 @@ Outros erros: `401` (tela leva a A2 e volta), `409 oferta_encerrada`, `400 pedid
 
 A tela C6 revalida com `GET /api/reservas/{id}` a cada 30 s; se `estado` mudar, vai para C7.
 
-## C · Operação da loja 📝
+## C · Operação da loja ✅
 Exigem vínculo com a loja `{lojaId}` (funcionário ou responsável), senão `403`.
+
+Pronto em 12/11/2026. Detalhes que valem para o mock:
+- Antes de responder, o backend passa a ronda **só daquela loja**: reservas vencidas já
+  vêm como `expirada` e ofertas que passaram do `fim` já vêm `encerrada` (sobra = perda).
+- `avisos_para_conferir` vem **sempre 0** até a etapa 10 (os avisos ainda não existem).
+- `aguardando_retirada` e `expiram_em_1h` contam **reservas** (pessoas a atender), não unidades.
+- `ofertas` sem `estado` devolve as ativas (por `fim`, a que acaba antes primeiro) e depois
+  as encerradas (por `fim` desc.). `estado` inválido → `400 parametro_invalido`.
+- Oferta de outra loja → `404 nao_encontrada` (não `403`).
+- `ReservaLoja.cliente` = primeiro nome + inicial do último ("Ana Souza" → "Ana S.").
+  Reservas da oferta ativa por `expira_em`; da encerrada, por `criada_em`.
+- **Código errado e código vencido são respostas diferentes:** se o código pertence a uma
+  reserva desta loja que venceu nas últimas 24 h, a prévia e a retirada respondem
+  `409 venceu` (mesmo que a ronda já a tenha expirado); senão, `404 nao_encontrada`.
+  Código fora do formato (não são 6 dígitos em texto) → `404`.
+- Dois balcões com o mesmo código ao mesmo tempo: um recebe `200`, o outro `404`.
 
 ### `GET /api/lojas/{lojaId}/resumo-do-dia`
 ```jsonc
@@ -195,12 +211,14 @@ O mesmo objeto + `"reservas": [ReservaLoja]` (ativas na oferta ativa; todas na e
 
 ### `POST /api/lojas/{lojaId}/ofertas/{id}/ajustes`
 Entrada `{quantidade, motivo}` → `201 {"estoque": Estoque}`.
-Erros: `409 acima_do_livre` (com `"livre": 6` no corpo), `400 sem_motivo`, `409 oferta_encerrada`.
+Erros: `409 acima_do_livre` (com `"livre": 6` no corpo — o livre **já sem** as vencidas),
+`400 sem_motivo`, `400 quantidade_invalida` (não é inteiro ≥ 1), `400 motivo_longo` (> 200),
+`409 oferta_encerrada`, `404 nao_encontrada`.
 
 ### Retirada (L12 → L13)
 | Método e rota | Entrada | Saída | Erros |
 |---|---|---|---|
-| `GET /api/lojas/{lojaId}/reservas/ativa?codigo=482917` | — | `200 RetiradaPrevia` | `404 nao_encontrada` |
+| `GET /api/lojas/{lojaId}/reservas/ativa?codigo=482917` | — | `200 RetiradaPrevia` | `404 nao_encontrada`, `409 venceu` |
 | `POST /api/lojas/{lojaId}/retiradas` | `{codigo}` | `200 RetiradaFeita` | `404 nao_encontrada`, `409 venceu` |
 
 A retirada é por **loja + código** (o código prova que o cliente está no balcão), não pelo

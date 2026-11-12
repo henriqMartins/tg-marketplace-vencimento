@@ -134,13 +134,26 @@ class TestCancelarERetirar(Base):
 
     def test_codigo_inexistente(self):
         codigo_errado = "000000" if self.r.codigo != "000000" else "111111"
-        with self.assertRaises(ErroDominio):
+        with self.assertRaises(ErroDominio) as ctx:
             servico.retirar(self.loja.id, codigo_errado, self.joao, agora=depois(1))
+        self.assertEqual(ctx.exception.codigo, "nao_encontrada")
 
     def test_retirar_depois_da_janela_recusado(self):
+        with self.assertRaises(ErroDominio) as ctx:
+            servico.retirar(self.loja.id, self.r.codigo, self.joao, agora=depois(5))
+        self.assertEqual(ctx.exception.codigo, "venceu")
+        self.assertEqual(self.recarregar().retirado, 0)
+
+    def test_retirada_vencida_ja_grava_a_expiracao(self):
+        # A recusa não desfaz a expiração: a reserva sai gravada como expirada
+        # e as 3 unidades voltam ao livre na mesma hora (a tela da oferta já acerta).
         with self.assertRaises(ErroDominio):
             servico.retirar(self.loja.id, self.r.codigo, self.joao, agora=depois(5))
-        self.assertEqual(self.recarregar().retirado, 0)
+        self.r.refresh_from_db()
+        self.assertEqual(self.r.estado, "expirada")
+        self.assertIsNone(self.r.retirada_por)
+        self.assertEqual(self.recarregar().livre, 10)
+        self.assertConservacao()
 
 
 class TestEncerradaEmERetiradaPor(Base):

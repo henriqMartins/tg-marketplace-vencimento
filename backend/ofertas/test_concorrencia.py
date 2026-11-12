@@ -134,6 +134,59 @@ class TestParcial(Disputa):
                 self.conferir_conta(oferta, resultados)
 
 
+class TestRetiradaSimultanea(Disputa):
+    """
+    Etapa 9: o MESMO código digitado em vários balcões ao mesmo tempo (ex.: dois
+    funcionários atendendo o mesmo cliente). A trava faz um esperar o outro:
+    só um retira; os demais encontram a reserva já retirada. Ninguém leva em dobro.
+    """
+
+    BALCOES = 5
+
+    def test_mesmo_codigo_em_5_balcoes_so_um_retira(self):
+        from dominio import ErroDominio
+
+        for rodada in range(RODADAS):
+            with self.subTest(rodada=rodada):
+                oferta = self.nova_oferta(separado=10)
+                reserva = servico.reservar(oferta.id, self.pessoas[0], 3, agora=T0)
+                loja_id = self.produto.loja_id
+                barreira = threading.Barrier(self.BALCOES)
+                deram_certo, recusas, erros = [], [], []
+
+                def balcao(i):
+                    try:
+                        barreira.wait()
+                        deram_certo.append(servico.retirar(
+                            loja_id, reserva.codigo, self.pessoas[i + 1],
+                            agora=T0 + timedelta(hours=1)))
+                    except ErroDominio as erro:
+                        recusas.append(erro.codigo)
+                    except Exception as erro:            # erro inesperado = teste falha
+                        erros.append(erro)
+                    finally:
+                        connection.close()
+
+                threads = [threading.Thread(target=balcao, args=(i,))
+                           for i in range(self.BALCOES)]
+                for t in threads:
+                    t.start()
+                for t in threads:
+                    t.join()
+
+                self.assertEqual(erros, [])
+                self.assertEqual(len(deram_certo), 1)                  # 1 balcão retirou
+                self.assertEqual(len(recusas), self.BALCOES - 1)
+                # Chegou antes da retirada confirmar: achou a reserva, esperou a trava e,
+                # ao remontar a oferta (só com as reservas ATIVAS), ela já não estava lá
+                # (reserva_inexistente). Chegou depois: nem achou (nao_encontrada).
+                self.assertTrue(set(recusas) <= {"reserva_inexistente", "nao_encontrada"},
+                                recusas)
+                oferta.refresh_from_db()
+                self.assertEqual(oferta.retirado, 3)                   # não retirou em dobro
+                self.conferir_conta(oferta, [None] * PESSOAS)
+
+
 @skipUnless(os.environ.get("CONTROLE_NEGATIVO") == "1",
             "controle negativo: ligue com CONTROLE_NEGATIVO=1")
 class TestControleNegativo(Disputa):

@@ -78,3 +78,13 @@ def vitrine(agora, lat=None, lng=None, categoria=None, faixa_desconto=None, q=No
         qs = qs.annotate(distancia=distancia_km(lat, lng))
         return qs.order_by(F("distancia").asc(nulls_last=True), "fim", "id")
     return qs.order_by("fim", "id")
+
+
+def com_reservado(qs):
+    """
+    Acrescenta `reservado` a cada oferta: a soma das reservas ATIVAS, contada no
+    banco (a mesma definição do domínio: reservado = soma das reservas ativas).
+    Usado nas telas da loja, depois da ronda da loja — então não há vencida ali.
+    """
+    return qs.annotate(reservado=Coalesce(
+        Sum("reservas__quantidade", filter=Q(reservas__estado=ATIVA)), 0))
