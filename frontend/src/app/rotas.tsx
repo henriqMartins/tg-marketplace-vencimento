@@ -36,14 +36,19 @@ import { G1Painel } from '../telas/gestor/G1Painel'
 import { ConfiguracoesLoja } from '../telas/gestor/ConfiguracoesLoja'
 import { G2Projecao } from '../telas/gestor/G2Projecao'
 import { G3Historico } from '../telas/gestor/G3Historico'
+import { G5Lotes } from '../telas/gestor/G5Lotes'
 import { G4Ofertas } from '../telas/gestor/G4Ofertas'
 import { useVisaoGestor } from './tela'
 
 const LARGA = { largura: 'larga' } satisfies HandleRota
 
-/** Mesma rota, duas telas: G4 para o responsável no computador, L9 no resto. */
+/** Mesma rota, duas telas: a versão do computador para o responsável com tela larga. */
 function OfertasDaLoja() {
   return useVisaoGestor() ? <G4Ofertas /> : <L9Ofertas />
+}
+
+function LotesDaLoja() {
+  return useVisaoGestor() ? <G5Lotes /> : <L4Lotes />
 }
 
 export const rotas: RouteObject[] = [
@@ -92,7 +97,7 @@ export const rotas: RouteObject[] = [
                   { index: true, element: <L1Inicio /> },
                   { path: 'produtos/novo', element: <L2Produto /> },
                   { path: 'lotes/novo', element: <L3Lote /> },
-                  { path: 'lotes', element: <L4Lotes />, handle: LARGA }, // G5 (computador) no 8e
+                  { path: 'lotes', element: <LotesDaLoja />, handle: LARGA },
                   { path: 'avisos', element: <L5Avisos /> },
                   { path: 'avisos/:avisoId', element: <L6Conferencia /> },
                   { path: 'avisos/:avisoId/publicar', element: <L7Publicar /> },

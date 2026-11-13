@@ -25,7 +25,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F8b · Mock do grupo D | ✅ |
 | F8c · L4 lotes, L3 cadastro do lote, L2 novo produto | ✅ |
 | F8d · L5 avisos, L6 conferência, L8 adiar, L7 publicar | ✅ |
-| F8e · G5 lotes e fitas no computador | — |
+| F8e · G5 lotes e fitas no computador | ✅ |
 | F8f · Endereço → coordenada (Nominatim) na L14/G6 | — |
 | F9 · PWA | — |
 
@@ -87,6 +87,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 13/11/2026 | L7: preço sugerido da API, desconto 30% marcado de início (como no protótipo), janela padrão da loja; prévia "De R$ 4,49 por R$ 3,14" com a mesma conta do backend (`previaDesconto`, meio centavo para cima), avisando que o valor final é o gravado. `409 fim_ja_passou` vira a frase da especificação |
 | 13/11/2026 | Oferta publicada **sem** a frase "Quem ativou os avisos de oferta foi notificado": o push (grupo H) está fora até 09/11, e a frase seria falsa |
 | 13/11/2026 | Todas as rotas da especificação têm a tela de verdade: a tela "em construção" saiu |
+| 13/11/2026 | G5 na mesma rota da L4 (`/loja/:id/lotes`), como a G4 e a L9. Situação na URL (`?situacao=`), pedida à API; grupos encerrados ficam de fora, como na L4. "+ Cadastrar lote" abre a L3 num modal, e "+ Novo produto" troca o conteúdo do modal pela L2, que devolve o produto criado |
+| 13/11/2026 | Calendário de fitas da G5: a contagem por cor soma a lista de grupos que a API devolveu; o destaque do bimestre atual sai do mês de hoje (`bimestreDoMes`). É conta de calendário, não a cor de um produto: a cor de cada grupo e lote continua vindo só da API |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

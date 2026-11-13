@@ -302,3 +302,80 @@ describe('G2 · Projeção da janela de reserva', () => {
     expect(tela.container.textContent).not.toMatch(/recomend|melhor janela|equilibra|ideal|sugerid/i)
   })
 })
+
+describe('G5 · Lotes e fitas (desktop)', () => {
+  const linhaDe = (produto: string) => screen.getByRole('button', { name: new RegExp(produto) }).closest('tr')!
+
+  it('calendário: 6 bimestres, o atual em destaque, com os grupos ativos de cada cor', async () => {
+    await abrir('/loja/1/lotes', { email: CARLOS, largura: DESKTOP })
+    const calendario = await screen.findByRole('region', { name: 'Calendário de fitas' })
+    const cartoes = within(calendario).getAllByRole('listitem')
+    expect(cartoes).toHaveLength(6)
+    const branco = cartoes.find((c) => c.getAttribute('aria-current') === 'date')!
+    expect(branco).toHaveTextContent('Branco')
+    expect(branco).toHaveTextContent('set–out · bimestre atual')
+    await waitFor(() => expect(branco).toHaveTextContent('6 grupos ativos'))
+    expect(cartoes[0]).toHaveTextContent('Vermelho') // jan–fev
+    expect(cartoes[0]).toHaveTextContent('1 grupo ativo')
+    expect(screen.getByText('A cor depende da data de validade, não do tempo que falta.')).toBeInTheDocument()
+  })
+
+  it('a linha expande os lotes e explica a colisão', async () => {
+    const usuario = userEvent.setup()
+    await abrir('/loja/1/lotes', { email: CARLOS, largura: DESKTOP })
+    await screen.findByRole('button', { name: /Achocolatado em pó 400 g/ })
+    const botao = screen.getByRole('button', { name: /Achocolatado em pó 400 g/ })
+    expect(botao).toHaveAttribute('aria-expanded', 'false')
+    expect(linhaDe('Achocolatado')).toHaveTextContent('Colisão de ciclo')
+    expect(linhaDe('Achocolatado')).toHaveTextContent('adiado para 23/10')
+
+    await usuario.click(botao)
+    expect(botao).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText(/Validade 31\/10\/2026 · 24 un\./)).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('Ainda há um lote Branco do ciclo anterior (validade 28/10/2025).')
+  })
+
+  it('chips de situação vão à API e ficam na URL; grupo em oferta leva à G4', async () => {
+    const usuario = userEvent.setup()
+    const { caminhoAtual } = await abrir('/loja/1/lotes', { email: CARLOS, largura: DESKTOP })
+    await screen.findByRole('button', { name: /Leite condensado/ })
+    await usuario.click(screen.getByRole('button', { name: 'Em oferta' }))
+    expect(caminhoAtual()).toBe('/loja/1/lotes?situacao=em_oferta')
+    await waitFor(() => expect(screen.queryByRole('button', { name: /Leite condensado/ })).not.toBeInTheDocument())
+    expect(within(linhaDe('Iogurte natural')).getByRole('link', { name: 'virou oferta' })).toHaveAttribute(
+      'href',
+      '/loja/1/ofertas?oferta=1',
+    )
+  })
+
+  it('"Cadastrar lote" abre a L3 no modal; a L2 também, e o lote novo entra na tabela', async () => {
+    const usuario = userEvent.setup()
+    await abrir('/loja/1/lotes', { email: CARLOS, largura: DESKTOP })
+    await usuario.click(await screen.findByRole('button', { name: 'Cadastrar lote' }))
+    let modal = screen.getByRole('dialog', { name: 'Cadastrar lote' })
+    await usuario.type(within(modal).getByRole('searchbox', { name: 'Buscar produto no catálogo' }), 'Atum')
+    await usuario.click(within(modal).getByRole('button', { name: '+ Novo produto' }))
+
+    modal = screen.getByRole('dialog', { name: 'Novo produto' })
+    expect(within(modal).getByLabelText('Nome do produto')).toHaveValue('Atum')
+    await usuario.type(within(modal).getByLabelText('Nome do produto'), ' em lata 170 g')
+    await usuario.click(within(modal).getByRole('button', { name: 'Enlatados' }))
+    await usuario.click(within(modal).getByRole('button', { name: 'Salvar e cadastrar o lote' }))
+
+    modal = await screen.findByRole('dialog', { name: 'Cadastrar lote' })
+    expect(await within(modal).findByText('Atum em lata 170 g')).toBeInTheDocument()
+    await usuario.type(within(modal).getByLabelText('Validade impressa'), '18122026')
+    await usuario.click(within(modal).getByRole('button', { name: 'Salvar lote e agendar aviso' }))
+    expect(await within(modal).findByText('Novo grupo Preto criado para este produto. Data de referência: 18/12/2026.')).toBeInTheDocument()
+
+    await usuario.click(within(modal).getByRole('button', { name: 'Ver lotes e fitas' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(await screen.findByRole('button', { name: /Atum em lata 170 g/ })).toBeInTheDocument()
+  })
+
+  it('no celular o responsável continua vendo a L4', async () => {
+    await abrir('/loja/1/lotes', { email: CARLOS, largura: 390 })
+    expect(await screen.findByRole('group', { name: 'Filtrar por cor da fita' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Calendário de fitas' })).not.toBeInTheDocument()
+  })
+})

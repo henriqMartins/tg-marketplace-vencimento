@@ -654,3 +654,92 @@
   font-weight: 800;
   color: var(--ink);
 }
+
+/* ---------- G5 · Lotes e fitas ---------- */
+
+.calendario {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sobrelinha {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bimestres {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bimestre {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+}
+
+.bimestreAtual {
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+/* A bolinha vira a amostra de 28 px do calendário. */
+.amostraBimestre > span {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.fitaLinha {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.selos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tabela tbody tr.linhaLotes td {
+  padding-top: 0;
+  background: var(--primary-soft);
+}
+
+.lotes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 0 4px 18px;
+  list-style: none;
+}
+
+.lotes li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alertaColisao {
+  margin: 8px 0 4px 18px;
+  padding: 8px 12px;
+  border-radius: var(--raio-campo);
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  font-size: 14px;
+}
