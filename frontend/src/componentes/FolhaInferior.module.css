@@ -47,3 +47,15 @@
     animation: none;
   }
 }
+
+/* Forma "modal": no computador, caixa centralizada com os quatro cantos arredondados. */
+.veuCentro {
+  align-items: center;
+  padding: 24px;
+}
+
+.modal {
+  max-width: 520px;
+  padding: 24px;
+  border-radius: var(--raio-destaque);
+}

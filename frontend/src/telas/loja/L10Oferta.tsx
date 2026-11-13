@@ -97,7 +97,8 @@ export function L10Oferta() {
   )
 }
 
-function ListaReservas({ oferta: o }: { oferta: OfertaLojaDetalhe }) {
+/** Reservas da oferta (L10 e painel da G4). */
+export function ListaReservas({ oferta: o }: { oferta: OfertaLojaDetalhe }) {
   const agora = useAgora(30_000)
   const ativa = o.estado === 'ativa'
   return (

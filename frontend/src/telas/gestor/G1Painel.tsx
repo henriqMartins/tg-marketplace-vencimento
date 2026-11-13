@@ -225,7 +225,8 @@ function TabelaOfertas({ ofertas, lojaId }: { ofertas: OfertaLoja[]; lojaId: num
           {ofertas.map((o) => (
             <tr key={o.id}>
               <td>
-                <Link to={`/loja/${lojaId}/ofertas/${o.id}`} className={styles.link}>
+                {/* No computador a oferta abre no painel da G4. */}
+                <Link to={`/loja/${lojaId}/ofertas?oferta=${o.id}`} className={styles.link}>
                   {o.produto.nome}
                 </Link>
               </td>

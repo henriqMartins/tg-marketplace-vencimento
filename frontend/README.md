@@ -18,7 +18,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F6a · Mock do grupo C + L1, L9, L10 | ✅ |
 | F6b · Ajuste e retirada (L11, L12, L13) | ✅ |
 | F7a · Mock do grupo F + G1 painel, G3 histórico | ✅ |
-| F7b · G4 ofertas no computador | — |
+| F7b · G4 ofertas no computador | ✅ |
 | F7c · Mock dos grupos G e E + G2 projeção, G6/L14 configurações | — |
 
 ## Decisões do frontend
@@ -48,6 +48,11 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 13/11/2026 | Período do gestor (7 dias · 30 dias · mês atual) na URL (`?periodo=`), contado a partir de hoje em Brasília; o mesmo controle na G1 e na G3 |
 | 13/11/2026 | Gráfico semanal sem biblioteca (HTML/CSS). As cores da especificação têm pouco contraste com o branco (cinza 1,7:1, laranja 2,5:1); compensado com legenda, total sobre cada barra, dica no foco/mouse e tabela equivalente ("Ver como tabela") |
 | 13/11/2026 | G1 "Reservas em andamento": uma leitura de `GET …/ofertas/{id}` por oferta ativa (grupo C, como o contrato indica) |
+| 13/11/2026 | G4 na mesma rota da L9 (`/loja/:id/ofertas`): responsável com tela ≥ 1024 px vê a G4 (`useVisaoGestor`, o mesmo critério do layout); no celular continua a L9. Aba e oferta escolhida na URL (`?aba=encerradas&oferta=2`); o G1 abre a oferta direto no painel |
+| 13/11/2026 | Cartões da G4: Livres agora, Reservadas aguardando e Encerram em 48 h **somados da lista de ativas** que a API devolve (não há endpoint de resumo de ofertas); Perda no mês vem dos indicadores (grupo F, mesmo cache do G1) |
+| 13/11/2026 | Coluna "Perda / ajuste" da G4 = perda + ajustado, a mesma soma que a barra de estoque já mostrava; na tabela o fim aparece só como dia ("amanhã", "18/11") e o horário completo fica no painel |
+| 13/11/2026 | Formulário da L11 extraído para `FormAjuste`: a L11 (celular) e o modal da G4 usam o mesmo componente, com o mesmo tratamento do 409 `acima_do_livre`. O modal é a `FolhaInferior` com `forma="modal"` (mesma captura de foco) |
+| 13/11/2026 | Corrigido: os estilos dos motivos da L11 (grade 2 × 2) não existiam desde a F6b; agora são ladrilhos com o rádio real por baixo |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

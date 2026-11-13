@@ -29,6 +29,8 @@ import { L11Ajuste } from '../telas/loja/L11Ajuste'
 import { L12Retirada } from '../telas/loja/L12Retirada'
 import { G1Painel } from '../telas/gestor/G1Painel'
 import { G3Historico } from '../telas/gestor/G3Historico'
+import { G4Ofertas } from '../telas/gestor/G4Ofertas'
+import { useVisaoGestor } from './tela'
 
 const tela = (path: string | undefined, codigo: string, titulo: string, etapa: string, larga = false): RouteObject => ({
   ...(path === undefined ? { index: true } : { path }),
@@ -37,6 +39,11 @@ const tela = (path: string | undefined, codigo: string, titulo: string, etapa: s
 })
 
 const LARGA = { largura: 'larga' } satisfies HandleRota
+
+/** Mesma rota, duas telas: G4 para o responsável no computador, L9 no resto. */
+function OfertasDaLoja() {
+  return useVisaoGestor() ? <G4Ofertas /> : <L9Ofertas />
+}
 
 export const rotas: RouteObject[] = [
   // A1 fica fora do LayoutRaiz: tem a própria faixa "Conectando…" no rodapé.
@@ -88,7 +95,7 @@ export const rotas: RouteObject[] = [
                   tela('avisos', 'L5', 'Avisos de validade', 'F8'),
                   tela('avisos/:avisoId', 'L6', 'Conferência na gôndola', 'F8'),
                   tela('avisos/:avisoId/publicar', 'L7', 'Revisar e publicar oferta', 'F8'),
-                  { path: 'ofertas', element: <L9Ofertas />, handle: LARGA }, // G4 (desktop) na F7
+                  { path: 'ofertas', element: <OfertasDaLoja />, handle: LARGA },
                   { path: 'ofertas/:ofertaId', element: <L10Oferta /> },
                   { path: 'ofertas/:ofertaId/ajuste', element: <L11Ajuste /> },
                   { path: 'retirada', element: <L12Retirada /> },

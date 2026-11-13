@@ -298,3 +298,65 @@ a.cartao:hover {
   background: var(--surface);
   color: var(--ink);
 }
+
+/* ---------- L11 · Ajuste (também no modal da G4) ---------- */
+
+.grupoMotivo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.rotuloForm {
+  padding: 0;
+  font: var(--texto-rotulo);
+}
+
+/* Grade 2 × 2 de ladrilhos; o rádio continua lá (teclado e leitor de tela), só invisível. */
+.gradeMotivo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.opcaoMotivo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 10px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.opcaoMotivo input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.opcaoMotivo:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.opcaoMotivo:has(input:focus-visible) {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.rodapeAjuste {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

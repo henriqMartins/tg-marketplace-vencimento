@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Indicadores } from '../../api'
@@ -95,7 +95,7 @@ describe('G1 · Painel de acompanhamento', () => {
     await abrir('/loja/1/painel', { email: CARLOS, largura: DESKTOP })
 
     const ofertas = await screen.findByRole('region', { name: 'Ofertas ativas' })
-    expect(await within(ofertas).findByRole('link', { name: 'Iogurte natural 170 g' })).toHaveAttribute('href', '/loja/1/ofertas/1')
+    expect(await within(ofertas).findByRole('link', { name: 'Iogurte natural 170 g' })).toHaveAttribute('href', '/loja/1/ofertas?oferta=1')
     expect(within(ofertas).getByRole('link', { name: 'Queijo minas frescal 250 g' })).toBeInTheDocument()
 
     const andamento = screen.getByRole('region', { name: 'Reservas em andamento' })
@@ -151,5 +151,84 @@ describe('G3 · Histórico de reservas', () => {
     expect(await screen.findByRole('searchbox', { name: 'Buscar por produto ou código' })).toHaveValue('917')
     const linhas = await screen.findAllByRole('row')
     expect(linhas[1]).toHaveTextContent('••• 917Iogurte natural 170 g2 / 2Ana S.Reservada')
+  })
+})
+
+describe('G4 · Ofertas (desktop)', () => {
+  const painel = () => screen.getByRole('region', { name: 'Detalhe da oferta' })
+  const botaoOferta = (nome: string) => screen.getByRole('button', { name: nome })
+
+  it('cartões: 3 somados da lista de ativas, perda do mês vinda dos indicadores', async () => {
+    const pecas = criarPecas()
+    vi.spyOn(pecas.mock.gestor, 'indicadores').mockResolvedValue(ESTRANHOS)
+    await abrir('/loja/1/ofertas', { email: CARLOS, largura: DESKTOP, pecas })
+
+    expect(await screen.findByRole('button', { name: 'Ativas (3)' })).toHaveAttribute('aria-pressed', 'true')
+    await waitFor(() => expect(cartao('Perda no mês')).toHaveTextContent('9 un.'))
+    expect(cartao('Livres agora')).toHaveTextContent('14 un.') // 6 + 5 + 3
+    expect(cartao('Reservadas aguardando')).toHaveTextContent('6 un.') // 4 + 2 + 0
+    expect(cartao('Encerram em 48 h')).toHaveTextContent('1') // o queijo, que sai amanhã
+    expect(screen.queryByRole('button', { name: /nova oferta/i })).not.toBeInTheDocument()
+  })
+
+  it('a linha escolhida fica marcada e o painel acompanha (primeira por padrão)', async () => {
+    const usuario = userEvent.setup()
+    const { caminhoAtual } = await abrir('/loja/1/ofertas', { email: CARLOS, largura: DESKTOP })
+
+    await screen.findByRole('table')
+    const primeira = screen.getAllByRole('button', { pressed: true }).find((b) => b.closest('tbody'))!
+    expect(await within(painel()).findByRole('heading', { name: primeira.textContent! })).toBeInTheDocument()
+
+    await usuario.click(botaoOferta('Presunto fatiado 200 g'))
+    expect(caminhoAtual()).toBe('/loja/1/ofertas?oferta=2')
+    expect(botaoOferta('Presunto fatiado 200 g')).toHaveAttribute('aria-pressed', 'true')
+    expect(botaoOferta('Presunto fatiado 200 g').closest('tr')!.className).toMatch(/linhaEscolhida/)
+    expect(primeira).toHaveAttribute('aria-pressed', 'false')
+    expect(await within(painel()).findByRole('heading', { name: 'Presunto fatiado 200 g' })).toBeInTheDocument()
+    expect(within(painel()).getByText('8 = 5 + 2 + 1 + 0 + 0')).toBeInTheDocument()
+    expect(within(painel()).getByRole('link', { name: 'Ver reservas' })).toHaveAttribute(
+      'href',
+      '/loja/1/reservas?q=Presunto%20fatiado%20200%20g',
+    )
+  })
+
+  it('encerradas: selo, perda explicada e ajuste desabilitado', async () => {
+    const usuario = userEvent.setup()
+    const { caminhoAtual } = await abrir('/loja/1/ofertas?oferta=1', { email: CARLOS, largura: DESKTOP })
+
+    await usuario.click(await screen.findByRole('button', { name: /^Encerradas/ }))
+    expect(caminhoAtual()).toBe('/loja/1/ofertas?aba=encerradas')
+    // O painel é remontado ao trocar de aba: busca a seção de novo a cada tentativa.
+    await waitFor(() => expect(within(painel()).getByText('Oferta encerrada')).toBeInTheDocument())
+    expect(within(painel()).getByText(/como perda\./)).toBeInTheDocument()
+    expect(within(painel()).getByRole('button', { name: 'Ajustar estoque' })).toBeDisabled()
+  })
+
+  it('"Ajustar estoque" abre a L11 num modal; o 409 é tratado igual e o painel se atualiza', async () => {
+    const usuario = userEvent.setup()
+    const { mock } = await abrir('/loja/1/ofertas?oferta=1', { email: CARLOS, largura: DESKTOP })
+
+    const detalhe = await screen.findByRole('region', { name: 'Detalhe da oferta' })
+    await usuario.click(await within(detalhe).findByRole('button', { name: 'Ajustar estoque' }))
+    const modal = screen.getByRole('dialog', { name: 'Ajustar estoque' })
+    const mais = await within(modal).findByRole('button', { name: 'Aumentar' })
+    for (let i = 0; i < 5; i++) await usuario.click(mais)
+    await usuario.click(within(modal).getByRole('radio', { name: 'Extraviada' }))
+
+    await act(() => mock.consumidor.reservar(1, 1)) // um cliente reserva enquanto o gestor contava
+    await usuario.click(within(modal).getByRole('button', { name: 'Registrar ajuste de 6 un.' }))
+    expect(await within(modal).findByRole('alert')).toHaveTextContent('Só há 5 unidades livres agora.')
+    await waitFor(() => expect(within(modal).getByRole('button', { name: 'Registrar ajuste de 5 un.' })).toBeInTheDocument())
+
+    await usuario.click(within(modal).getByRole('button', { name: 'Registrar ajuste de 5 un.' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(await within(painel()).findByText('12 = 0 + 5 + 2 + 5 + 0')).toBeInTheDocument()
+    expect(screen.getByText('Ajuste registrado: 5 un. (Extraviada).')).toBeInTheDocument()
+  })
+
+  it('no celular o responsável continua vendo a L9', async () => {
+    await abrir('/loja/1/ofertas', { email: CARLOS, largura: 390 })
+    expect(await screen.findByRole('tablist', { name: 'Ofertas da loja' })).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Estado das ofertas' })).not.toBeInTheDocument()
   })
 })

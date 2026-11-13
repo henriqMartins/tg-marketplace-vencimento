@@ -8,6 +8,8 @@ export interface FolhaInferiorProps {
   titulo: string
   aoFechar: () => void
   children: ReactNode
+  /** 'modal': caixa no centro, para o computador (G4 abre a L11 assim). Padrão: folha de baixo. */
+  forma?: 'folha' | 'modal'
 }
 
 const FOCAVEIS = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -16,7 +18,7 @@ const FOCAVEIS = 'a[href], button:not([disabled]), input:not([disabled]), select
  * Folha inferior (bottom sheet) com véu. É um diálogo modal: foco vai para dentro ao abrir,
  * Tab não escapa, Esc ou toque no véu fecham, e o foco volta para quem abriu.
  */
-export function FolhaInferior({ aberta, titulo, aoFechar, children }: FolhaInferiorProps) {
+export function FolhaInferior({ aberta, titulo, aoFechar, children, forma = 'folha' }: FolhaInferiorProps) {
   const idTitulo = useId()
   const folha = useRef<HTMLDivElement>(null)
 
@@ -55,7 +57,7 @@ export function FolhaInferior({ aberta, titulo, aoFechar, children }: FolhaInfer
 
   return createPortal(
     <div
-      className={styles.veu}
+      className={forma === 'modal' ? `${styles.veu} ${styles.veuCentro}` : styles.veu}
       data-testid="veu"
       onClick={(e) => {
         if (e.target === e.currentTarget) aoFechar()
@@ -67,10 +69,10 @@ export function FolhaInferior({ aberta, titulo, aoFechar, children }: FolhaInfer
         aria-modal="true"
         aria-labelledby={idTitulo}
         tabIndex={-1}
-        className={styles.folha}
+        className={forma === 'modal' ? `${styles.folha} ${styles.modal}` : styles.folha}
         onKeyDown={teclas}
       >
-        <span className={styles.puxador} aria-hidden="true" />
+        {forma === 'folha' && <span className={styles.puxador} aria-hidden="true" />}
         <h2 id={idTitulo} className={styles.titulo}>
           {titulo}
         </h2>

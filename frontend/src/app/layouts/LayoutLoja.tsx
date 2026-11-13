@@ -5,7 +5,7 @@ import { useApi } from '../contextos'
 import { IconeAvisos, IconeCasa, IconeLotes, IconeRetirada } from '../../componentes/icones'
 import { NavInferior } from '../../componentes/NavInferior'
 import { useLojaAtual } from '../loja'
-import { useEhDesktop } from '../tela'
+import { useVisaoGestor } from '../tela'
 import { LayoutGestor } from './LayoutGestor'
 import styles from './Layouts.module.css'
 
@@ -16,12 +16,12 @@ import styles from './Layouts.module.css'
  */
 export function LayoutLoja() {
   const api = useApi()
-  const { lojaId, papel } = useLojaAtual()
-  const desktop = useEhDesktop()
+  const { lojaId } = useLojaAtual()
+  const gestor = useVisaoGestor()
   // Mesmo cache da L1: o contador de avisos vem do resumo do dia.
   const resumo = useQuery({ queryKey: ['resumo', lojaId], queryFn: () => api.operacao.resumoDoDia(lojaId), ...RECARGA_30S })
 
-  if (desktop && papel === 'responsavel') return <LayoutGestor />
+  if (gestor) return <LayoutGestor />
 
   const base = `/loja/${lojaId}`
   return (
