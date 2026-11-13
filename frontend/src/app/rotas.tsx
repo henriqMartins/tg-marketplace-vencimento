@@ -28,6 +28,7 @@ import { L10Oferta } from '../telas/loja/L10Oferta'
 import { L11Ajuste } from '../telas/loja/L11Ajuste'
 import { L12Retirada } from '../telas/loja/L12Retirada'
 import { G1Painel } from '../telas/gestor/G1Painel'
+import { G2Projecao } from '../telas/gestor/G2Projecao'
 import { G3Historico } from '../telas/gestor/G3Historico'
 import { G4Ofertas } from '../telas/gestor/G4Ofertas'
 import { useVisaoGestor } from './tela'
@@ -105,7 +106,7 @@ export const rotas: RouteObject[] = [
                     children: [
                       tela('config', 'L14 / G6', 'Configurações da loja', 'F8', true),
                       { path: 'painel', element: <G1Painel />, handle: LARGA },
-                      tela('projecao', 'G2', 'Projeção da janela de reserva', 'F7', true),
+                      { path: 'projecao', element: <G2Projecao />, handle: LARGA },
                       { path: 'reservas', element: <G3Historico />, handle: LARGA },
                     ],
                   },

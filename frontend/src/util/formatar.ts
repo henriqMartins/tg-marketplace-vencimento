@@ -72,3 +72,13 @@ export function formatarTaxa(taxa: number | null): string {
 export function comEm(horario: string): string {
   return horario.startsWith('hoje') || horario.startsWith('amanhã') ? horario : `em ${horario}`
 }
+
+/** Percentual que a API já manda em % (ex.: 31.3) → "31,3%". Só formata. */
+export function formatarPercentual(pct: number): string {
+  return `${pct.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
+}
+
+/** Janela de reserva em horas → "30 min", "1 h", "24 h". */
+export function formatarJanela(horas: number): string {
+  return horas < 1 ? `${Math.round(horas * 60)} min` : `${horas.toLocaleString('pt-BR')} h`
+}

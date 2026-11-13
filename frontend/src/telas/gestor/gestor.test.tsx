@@ -1,4 +1,4 @@
-import { act, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Indicadores } from '../../api'
@@ -230,5 +230,75 @@ describe('G4 · Ofertas (desktop)', () => {
     await abrir('/loja/1/ofertas', { email: CARLOS, largura: 390 })
     expect(await screen.findByRole('tablist', { name: 'Ofertas da loja' })).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Estado das ofertas' })).not.toBeInTheDocument()
+  })
+})
+
+describe('G2 · Projeção da janela de reserva', () => {
+  const cartaoValor = (rotulo: string) => screen.getByText(rotulo).closest('div')!
+
+  it('sem filtro = Tabela 5, "Baseado em 5.000 rodadas simuladas"', async () => {
+    await abrir('/loja/1/projecao', { email: CARLOS, largura: DESKTOP })
+
+    expect(await screen.findByText(/Baseado em 5\.000 rodadas simuladas/)).toBeInTheDocument()
+    expect(screen.getByRole('slider', { name: 'Tamanho do lote' })).toHaveAttribute('aria-valuetext', 'Todos')
+    // Janela inicial 4 h
+    expect(cartaoValor('Perda projetada')).toHaveTextContent('31,3%')
+    expect(cartaoValor('Compradores bloqueados')).toHaveTextContent('13,8%')
+    expect(cartaoValor('Taxa de retirada')).toHaveTextContent('53,3%')
+
+    const tabela = screen.getByRole('table', { name: 'Projeção por janela de reserva' })
+    const linhas = within(tabela).getAllByRole('row').slice(1).map((l) => l.textContent)
+    expect(linhas).toEqual([
+      '30 min92,60,64,6',
+      '1 h74,21,316,1',
+      '2 h48,45,434,7',
+      '4 h31,313,853,3',
+      '8 h24,919,564,5',
+      '12 h23,721,267,4',
+      '24 h24,421,867,4',
+    ])
+  })
+
+  it('escolher outra janela (barra ou seletor) troca os cartões', async () => {
+    const usuario = userEvent.setup()
+    await abrir('/loja/1/projecao', { email: CARLOS, largura: DESKTOP })
+    await usuario.click(await screen.findByRole('button', { name: 'Janela 1 h: perda 74,2%, bloqueados 1,3%' }))
+    expect(cartaoValor('Perda projetada')).toHaveTextContent('74,2%')
+    await usuario.click(within(screen.getByRole('group', { name: 'Janela de reserva' })).getByRole('button', { name: '24 h' }))
+    expect(cartaoValor('Taxa de retirada')).toHaveTextContent('67,4%')
+  })
+
+  it('com filtro: só vale ao atualizar, vai à API e mostra o N menor que ela devolveu', async () => {
+    const usuario = userEvent.setup()
+    const pecas = criarPecas()
+    const projecao = vi.spyOn(pecas.mock.projecao, 'projecao')
+    const { caminhoAtual } = await abrir('/loja/1/projecao', { email: CARLOS, largura: DESKTOP, pecas })
+    await screen.findByText(/Baseado em 5\.000/)
+    expect(screen.getByRole('button', { name: 'Atualizar projeção' })).toBeDisabled()
+
+    const lote = screen.getByRole('slider', { name: 'Tamanho do lote' })
+    fireEvent.change(lote, { target: { value: '1' } })
+    expect(lote).toHaveAttribute('aria-valuetext', '5–14 un.')
+    expect(screen.getByText(/Baseado em 5\.000/)).toBeInTheDocument() // ainda não aplicou
+
+    await usuario.click(screen.getByRole('button', { name: 'Atualizar projeção' }))
+    expect(caminhoAtual()).toBe('/loja/1/projecao?lote=5-14')
+    await waitFor(() => expect(projecao).toHaveBeenLastCalledWith(1, { lote: '5-14', procura: undefined, chegada: 2 }))
+    const { rodadas } = await projecao.mock.results.at(-1)!.value
+    expect(rodadas).toBeLessThan(5000)
+    expect(
+      await screen.findByText(new RegExp(`Baseado em ${rodadas.toLocaleString('pt-BR')} rodadas simuladas`)),
+    ).toBeInTheDocument()
+  })
+
+  it('chegada de 4 h no mock: mensagem "só com a API real"', async () => {
+    await abrir('/loja/1/projecao?chegada=4', { email: CARLOS, largura: DESKTOP })
+    expect(await screen.findByRole('alert')).toHaveTextContent('Projeção com chegada de 4 h disponível só com a API real.')
+  })
+
+  it('nenhum texto recomenda janela', async () => {
+    const { tela } = await abrir('/loja/1/projecao', { email: CARLOS, largura: DESKTOP })
+    await screen.findByText(/Baseado em/)
+    expect(tela.container.textContent).not.toMatch(/recomend|melhor janela|equilibra|ideal|sugerid/i)
   })
 })

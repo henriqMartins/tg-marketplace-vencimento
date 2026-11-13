@@ -42,6 +42,7 @@ import {
   quantidadeReservada,
 } from './regras-fingidas'
 import { carregar, salvar, type Guarda } from './persistencia'
+import { calcularProjecao } from './projecao'
 import { criarSemente, type BancoMock, type OfertaMock, type ReservaMock, type UsuarioMock } from './semente'
 
 export interface OpcoesMock {
@@ -535,6 +536,21 @@ export function criarClienteMock({
       }),
   }
 
+  // ---------- G · Projeção ----------
+
+  const projecao: ApiProjecao = {
+    projecao: (lojaId, filtros = {}) =>
+      responder(() => {
+        responsavelDe(lojaId)
+        const chegada = filtros.chegada ?? 2
+        // O resumo do mock vem do rodadas.csv, que só tem a chegada de 2 h (decisão 4a).
+        if (chegada !== 2) {
+          throw erro(501, 'chegada_so_na_api', `Projeção com chegada de ${chegada} h disponível só com a API real.`)
+        }
+        return calcularProjecao(filtros.lote ?? null, filtros.procura ?? null)
+      }),
+  }
+
   return {
     servidor,
     acesso,
@@ -543,7 +559,7 @@ export function criarClienteMock({
     lotes: pendente<ApiLotes>('lotes', 'F8'),
     configuracao: pendente<ApiConfiguracao>('configuracao', 'F8'),
     gestor,
-    projecao: pendente<ApiProjecao>('projecao', 'F7'),
+    projecao,
 
     reiniciar() {
       banco = criarSemente(agora())

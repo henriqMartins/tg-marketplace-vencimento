@@ -202,7 +202,7 @@ describe('mock · vitrine', () => {
   })
 
   it('grupos ainda sem mock avisam a etapa', async () => {
-    await expect(api.projecao.projecao(1)).rejects.toThrow('etapa F7')
+    await expect(api.configuracao.obterLoja(1)).rejects.toThrow('etapa F8')
   })
 })
 
@@ -367,5 +367,52 @@ describe('mock · grupo C (operação da loja)', () => {
 
     agora = new Date('2026-10-22T19:45:00-03:00') // a 31 venceu às 19:42
     expect((await erroDe(api.operacao.retirar(1, '482917'))).codigo).toBe('venceu')
+  })
+})
+
+describe('mock · projeção (grupo G)', () => {
+  /** Tabela 5 do artigo: janela, perda (% do lote), bloqueados (% dos compradores), retirada (%). */
+  const TABELA_5 = [
+    [0.5, 92.6, 0.6, 4.6],
+    [1, 74.2, 1.3, 16.1],
+    [2, 48.4, 5.4, 34.7],
+    [4, 31.3, 13.8, 53.3],
+    [8, 24.9, 19.5, 64.5],
+    [12, 23.7, 21.2, 67.4],
+    [24, 24.4, 21.8, 67.4],
+  ]
+
+  it('sem filtro e chegada 2 h = exatamente a Tabela 5, com 5.000 rodadas', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const p = await api.projecao.projecao(1)
+    expect(p.rodadas).toBe(5000)
+    expect(p.filtro).toEqual({ lote: null, procura: null, chegada: 2 })
+    expect(p.janelas.map((j) => [j.janela_horas, j.perda_pct, j.bloqueados_pct, j.retirada_pct])).toEqual(TABELA_5)
+  })
+
+  it('com filtro: menos rodadas, números diferentes; as faixas somam as 5.000', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const pequenos = await api.projecao.projecao(1, { lote: '5-14' })
+    expect(pequenos.rodadas).toBeGreaterThan(0)
+    expect(pequenos.rodadas).toBeLessThan(5000)
+    expect(pequenos.filtro).toEqual({ lote: '5-14', procura: null, chegada: 2 })
+    expect(pequenos.janelas[3].perda_pct).not.toBe(31.3)
+
+    let soma = 0
+    for (const lote of ['5-14', '15-24', '25-34', '35-44', '45-60'] as const) {
+      soma += (await api.projecao.projecao(1, { lote })).rodadas
+    }
+    expect(soma).toBe(5000)
+    const celula = await api.projecao.projecao(1, { lote: '25-34', procura: '0.8-1.3' })
+    expect(celula.rodadas).toBeLessThan((await api.projecao.projecao(1, { lote: '25-34' })).rodadas)
+  })
+
+  it('chegada 1 ou 4 h: só com a API real; funcionária: 403', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const e = await erroDe(api.projecao.projecao(1, { chegada: 4 }))
+    expect(e.codigo).toBe('chegada_so_na_api')
+    expect(e.message).toBe('Projeção com chegada de 4 h disponível só com a API real.')
+    await entrarComo('juliana.prado@email.com')
+    expect((await erroDe(api.projecao.projecao(1))).status).toBe(403)
   })
 })

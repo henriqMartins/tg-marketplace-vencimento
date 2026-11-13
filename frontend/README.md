@@ -19,7 +19,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F6b · Ajuste e retirada (L11, L12, L13) | ✅ |
 | F7a · Mock do grupo F + G1 painel, G3 histórico | ✅ |
 | F7b · G4 ofertas no computador | ✅ |
-| F7c · Mock dos grupos G e E + G2 projeção, G6/L14 configurações | — |
+| F7c · Mock do grupo G + G2 projeção | ✅ |
+| F7d · Mock do grupo E + G6/L14 configurações | — |
 
 ## Decisões do frontend
 
@@ -53,6 +54,11 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 13/11/2026 | Coluna "Perda / ajuste" da G4 = perda + ajustado, a mesma soma que a barra de estoque já mostrava; na tabela o fim aparece só como dia ("amanhã", "18/11") e o horário completo fica no painel |
 | 13/11/2026 | Formulário da L11 extraído para `FormAjuste`: a L11 (celular) e o modal da G4 usam o mesmo componente, com o mesmo tratamento do 409 `acima_do_livre`. O modal é a `FolhaInferior` com `forma="modal"` (mesma captura de foco) |
 | 13/11/2026 | Corrigido: os estilos dos motivos da L11 (grade 2 × 2) não existiam desde a F6b; agora são ladrilhos com o rádio real por baixo |
+| 13/11/2026 | Mock da projeção com **números reais**: `scripts/resumir-rodadas.mjs` (`npm run mock:projecao`) só lê `simulacao/resultados_n5000/rodadas.csv` e grava `src/api/mock/projecao-resumo.ts` com somas e contagens por faixa de lote × faixa de procura × janela, como o contrato descreve para o backend. Sem filtro dá exatamente a Tabela 5 (testado) |
+| 13/11/2026 | Faixas no resumo: lote fechado nas duas pontas (5–14 …); procura ÷ lote em [a, b), a última fechada (2,3–3,0). Bloqueados e retirada têm contagem própria (350 rodadas sem comprador ficam fora dessas duas médias) |
+| 13/11/2026 | Chegada de 1 h ou 4 h no mock responde 501 `chegada_so_na_api` ("disponível só com a API real"): o `rodadas.csv` só tem a chegada de 2 h |
+| 13/11/2026 | G2: os controles só valem ao clicar "Atualizar projeção"; o cenário aplicado fica na URL (`?lote=&procura=&chegada=`). Janela inicial de 4 h, sem nenhum texto de recomendação (testado) |
+| 13/11/2026 | Gráfico da G2: verde `primary` × laranja `discount` ficam a ΔE 6,1 para protanopia (validador do dataviz); compensado com textura diagonal na barra de bloqueados, valores escritos, legenda e tabela |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
