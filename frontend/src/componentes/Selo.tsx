@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
-import type { EstadoOferta, EstadoReserva, SituacaoGrupo } from '../api/tipos'
+import type { EstadoHistorico, EstadoOferta, EstadoReserva, SituacaoGrupo } from '../api/tipos'
 import { classes } from '../util/classes'
 import styles from './Selo.module.css'
 
-export type VarianteSelo = 'pending' | 'success' | 'neutral' | 'danger' | 'warn' | 'primary'
+export type VarianteSelo = 'pending' | 'success' | 'neutral' | 'danger' | 'warn' | 'primary' | 'bloqueio'
 
 /** Pílula 12/700. Sempre com texto: a cor nunca é o único sinal. */
 export function Selo({ variante, children }: { variante: VarianteSelo; children: ReactNode }) {
@@ -34,6 +34,12 @@ const GRUPO: Record<SituacaoGrupo, [string, VarianteSelo]> = {
 export function SeloReserva({ estado }: { estado: EstadoReserva }) {
   const [texto, variante] = RESERVA[estado]
   return <Selo variante={variante}>{texto}</Selo>
+}
+
+/** Histórico do gestor (G3): os 4 estados da reserva + a recusa. */
+export function SeloHistorico({ estado }: { estado: EstadoHistorico }) {
+  if (estado === 'recusa') return <Selo variante="bloqueio">Recusa</Selo>
+  return <SeloReserva estado={estado} />
 }
 
 export function SeloOferta({ estado }: { estado: EstadoOferta }) {

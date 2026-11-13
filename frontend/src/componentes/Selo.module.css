@@ -32,6 +32,11 @@
   color: var(--warn-text);
 }
 
+.bloqueio {
+  background: var(--bloqueio-bg);
+  color: var(--bloqueio-text);
+}
+
 .primary {
   background: var(--primary-soft);
   color: var(--primary-dark);

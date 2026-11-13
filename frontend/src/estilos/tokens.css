@@ -42,6 +42,11 @@
 
   --chart-expirada: #e8913a;
 
+  /* Gestor (G1–G3) */
+  --alerta: #b4530c; /* taxa de expiração; reserva com menos de 1 h */
+  --bloqueio-bg: #fbe9de; /* recusa e compradores bloqueados */
+  --bloqueio-text: #8a3108;
+
   /* Barra de estoque (L9, L10): sempre acompanhada do resumo em texto. */
   --estoque-retirado: var(--primary-dark);
   --estoque-reservado: #e9b23a;

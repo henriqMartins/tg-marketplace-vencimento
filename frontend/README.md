@@ -17,7 +17,9 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F5c · Minhas reservas e perfil (C8, C9) | ✅ |
 | F6a · Mock do grupo C + L1, L9, L10 | ✅ |
 | F6b · Ajuste e retirada (L11, L12, L13) | ✅ |
-| F7 · Gestor (G1, G3, G4, G2, G6) | — |
+| F7a · Mock do grupo F + G1 painel, G3 histórico | ✅ |
+| F7b · G4 ofertas no computador | — |
+| F7c · Mock dos grupos G e E + G2 projeção, G6/L14 configurações | — |
 
 ## Decisões do frontend
 
@@ -41,6 +43,11 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 12/11/2026 | L12 também aceita o teclado físico (números, ⌫, Enter) no computador |
 | 12/11/2026 | `avisos_para_conferir` no mock é fixo em 5 (o do protótipo) até o mock do grupo D (F8) |
 | 12/11/2026 | Push (C1 tela 2, C3, C9) **só desenhado**, botão "em breve" — grupo H depois de 09/11 |
+| 13/11/2026 | Mock gera ~35 dias de **histórico determinístico** da loja 1 (`mock/historico.ts`, sorteio com semente fixa): 12 ofertas encerradas com retiradas, expiradas, canceladas, parciais e recusas — G1 e G3 coerentes entre si |
+| 13/11/2026 | Indicadores da G1 **só formatados**: taxa `null` vira "—"; o teste usa números incoerentes de propósito para provar que a tela não refaz a conta |
+| 13/11/2026 | Período do gestor (7 dias · 30 dias · mês atual) na URL (`?periodo=`), contado a partir de hoje em Brasília; o mesmo controle na G1 e na G3 |
+| 13/11/2026 | Gráfico semanal sem biblioteca (HTML/CSS). As cores da especificação têm pouco contraste com o branco (cinza 1,7:1, laranja 2,5:1); compensado com legenda, total sobre cada barra, dica no foco/mouse e tabela equivalente ("Ver como tabela") |
+| 13/11/2026 | G1 "Reservas em andamento": uma leitura de `GET …/ofertas/{id}` por oferta ativa (grupo C, como o contrato indica) |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

@@ -17,6 +17,7 @@ import type {
   VinculoEu,
 } from '../tipos'
 import { dataBrasilia, somarDias, somarMinutos } from './datas'
+import { gerarHistorico } from './historico'
 import { fimDaOferta } from './regras-fingidas'
 
 // ---------- Modelo interno do mock (não é o formato do contrato) ----------
@@ -67,6 +68,8 @@ export interface ReservaMock {
 export interface RecusaMock {
   ofertaId: number
   usuarioId: number
+  /** Nome curto como a loja vê ("Bruno M."). */
+  cliente: string
   pedido: number
   criada_em: Date
 }
@@ -213,5 +216,16 @@ export function criarSemente(agora: Date): BancoMock {
     encerrada(38, 5, 'cancelada', 1, '993021', 5),
   ]
 
-  return { usuarios, lojas, ofertas, reservas, recusas: [], tokens: new Map(), proximoId: 100 }
+  // ~35 dias de ofertas encerradas da loja 1, para o painel e o histórico do gestor (F7).
+  const historico = gerarHistorico(agora)
+
+  return {
+    usuarios,
+    lojas,
+    ofertas: [...ofertas, ...historico.ofertas],
+    reservas: [...reservas, ...historico.reservas],
+    recusas: historico.recusas,
+    tokens: new Map(),
+    proximoId: 5000,
+  }
 }

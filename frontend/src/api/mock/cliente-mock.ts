@@ -3,7 +3,7 @@
  * Segue o contrato (formatos, códigos de erro); as regras que só o backend tem
  * ficam fingidas em regras-fingidas.ts. Só src/api/index.ts importa este arquivo.
  *
- * Grupos prontos no mock: A (acesso), B (consumidor) e C (operação da loja).
+ * Grupos prontos no mock: A (acesso), B (consumidor), C (operação da loja) e F (gestor).
  * D–G entram junto com as telas deles (F7–F8) — decidido 11/11/2026.
  */
 import type {
@@ -22,6 +22,7 @@ import type {
   Eu,
   Estoque,
   FaixaDesconto,
+  ItemHistorico,
   LojaResumo,
   OfertaLoja,
   OfertaVitrine,
@@ -29,9 +30,10 @@ import type {
   ReservaLoja,
   Sessao,
 } from '../tipos'
-import { isoBrasilia } from './datas'
+import { dataBrasilia, isoBrasilia } from './datas'
 import {
   calcularExpiraEm,
+  calcularIndicadores,
   economia,
   fitaDe,
   multiplicar,
@@ -249,7 +251,7 @@ export function criarClienteMock({
         const momento = agora()
         const quantidade = quantidadeReservada(pedido, o.estoque.livre)
         if (quantidade === 0) {
-          banco.recusas.push({ ofertaId, usuarioId: usuario.id, pedido, criada_em: momento })
+          banco.recusas.push({ ofertaId, usuarioId: usuario.id, cliente: abreviar(usuario.nome), pedido, criada_em: momento })
           return { status: 'recusada' as const, pedido, erro: 'Esgotou agora há pouco', codigo: 'esgotada' as const }
         }
 
@@ -464,6 +466,75 @@ export function criarClienteMock({
       }),
   }
 
+  // ---------- F · Gestor ----------
+
+  /** Só o responsável da loja; funcionário ou sem vínculo, 403. */
+  function responsavelDe(lojaId: number) {
+    const { papel } = vinculoCom(lojaId)
+    if (papel !== 'responsavel') throw erro(403, 'http_403', mensagemPadrao(403))
+  }
+
+  const gestor: ApiGestor = {
+    indicadores: (lojaId, de, ate) =>
+      responder(() => {
+        responsavelDe(lojaId)
+        return calcularIndicadores(banco, lojaId, de, ate)
+      }),
+
+    historico: (lojaId, filtros = {}) =>
+      responder(() => {
+        responsavelDe(lojaId)
+        const noPeriodo = (d: Date) => {
+          const dia = dataBrasilia(d)
+          return (!filtros.de || dia >= filtros.de) && (!filtros.ate || dia <= filtros.ate)
+        }
+        const daLoja = (ofertaId: number) => banco.ofertas.find((o) => o.id === ofertaId)?.lojaId === lojaId
+        const produtoDe = (ofertaId: number) => banco.ofertas.find((o) => o.id === ofertaId)!.produto.nome
+
+        const reservas: ItemHistorico[] = banco.reservas
+          .filter((r) => daLoja(r.ofertaId) && noPeriodo(r.criada_em))
+          .map((r) => ({
+            tipo: 'reserva',
+            criada_em: isoBrasilia(r.criada_em),
+            codigo_final: r.codigo.slice(-3),
+            produto: produtoDe(r.ofertaId),
+            quantidade: r.quantidade,
+            pedido: r.pedido,
+            cliente: r.cliente,
+            estado: r.estado,
+            encerrada_em: r.encerrada_em ? isoBrasilia(r.encerrada_em) : null,
+          }))
+        const recusas: ItemHistorico[] = banco.recusas
+          .filter((x) => daLoja(x.ofertaId) && noPeriodo(x.criada_em))
+          .map((x) => ({
+            tipo: 'recusa',
+            criada_em: isoBrasilia(x.criada_em),
+            codigo_final: null,
+            produto: produtoDe(x.ofertaId),
+            quantidade: 0,
+            pedido: x.pedido,
+            cliente: x.cliente,
+            estado: 'recusa',
+            encerrada_em: null,
+          }))
+
+        // q: produto (sem acento) ou final do código.
+        const busca = filtros.q ? semAcento(filtros.q.trim()) : ''
+        const casaBusca = (i: ItemHistorico) =>
+          !busca || semAcento(i.produto).includes(busca) || (i.codigo_final?.endsWith(busca) ?? false)
+
+        return {
+          // Os totais são do período (o cabeçalho da G3); estado e busca só filtram a lista.
+          total_reservas: reservas.length,
+          total_recusas: recusas.length,
+          itens: [...reservas, ...recusas]
+            .filter((i) => !filtros.estado || i.estado === filtros.estado)
+            .filter(casaBusca)
+            .sort((a, b) => b.criada_em.localeCompare(a.criada_em)),
+        }
+      }),
+  }
+
   return {
     servidor,
     acesso,
@@ -471,7 +542,7 @@ export function criarClienteMock({
     operacao,
     lotes: pendente<ApiLotes>('lotes', 'F8'),
     configuracao: pendente<ApiConfiguracao>('configuracao', 'F8'),
-    gestor: pendente<ApiGestor>('gestor', 'F7'),
+    gestor,
     projecao: pendente<ApiProjecao>('projecao', 'F7'),
 
     reiniciar() {

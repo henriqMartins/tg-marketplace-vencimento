@@ -27,12 +27,16 @@ import { L9Ofertas } from '../telas/loja/L9Ofertas'
 import { L10Oferta } from '../telas/loja/L10Oferta'
 import { L11Ajuste } from '../telas/loja/L11Ajuste'
 import { L12Retirada } from '../telas/loja/L12Retirada'
+import { G1Painel } from '../telas/gestor/G1Painel'
+import { G3Historico } from '../telas/gestor/G3Historico'
 
 const tela = (path: string | undefined, codigo: string, titulo: string, etapa: string, larga = false): RouteObject => ({
   ...(path === undefined ? { index: true } : { path }),
   element: <TelaEmConstrucao codigo={codigo} titulo={titulo} etapa={etapa} />,
   handle: (larga ? { largura: 'larga' } : {}) satisfies HandleRota,
 })
+
+const LARGA = { largura: 'larga' } satisfies HandleRota
 
 export const rotas: RouteObject[] = [
   // A1 fica fora do LayoutRaiz: tem a própria faixa "Conectando…" no rodapé.
@@ -84,7 +88,7 @@ export const rotas: RouteObject[] = [
                   tela('avisos', 'L5', 'Avisos de validade', 'F8'),
                   tela('avisos/:avisoId', 'L6', 'Conferência na gôndola', 'F8'),
                   tela('avisos/:avisoId/publicar', 'L7', 'Revisar e publicar oferta', 'F8'),
-                  { path: 'ofertas', element: <L9Ofertas />, handle: { largura: 'larga' } satisfies HandleRota }, // G4 (desktop) na F7
+                  { path: 'ofertas', element: <L9Ofertas />, handle: LARGA }, // G4 (desktop) na F7
                   { path: 'ofertas/:ofertaId', element: <L10Oferta /> },
                   { path: 'ofertas/:ofertaId/ajuste', element: <L11Ajuste /> },
                   { path: 'retirada', element: <L12Retirada /> },
@@ -93,9 +97,9 @@ export const rotas: RouteObject[] = [
                     element: <ExigeVinculo papel="responsavel" />,
                     children: [
                       tela('config', 'L14 / G6', 'Configurações da loja', 'F8', true),
-                      tela('painel', 'G1', 'Painel de acompanhamento', 'F7', true),
+                      { path: 'painel', element: <G1Painel />, handle: LARGA },
                       tela('projecao', 'G2', 'Projeção da janela de reserva', 'F7', true),
-                      tela('reservas', 'G3', 'Histórico de reservas', 'F7', true),
+                      { path: 'reservas', element: <G3Historico />, handle: LARGA },
                     ],
                   },
                 ],

@@ -56,6 +56,18 @@ export function formatarTempoRestante(ms: number): string {
   return h > 0 ? `${h} h ${String(min).padStart(2, '0')} min` : `${min} min`
 }
 
+/** Data e hora curtas, em Brasília: "22/10 14:18" (tabelas do gestor). */
+export function formatarDataHoraCurta(dataHora: string): string {
+  const momento = new Date(dataHora)
+  return `${formatarDataCurta(diaEm(momento))} ${horaEm(momento)}`
+}
+
+/** Taxa de 0 a 1 vinda da API → "66,7%"; null (base zero) → "—". Só formata. */
+export function formatarTaxa(taxa: number | null): string {
+  if (taxa === null) return '—'
+  return new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 1 }).format(taxa)
+}
+
 /** "hoje, 20:00" fica igual; "28/10, 20:00" vira "em 28/10, 20:00" (evita "em hoje"). */
 export function comEm(horario: string): string {
   return horario.startsWith('hoje') || horario.startsWith('amanhã') ? horario : `em ${horario}`

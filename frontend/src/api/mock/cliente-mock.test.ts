@@ -202,7 +202,86 @@ describe('mock · vitrine', () => {
   })
 
   it('grupos ainda sem mock avisam a etapa', async () => {
-    await expect(api.gestor.indicadores(1, '2026-10-01', '2026-10-31')).rejects.toThrow('etapa F7')
+    await expect(api.projecao.projecao(1)).rejects.toThrow('etapa F7')
+  })
+})
+
+describe('mock · gestor (grupo F)', () => {
+  const OUTUBRO = ['2026-10-01', '2026-10-22'] as const
+
+  it('só o responsável: a funcionária recebe 403', async () => {
+    await entrarComo('juliana.prado@email.com')
+    expect((await erroDe(api.gestor.indicadores(1, ...OUTUBRO))).status).toBe(403)
+    expect((await erroDe(api.gestor.historico(1))).status).toBe(403)
+  })
+
+  it('indicadores fecham entre si (encerradas, taxas, bloqueados, semanas)', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const i = await api.gestor.indicadores(1, ...OUTUBRO)
+    const { total, retiradas, expiradas, canceladas } = i.encerradas
+    expect(i.reservas_criadas).toBeGreaterThan(50) // histórico gerado, não só a semente
+    expect(retiradas + expiradas + canceladas).toBe(total)
+    expect(i.taxa_retirada).toBeCloseTo(retiradas / total, 3)
+    expect(i.taxa_expiracao).toBeCloseTo(expiradas / total, 3)
+    expect(i.bloqueados.total).toBe(i.bloqueados.recusas + i.bloqueados.parciais)
+    expect(i.bloqueados.recusas).toBeGreaterThan(0)
+    expect(i.bloqueados.parciais).toBeGreaterThan(0)
+    expect(i.perda_unidades).toBeGreaterThan(0)
+    expect(i.semanas[0].inicio).toBe('2026-09-28') // segunda-feira da semana de 01/10
+    const nasSemanas = i.semanas.reduce((s, x) => s + x.retiradas + x.expiradas + x.canceladas, 0)
+    expect(nasSemanas).toBe(total)
+  })
+
+  it('período sem reserva: taxas null (base zero), não 0', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const i = await api.gestor.indicadores(1, '2025-01-01', '2025-01-31')
+    expect(i.encerradas.total).toBe(0)
+    expect(i.taxa_retirada).toBeNull()
+    expect(i.taxa_expiracao).toBeNull()
+  })
+
+  it('o histórico gerado é determinístico e conserva o estoque das ofertas', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    let tokenOutra: string | null = null
+    const outra = criarClienteMock({ obterToken: () => tokenOutra, agora: () => agora })
+    tokenOutra = (await outra.acesso.entrar({ email: 'carlos@vilanova.com.br', senha: SENHA_MOCK })).token
+    expect(await outra.gestor.indicadores(1, ...OUTUBRO)).toEqual(await api.gestor.indicadores(1, ...OUTUBRO))
+    for (const id of [50, 55, 61]) {
+      const e = api.estoqueDe(id)
+      expect(conservacao(e)).toBe(e.separado)
+    }
+  })
+
+  it('histórico: totais batem com os indicadores; filtros por estado e busca', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const filtroPeriodo = { de: OUTUBRO[0], ate: OUTUBRO[1] }
+    const i = await api.gestor.indicadores(1, ...OUTUBRO)
+    const h = await api.gestor.historico(1, filtroPeriodo)
+    expect(h.total_reservas).toBe(i.reservas_criadas)
+    expect(h.total_recusas).toBe(i.bloqueados.recusas)
+    expect(h.itens).toHaveLength(h.total_reservas + h.total_recusas)
+    expect(h.itens[0].criada_em >= h.itens.at(-1)!.criada_em).toBe(true) // mais recente primeiro
+
+    const recusas = await api.gestor.historico(1, { ...filtroPeriodo, estado: 'recusa' })
+    expect(recusas.itens.every((x) => x.tipo === 'recusa' && x.quantidade === 0 && x.codigo_final === null)).toBe(true)
+    expect(recusas.total_recusas).toBe(h.total_recusas) // totais não mudam com o filtro
+
+    const porCodigo = await api.gestor.historico(1, { q: '917' })
+    expect(porCodigo.itens.map((x) => x.codigo_final)).toContain('917')
+    expect(porCodigo.itens.every((x) => x.codigo_final?.endsWith('917') || x.produto.includes('917'))).toBe(true)
+
+    const porProduto = await api.gestor.historico(1, { q: 'requeijao' }) // sem acento também acha
+    expect(porProduto.itens.length).toBeGreaterThan(0)
+    expect(porProduto.itens.every((x) => x.produto.startsWith('Requeijão'))).toBe(true)
+  })
+
+  it('uma recusa feita agora aparece no histórico com o nome curto do cliente', async () => {
+    await entrarComo('ana@email.com')
+    await api.consumidor.reservar(5, 3) // queijo: 3 livres
+    await api.consumidor.reservar(5, 1) // agora 0 → recusa
+    await entrarComo('carlos@vilanova.com.br')
+    const h = await api.gestor.historico(1, { estado: 'recusa', q: 'queijo minas' })
+    expect(h.itens[0]).toMatchObject({ tipo: 'recusa', cliente: 'Ana S.', pedido: 1, quantidade: 0, encerrada_em: null })
   })
 })
 

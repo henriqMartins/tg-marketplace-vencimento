@@ -6,9 +6,9 @@
  * Existem aqui apenas para as telas terem o que mostrar enquanto a API não está pronta.
  * Nenhuma tela pode importar este arquivo (regra no .oxlintrc.json).
  */
-import type { CorFita, Data, Dinheiro, Fita } from '../tipos'
-import { fimDoDia, somarDias } from './datas'
-import type { BancoMock } from './semente'
+import type { CorFita, Data, Dinheiro, EstadoReserva, Fita, Indicadores, Taxa } from '../tipos'
+import { dataBrasilia, fimDoDia, somarDias } from './datas'
+import type { BancoMock, ReservaMock } from './semente'
 
 // ---------- Fita: uma cor por bimestre de vencimento, ciclo anual ----------
 
@@ -90,4 +90,66 @@ export function multiplicar(valor: Dinheiro, quantidade: number): Dinheiro {
 
 export function economia(precoOriginal: Dinheiro, preco: Dinheiro, quantidade: number): Dinheiro {
   return paraDinheiro((centavos(precoOriginal) - centavos(preco)) * quantidade)
+}
+
+// ---------- Indicadores do gestor (G1) ----------
+
+/** Segunda-feira da semana de uma data (semanas de segunda a domingo). */
+export function segundaDaSemana(data: Data): Data {
+  const [ano, mes, dia] = data.split('-').map(Number)
+  const diaDaSemana = new Date(Date.UTC(ano, mes - 1, dia)).getUTCDay() // 0 = domingo
+  return somarDias(data, -((diaDaSemana + 6) % 7))
+}
+
+const taxa = (parte: number, total: number): Taxa => (total === 0 ? null : Math.round((parte / total) * 1000) / 1000)
+
+/**
+ * Definições de 04/11/2026 (especificação, G1):
+ * - base = reservas CRIADAS no período; taxas sobre as que já encerraram;
+ * - bloqueados = recusas + parciais (quantidade < pedido);
+ * - perda = sobra livre das ofertas encerradas com fim no período;
+ * - semanas: desfecho das encerradas, pela semana em que foram criadas.
+ */
+export function calcularIndicadores(banco: BancoMock, lojaId: number, de: Data, ate: Data): Indicadores {
+  const noPeriodo = (d: Date) => {
+    const dia = dataBrasilia(d)
+    return dia >= de && dia <= ate
+  }
+  const daLoja = new Set(banco.ofertas.filter((o) => o.lojaId === lojaId).map((o) => o.id))
+  const criadas = banco.reservas.filter((r) => daLoja.has(r.ofertaId) && noPeriodo(r.criada_em))
+  const encerradas = criadas.filter((r) => r.estado !== 'reservada')
+  const contar = (lista: ReservaMock[], estado: EstadoReserva) => lista.filter((r) => r.estado === estado).length
+  const retiradas = contar(encerradas, 'retirada')
+  const expiradas = contar(encerradas, 'expirada')
+  const recusas = banco.recusas.filter((x) => daLoja.has(x.ofertaId) && noPeriodo(x.criada_em)).length
+  const parciais = criadas.filter((r) => r.quantidade < r.pedido).length
+
+  const semanas: Indicadores['semanas'] = []
+  for (let inicio = segundaDaSemana(de); inicio <= ate; inicio = somarDias(inicio, 7)) {
+    const fimSemana = somarDias(inicio, 6)
+    const daSemana = encerradas.filter((r) => {
+      const dia = dataBrasilia(r.criada_em)
+      return dia >= inicio && dia <= fimSemana
+    })
+    semanas.push({
+      inicio,
+      retiradas: contar(daSemana, 'retirada'),
+      expiradas: contar(daSemana, 'expirada'),
+      canceladas: contar(daSemana, 'cancelada'),
+    })
+  }
+
+  return {
+    de,
+    ate,
+    reservas_criadas: criadas.length,
+    encerradas: { total: encerradas.length, retiradas, expiradas, canceladas: contar(encerradas, 'cancelada') },
+    taxa_retirada: taxa(retiradas, encerradas.length),
+    taxa_expiracao: taxa(expiradas, encerradas.length),
+    bloqueados: { total: recusas + parciais, recusas, parciais },
+    perda_unidades: banco.ofertas
+      .filter((o) => o.lojaId === lojaId && o.estado === 'encerrada' && noPeriodo(o.fim))
+      .reduce((soma, o) => soma + o.estoque.perda, 0),
+    semanas,
+  }
 }
