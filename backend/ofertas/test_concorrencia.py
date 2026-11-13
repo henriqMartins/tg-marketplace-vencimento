@@ -231,6 +231,54 @@ class TestLotesSimultaneos(Disputa):
                 self.assertEqual(grupo.referencia, date(2026, 12, 10))   # a mais próxima
 
 
+class TestEquipeSimultanea(Disputa):
+    """
+    Etapa 10b: os DOIS responsáveis da loja removem um ao outro no mesmo instante.
+    Sem a trava da loja, cada um vê "somos 2" e remove o outro: a loja fica sem
+    responsável e ninguém mais consegue configurá-la. Com a trava, um espera o
+    outro; o segundo descobre que já não é responsável e é recusado.
+    """
+
+    def test_dois_responsaveis_se_removendo_sobra_um(self):
+        from . import servico_equipe
+        from .models import Papel, Vinculo
+
+        loja = self.produto.loja
+        a, b = self.pessoas[0], self.pessoas[1]
+        for rodada in range(RODADAS):
+            with self.subTest(rodada=rodada):
+                Vinculo.objects.filter(loja=loja).delete()
+                va = Vinculo.objects.create(usuario=a, loja=loja, papel=Papel.RESPONSAVEL)
+                vb = Vinculo.objects.create(usuario=b, loja=loja, papel=Papel.RESPONSAVEL)
+                barreira = threading.Barrier(2)
+                removidos, recusas, erros = [], [], []
+
+                def remover(quem, alvo):
+                    try:
+                        barreira.wait()
+                        servico_equipe.remover(loja.id, alvo.id, quem)
+                        removidos.append(alvo.id)
+                    except servico_equipe.ErroEquipe as erro:
+                        recusas.append(erro.codigo)
+                    except Exception as erro:
+                        erros.append(erro)
+                    finally:
+                        connection.close()
+
+                threads = [threading.Thread(target=remover, args=(a, vb)),
+                           threading.Thread(target=remover, args=(b, va))]
+                for t in threads:
+                    t.start()
+                for t in threads:
+                    t.join()
+
+                self.assertEqual(erros, [])
+                self.assertEqual(len(removidos), 1)                      # só um conseguiu
+                self.assertEqual(recusas, ["sem_permissao"])             # o outro já não era
+                self.assertEqual(Vinculo.objects.filter(
+                    loja=loja, papel=Papel.RESPONSAVEL).count(), 1)      # a loja tem dono
+
+
 @skipUnless(os.environ.get("CONTROLE_NEGATIVO") == "1",
             "controle negativo: ligue com CONTROLE_NEGATIVO=1")
 class TestControleNegativo(Disputa):

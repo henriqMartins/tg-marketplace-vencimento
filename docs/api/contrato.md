@@ -330,8 +330,26 @@ O aviso é o grupo em situação `conferir` ou `adiado`; o `avisoId` é o id do 
 - **Adiar:** no máximo até `adiar_ate_max`. Ex.: validade 05/11, margem 1 dia → a oferta
   iria até 04/11, 23:59 → adiar até 03/11.
 
-## E · Configuração da loja 📝
+## E · Configuração da loja ✅
 Leitura: vínculo com a loja. Escrita: **só responsável** (`403` para funcionário).
+
+Pronto em 13/11/2026. Detalhes que valem para o mock:
+- **PATCH parcial:** só os campos enviados mudam. Se **um** campo está errado, **nada** é
+  gravado (`400` com o código do primeiro erro). `id` e campos desconhecidos são ignorados.
+- Erros do PATCH: `400 sem_nome`, `400 nome_longo` (> 120), `400 sem_endereco`,
+  `400 endereco_longo` (> 255), `400 janela_invalida`, `400 margem_invalida`,
+  `400 antecedencia_invalida` (fora de **1–30**), `400 coordenadas_incompletas`
+  (latitude e longitude vão **juntas**; as duas `null` apagam), `400 coordenadas_invalidas`
+  (não é número, ou fora de −90..90 / −180..180).
+- **Antecedência > margem** (decidido 13/11/2026): senão o aviso chega depois do último dia
+  da oferta. Conferido no par final (o que veio + o que já estava gravado): `400
+  antecedencia_menor_que_margem`, tanto ao baixar a antecedência quanto ao subir a margem.
+  Margem própria de produto maior que a antecedência não é barrada aqui; na publicação,
+  o `409 fim_ja_passou` protege.
+- Erros do POST de vínculo: `400 email_invalido`, `400 papel_invalido`. O e-mail é comparado
+  sem diferenciar maiúsculas. A pessoa precisa **já ter conta**.
+- DELETE: `404 nao_encontrado` (vínculo de outra loja ou inexistente). Remover alguém **não
+  apaga a conta**: a pessoa volta a ser só consumidora. A lista vem com responsáveis primeiro.
 
 | Método e rota | Entrada | Saída | Erros |
 |---|---|---|---|

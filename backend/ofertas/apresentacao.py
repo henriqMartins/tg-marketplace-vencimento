@@ -210,3 +210,33 @@ def grupo(g, situacao: str, com_lotes: bool = False) -> dict:
     if com_lotes:
         corpo["lotes"] = [lote(l) for l in lotes]
     return corpo
+
+
+# ---------------------------------------------------------------- configuração e equipe
+
+def _coordenada(valor):
+    return float(valor) if valor is not None else None
+
+
+def loja_config(loja) -> dict:
+    """LojaConfig (L14). Margem em dias; janela em horas."""
+    return {
+        "id": loja.id,
+        "nome": loja.nome,
+        "endereco": loja.endereco,
+        "latitude": _coordenada(loja.latitude),
+        "longitude": _coordenada(loja.longitude),
+        "janela_padrao_horas": horas(loja.janela_padrao),
+        "margem_fim_dias": loja.margem_fim.days,
+        "antecedencia_aviso_dias": loja.antecedencia_aviso_dias,
+    }
+
+
+def vinculo(v, quem) -> dict:
+    """Vinculo (L14). `eu` marca a linha de quem está vendo (a tela não mostra "remover" nela)."""
+    return {
+        "id": v.id,
+        "usuario": {"nome": v.usuario.nome, "email": v.usuario.email},
+        "papel": v.papel,
+        "eu": v.usuario_id == quem.id,
+    }

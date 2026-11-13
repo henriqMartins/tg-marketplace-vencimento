@@ -356,6 +356,21 @@ O lote entra no grupo **produto + cor da fita + ano**; o grupo vira aviso `antec
 dias antes da validade mais próxima. A publicação monta a oferta **pelo domínio** (livre
 nasce igual ao separado) com fim às 23:59 de (validade − margem), horário de Brasília.
 
+**Configuração da loja e equipe** (grupo E do contrato, tela L14): ler é da equipe toda;
+mudar é só do responsável (o funcionário recebe `403`).
+
+```powershell
+curl.exe -X PATCH http://localhost:8000/api/lojas/1 -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"margem_fim_dias\":2,\"janela_padrao_horas\":8}'
+curl.exe -X POST http://localhost:8000/api/lojas/1/vinculos -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"email\":\"juliana@email.com\",\"papel\":\"funcionario\"}'
+```
+
+A loja nunca fica sem responsável: ninguém remove o próprio vínculo (`409 proprio_vinculo`)
+e a remoção trava a linha da loja, então dois responsáveis removendo um ao outro ao
+mesmo tempo não zeram a equipe. Mudar margem ou antecedência vale só para lotes e
+ofertas novos (o `fim` e o `aviso_em` são gravados quando nascem). A antecedência do aviso
+(1–30 dias) tem de ser **maior que a margem**: senão o aviso chegaria depois do último dia
+da oferta.
+
 **Rodar a simulação:**
 
 ```powershell
@@ -417,12 +432,13 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 11/11/2026 | Backend (etapa 8): rotas do consumidor (grupo B) — vitrine com Haversine em SQL e filtros, detalhe, reservar (201 confirmada/parcial, 409 recusada), minhas reservas, ver e cancelar; CORS por variável de ambiente | 25 testes (distância igual à conta em Python; livre da vitrine desconta vencidas sem gravar; reserva de outra pessoa → 404; leitura expira a vencida antes de responder; CORS só para o frontend) · conferido ao vivo · backend: 112 ok + 1 pulado |
 | 12/11/2026 | Backend (etapa 9): rotas da operação da loja (grupo C) — resumo do dia, ofertas da loja com estoque, detalhe com reservas (código mascarado), ajuste e retirada no balcão; cada recusa do domínio ganhou um **código** (`acima_do_livre`, `venceu`...) que a API traduz; retirada vencida já grava a expiração | Domínio: 16 testes novos (50 ok). Backend: 31 testes da loja (sem vínculo → 403; oferta de outra loja → 404; código inteiro nunca vai para a loja; vencido → 409 mesmo depois da ronda) + **5 balcões com o mesmo código ao mesmo tempo: 1 retira, 4 recusados, nada em dobro** (5 rodadas) · backend: 146 ok + 1 pulado |
 | 12/11/2026 | Backend (etapa 10a): lote, fita e aviso (grupo D) — produtos, registro de lote com agrupamento por produto + cor + ano e aviso de colisão de ciclo, grupos de fita, avisos (adiar até a véspera do último dia, descartar), **publicação da oferta pelo domínio**; "conferir" calculado pela data, sem worker | 13 testes puros (fim 23:59 de Brasília; limite do adiar; novo/agrupado/colisão) + 37 da API (referência = data mais próxima; grupo publicado não recebe lote; separado acima do recebido → 400; publicada aparece na vitrine) + **5 lotes simultâneos do mesmo produto → 1 grupo só** (5 rodadas) · migração aplicada, desfeita e reaplicada · backend: 197 ok + 1 pulado |
+| 13/11/2026 | Backend (etapa 10b): configuração da loja e equipe (grupo E) — ler/alterar as regras da loja (janela padrão, margem, antecedência, coordenadas), listar, adicionar e remover pessoas da equipe; **permissão por método** (ler = vínculo, mudar = responsável) | 33 testes da API (funcionário lê mas não altera → 403; erro em um campo não grava nenhum; antecedência ≤ margem → 400; mudança não mexe em aviso já agendado; e-mail sem conta → 404; já vinculado → 409; próprio vínculo → 409) + **2 responsáveis removendo um ao outro ao mesmo tempo → sobra 1** (5 rodadas; sem a trava, as 5 falham) · backend: 231 ok + 1 pulado |
 
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Backend (etapa 10b): configuração da loja e equipe (grupo E) |
+| ⏳ | Backend: dados de demonstração para o vídeo (`manage.py popular_demo`, dados fictícios) |
 | ⏳ | Backend (etapa 11): indicadores dos painéis e histórico |
 | ⏳ | Backend (etapa 13): projeção a partir do resumo de `resultados_n5000` |
 | ⏳ | Frontend (worktree `frontend`, etapas F0–F9 do `docs/frontend/BRIEFING-agente.md`), integrado por grupo do contrato |
