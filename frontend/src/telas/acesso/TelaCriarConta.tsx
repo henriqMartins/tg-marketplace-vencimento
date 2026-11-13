@@ -31,10 +31,12 @@ export function TelaCriarConta() {
 
   // Erros da API que têm lugar certo na tela (embaixo do campo).
   const codigo = codigoDoErro(criar.error)
-  const erroEmail = faltando.email ?? (codigo === 'email_em_uso' ? mensagemDeErro(criar.error) : null)
+  const naApi = (...codigos: string[]) => (codigo && codigos.includes(codigo) ? mensagemDeErro(criar.error) : null)
+  const erroNome = faltando.nome ?? naApi('sem_nome')
+  const erroEmail = faltando.email ?? naApi('email_em_uso', 'email_invalido')
   const senhaCurta = senhaTocada && senha.length > 0 && senha.length < SENHA_MINIMA
   const erroSenha = codigo === 'senha_curta' ? mensagemDeErro(criar.error) : senhaCurta ? 'A senha precisa ter pelo menos 8 caracteres.' : null
-  const erroGeral = criar.isError && codigo !== 'email_em_uso' && codigo !== 'senha_curta'
+  const erroGeral = criar.isError && !erroNome && !erroEmail && codigo !== 'senha_curta'
 
   function enviar(e: FormEvent) {
     e.preventDefault()
@@ -59,7 +61,7 @@ export function TelaCriarConta() {
 
       <form className={styles.formulario} onSubmit={enviar} noValidate>
         {erroGeral && <MensagemErro erro={criar.error} />}
-        <Campo rotulo="Nome" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} erro={faltando.nome} />
+        <Campo rotulo="Nome" autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} erro={erroNome} />
         <Campo
           rotulo="E-mail"
           type="email"

@@ -109,8 +109,21 @@ describe('L13 · Retirada — os 3 estados', () => {
 
     relogio = new Date('2026-10-22T19:45:00-03:00')
     await usuario.click(screen.getByRole('button', { name: 'Entreguei e cobrei · confirmar' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('O prazo desta reserva acabou.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Esta reserva venceu: o prazo de retirada acabou.')
     expect(screen.getByRole('button', { name: 'Digitar outro código' })).toBeInTheDocument()
+  })
+
+  it('código que venceu há pouco (409 na prévia) → a frase da API, sem "não encontrada"', async () => {
+    const usuario = userEvent.setup()
+    // A semente nasce às 16:00 (a 31 vence às 19:42); o relógio anda antes da busca.
+    let relogio = new Date('2026-10-22T16:00:00-03:00')
+    await abrir('/loja/1/retirada', { email: JULIANA, agora: () => relogio })
+    await screen.findByRole('group', { name: 'Teclado numérico' })
+    relogio = new Date('2026-10-22T19:45:00-03:00')
+    await digitar(usuario, '482917')
+    await usuario.click(screen.getByRole('button', { name: 'Buscar reserva' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Esta reserva venceu: o prazo de retirada acabou.')
+    expect(screen.queryByRole('heading', { name: 'Código não encontrado' })).not.toBeInTheDocument()
   })
 })
 
@@ -154,7 +167,7 @@ describe('L11 · Ajuste de estoque', () => {
     await act(() => mock.consumidor.reservar(1, 1)) // um cliente reserva enquanto a funcionária contava
     await usuario.click(screen.getByRole('button', { name: 'Registrar ajuste de 6 un.' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Só há 5 unidades livres agora.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Só dá para ajustar unidades livres; as reservadas não entram.')
     await waitFor(() => expect(within(screen.getByRole('group', { name: 'Unidades a tirar' })).getByRole('status')).toHaveTextContent('5'))
     expect(screen.getByRole('button', { name: 'Aumentar' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Registrar ajuste de 5 un.' })).toBeInTheDocument()

@@ -217,7 +217,7 @@ describe('G4 · Ofertas (desktop)', () => {
 
     await act(() => mock.consumidor.reservar(1, 1)) // um cliente reserva enquanto o gestor contava
     await usuario.click(within(modal).getByRole('button', { name: 'Registrar ajuste de 6 un.' }))
-    expect(await within(modal).findByRole('alert')).toHaveTextContent('Só há 5 unidades livres agora.')
+    expect(await within(modal).findByRole('alert')).toHaveTextContent('Só dá para ajustar unidades livres; as reservadas não entram.')
     await waitFor(() => expect(within(modal).getByRole('button', { name: 'Registrar ajuste de 5 un.' })).toBeInTheDocument())
 
     await usuario.click(within(modal).getByRole('button', { name: 'Registrar ajuste de 5 un.' }))

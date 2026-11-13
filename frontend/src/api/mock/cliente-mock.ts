@@ -18,6 +18,7 @@ import type {
   ClienteApi,
 } from '../cliente'
 import { ErroApi, mensagemPadrao } from '../erros'
+import { CATEGORIAS } from '../tipos'
 import type {
   EntradaVinculo,
   Eu,
@@ -122,12 +123,18 @@ export function criarClienteMock({
     return { id, nome, endereco }
   }
 
+  /** Distância fingida da semente; null quando a loja apagou a coordenada (grupo E). */
+  function distanciaDa(lojaId: number): number | null {
+    const loja = banco.lojas.find((l) => l.id === lojaId)!
+    return loja.latitude === null ? null : loja.distancia_km
+  }
+
   function paraOfertaVitrine(o: OfertaMock, comDistancia: boolean): OfertaVitrine {
     return {
       id: o.id,
       produto: o.produto,
       loja: lojaResumo(o.lojaId),
-      distancia_km: comDistancia ? banco.lojas.find((l) => l.id === o.lojaId)!.distancia_km : null,
+      distancia_km: comDistancia ? distanciaDa(o.lojaId) : null,
       preco: o.preco,
       preco_original: o.preco_original,
       desconto: o.desconto,
@@ -191,12 +198,15 @@ export function criarClienteMock({
 
     criarConta: ({ nome, email, senha, aceite_termos }) =>
       responder(() => {
+        // Mesma ordem e frases do backend (backend/contas/views.py).
         const emailLimpo = email.trim().toLowerCase()
-        if (banco.usuarios.some((u) => u.email === emailLimpo)) {
-          throw erro(400, 'email_em_uso', 'Já existe uma conta com este e-mail.')
-        }
+        if (!nome.trim()) throw erro(400, 'sem_nome', 'Informe seu nome.')
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailLimpo)) throw erro(400, 'email_invalido', 'Confira o e-mail.')
         if (senha.length < 8) throw erro(400, 'senha_curta', 'A senha precisa ter pelo menos 8 caracteres.')
-        if (aceite_termos !== true) throw erro(400, 'termos', 'É preciso aceitar os termos de uso.')
+        if (aceite_termos !== true) throw erro(400, 'termos', 'Aceite os termos de uso para continuar.')
+        if (banco.usuarios.some((u) => u.email === emailLimpo)) {
+          throw erro(400, 'email_em_uso', 'Já existe uma conta com esse e-mail.')
+        }
         const usuario: UsuarioMock = { id: banco.proximoId++, nome: nome.trim(), email: emailLimpo, senha, vinculos: [] }
         banco.usuarios.push(usuario)
         return abrirSessao(usuario)
@@ -222,19 +232,31 @@ export function criarClienteMock({
   const consumidor: ApiConsumidor = {
     listarOfertas: (filtros = {}) =>
       responder(() => {
+        // Filtro inválido → 400, como no backend (backend/ofertas/api_consumidor.py).
+        if ([filtros.lat, filtros.lng].some((n) => n !== undefined && !Number.isFinite(n))) {
+          throw erro(400, 'parametro_invalido', 'Localização inválida.')
+        }
+        if (filtros.categoria && !CATEGORIAS.some((c) => c.valor === filtros.categoria)) {
+          throw erro(400, 'parametro_invalido', 'Categoria inválida.')
+        }
+        if (filtros.faixa_desconto && !['ate30', '30a50', '50mais'].includes(filtros.faixa_desconto)) {
+          throw erro(400, 'parametro_invalido', 'Faixa de desconto inválida.')
+        }
         const comDistancia = filtros.lat !== undefined && filtros.lng !== undefined
         const busca = filtros.q ? semAcento(filtros.q.trim()) : ''
         return banco.ofertas
-          .filter((o) => o.estado === 'ativa')
+          // A vitrine não mostra oferta encerrada nem esgotada (livre 0); o detalhe mostra as duas.
+          .filter((o) => o.estado === 'ativa' && o.estoque.livre > 0)
           .filter((o) => !filtros.categoria || o.produto.categoria === filtros.categoria)
           .filter((o) => !filtros.faixa_desconto || naFaixa(o.desconto, filtros.faixa_desconto))
           .filter((o) => !busca || semAcento(o.produto.nome).includes(busca))
           .map((o) => ({ oferta: o, vitrine: paraOfertaVitrine(o, comDistancia) }))
-          .sort((a, b) =>
-            comDistancia
-              ? a.vitrine.distancia_km! - b.vitrine.distancia_km!
-              : a.oferta.fim.getTime() - b.oferta.fim.getTime(),
-          )
+          .sort((a, b) => {
+            if (!comDistancia) return a.oferta.fim.getTime() - b.oferta.fim.getTime()
+            // Loja sem coordenada vai para o fim da lista, com distancia_km null.
+            const [da, db] = [a.vitrine.distancia_km ?? Infinity, b.vitrine.distancia_km ?? Infinity]
+            return da - db
+          })
           .map((x) => x.vitrine)
       }),
 
@@ -298,6 +320,9 @@ export function criarClienteMock({
     minhasReservas: (estado) =>
       responder(() => {
         const usuario = usuarioLogado()
+        if (estado !== undefined && estado !== 'ativa' && estado !== 'encerrada') {
+          throw erro(400, 'parametro_invalido', 'Use estado=ativa ou estado=encerrada.')
+        }
         const minhas = banco.reservas.filter((r) => r.usuarioId === usuario.id)
         const ativas = minhas
           .filter((r) => r.estado === 'reservada')
@@ -374,7 +399,23 @@ export function criarClienteMock({
   const reservaAtivaPorCodigo = (lojaId: number, codigo: string) =>
     banco.reservas.find((r) => r.estado === 'reservada' && r.codigo === codigo && lojaDaReserva(r) === lojaId)
 
-  const naoEncontrada = () => erro(404, 'nao_encontrada', 'Nenhuma reserva ativa com esse código nesta loja.')
+  const VENCIDA_RECENTE_MS = 24 * 3600_000
+
+  /** "Não achei reserva ativa": venceu nas últimas 24 h (409) ou nunca existiu (404), como no backend. */
+  function naoAchou(lojaId: number, codigo: string) {
+    const venceu = banco.reservas.some(
+      (x) =>
+        x.estado === 'expirada' &&
+        x.codigo === codigo &&
+        lojaDaReserva(x) === lojaId &&
+        x.expira_em.getTime() >= agora().getTime() - VENCIDA_RECENTE_MS,
+    )
+    if (venceu) return erro(409, 'venceu', 'Esta reserva venceu: o prazo de retirada acabou.')
+    return erro(404, 'nao_encontrada', 'Nenhuma reserva ativa com esse código nesta loja.')
+  }
+
+  /** Só 6 dígitos em texto; outro formato nem é procurado (404). */
+  const codigoValido = (codigo: unknown): codigo is string => typeof codigo === 'string' && /^\d{6}$/.test(codigo)
 
   const operacao: ApiOperacao = {
     resumoDoDia: (lojaId) =>
@@ -395,10 +436,12 @@ export function criarClienteMock({
     listarOfertas: (lojaId, estado) =>
       responder(() => {
         vinculoCom(lojaId)
-        return banco.ofertas
-          .filter((o) => o.lojaId === lojaId && (!estado || o.estado === estado))
-          .sort((a, b) => (estado === 'encerrada' ? b.fim.getTime() - a.fim.getTime() : a.fim.getTime() - b.fim.getTime()))
-          .map(paraOfertaLoja)
+        const daLoja = banco.ofertas.filter((o) => o.lojaId === lojaId)
+        // Ativas: a que acaba antes primeiro. Encerradas: a mais recente primeiro. Sem estado: as duas, nessa ordem.
+        const ativas = daLoja.filter((o) => o.estado === 'ativa').sort((a, b) => a.fim.getTime() - b.fim.getTime())
+        const encerradas = daLoja.filter((o) => o.estado === 'encerrada').sort((a, b) => b.fim.getTime() - a.fim.getTime())
+        const lista = estado === 'ativa' ? ativas : estado === 'encerrada' ? encerradas : [...ativas, ...encerradas]
+        return lista.map(paraOfertaLoja)
       }),
 
     obterOferta: (lojaId, ofertaId) =>
@@ -408,7 +451,11 @@ export function criarClienteMock({
         // Ativa: só as reservas aguardando. Encerrada: todas, com o estado final.
         const reservas = banco.reservas
           .filter((r) => r.ofertaId === o.id && (o.estado === 'encerrada' || r.estado === 'reservada'))
-          .sort((a, b) => a.expira_em.getTime() - b.expira_em.getTime())
+          .sort((a, b) =>
+            o.estado === 'ativa'
+              ? a.expira_em.getTime() - b.expira_em.getTime()
+              : a.criada_em.getTime() - b.criada_em.getTime(),
+          )
           .map(paraReservaLoja)
         return { ...paraOfertaLoja(o), reservas }
       }),
@@ -416,16 +463,19 @@ export function criarClienteMock({
     ajustar: (lojaId, ofertaId, { quantidade, motivo }) =>
       responder(() => {
         vinculoCom(lojaId)
-        const o = ofertaDaLoja(lojaId, ofertaId)
-        if (!motivo?.trim()) throw erro(400, 'sem_motivo', 'Informe o motivo do ajuste.')
-        if (o.estado !== 'ativa') throw erro(409, 'oferta_encerrada', 'Esta oferta já terminou.')
+        // Mesma ordem e frases do backend (backend/ofertas/api_loja.py).
         if (!Number.isInteger(quantidade) || quantidade < 1) {
           throw erro(400, 'quantidade_invalida', 'Informe pelo menos 1 unidade.')
         }
+        const texto = typeof motivo === 'string' ? motivo.trim() : ''
+        if (!texto) throw erro(400, 'sem_motivo', 'Informe o motivo do ajuste.')
+        if (texto.length > 200) throw erro(400, 'motivo_longo', 'O motivo pode ter até 200 letras.')
+        const o = ofertaDaLoja(lojaId, ofertaId)
+        if (o.estado !== 'ativa') throw erro(409, 'oferta_encerrada', 'Esta oferta já terminou.')
         // Ajuste só reduz o LIVRE; unidade reservada está prometida a um cliente.
         const livre = o.estoque.livre
         if (quantidade > livre) {
-          throw erro(409, 'acima_do_livre', `Só há ${livre} ${livre === 1 ? 'unidade livre' : 'unidades livres'} agora.`, { livre })
+          throw erro(409, 'acima_do_livre', 'Só dá para ajustar unidades livres; as reservadas não entram.', { livre })
         }
         o.estoque.livre -= quantidade
         o.estoque.ajustado += quantidade
@@ -435,8 +485,8 @@ export function criarClienteMock({
     previaRetirada: (lojaId, codigo) =>
       responder(() => {
         vinculoCom(lojaId)
-        const r = reservaAtivaPorCodigo(lojaId, codigo)
-        if (!r) throw naoEncontrada()
+        const r = codigoValido(codigo) ? reservaAtivaPorCodigo(lojaId, codigo) : undefined
+        if (!r) throw naoAchou(lojaId, codigo)
         const o = ofertaDe(r)
         return {
           reserva: paraReservaLoja(r),
@@ -451,19 +501,8 @@ export function criarClienteMock({
     retirar: (lojaId, codigo) =>
       responder(() => {
         const { usuario } = vinculoCom(lojaId)
-        const r = reservaAtivaPorCodigo(lojaId, codigo)
-        if (!r) {
-          // Venceu entre a busca (L13) e a confirmação: o mock considera "agora há pouco" = 30 min.
-          const venceu = banco.reservas.some(
-            (x) =>
-              x.estado === 'expirada' &&
-              x.codigo === codigo &&
-              lojaDaReserva(x) === lojaId &&
-              agora().getTime() - (x.encerrada_em?.getTime() ?? 0) < 30 * 60_000,
-          )
-          if (venceu) throw erro(409, 'venceu', 'O prazo desta reserva acabou. As unidades voltaram para a vitrine.')
-          throw naoEncontrada()
-        }
+        const r = codigoValido(codigo) ? reservaAtivaPorCodigo(lojaId, codigo) : undefined
+        if (!r) throw naoAchou(lojaId, codigo)
         const o = ofertaDe(r)
         r.estado = 'retirada'
         r.encerrada_em = agora()

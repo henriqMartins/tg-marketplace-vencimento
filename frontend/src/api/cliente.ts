@@ -51,7 +51,7 @@ import type {
 export interface ApiAcesso {
   /** POST /api/auth/login · 400 credenciais_invalidas */
   entrar(entrada: EntradaLogin): Promise<Sessao>
-  /** POST /api/auth/conta · 400 email_em_uso | senha_curta | termos */
+  /** POST /api/auth/conta · 400 sem_nome | email_invalido | senha_curta | termos | email_em_uso */
   criarConta(entrada: EntradaConta): Promise<Sessao>
   /** POST /api/auth/sair · 204 */
   sair(): Promise<void>

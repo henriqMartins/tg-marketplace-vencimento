@@ -367,6 +367,12 @@ describe('mock · grupo C (operação da loja)', () => {
 
     agora = new Date('2026-10-22T19:45:00-03:00') // a 31 venceu às 19:42
     expect((await erroDe(api.operacao.retirar(1, '482917'))).codigo).toBe('venceu')
+    // Como no backend: a prévia também responde "venceu", por até 24 h depois do prazo.
+    const previa = await erroDe(api.operacao.previaRetirada(1, '482917'))
+    expect([previa.status, previa.codigo, previa.message]).toEqual([409, 'venceu', 'Esta reserva venceu: o prazo de retirada acabou.'])
+    agora = new Date('2026-10-23T19:43:00-03:00') // 24 h e 1 min depois
+    expect((await erroDe(api.operacao.previaRetirada(1, '482917'))).codigo).toBe('nao_encontrada')
+    expect((await erroDe(api.operacao.previaRetirada(1, '48291'))).codigo).toBe('nao_encontrada') // fora do formato
   })
 })
 
@@ -481,5 +487,64 @@ describe('mock · configuração da loja (grupo E)', () => {
     // A conta continua: a Ana volta a ser só consumidora.
     await entrarComo('ana@email.com')
     expect((await api.acesso.eu()).vinculos).toEqual([])
+  })
+})
+
+describe('mock · acerto com o contrato da main (A, B, C)', () => {
+  it('A · criar conta: sem_nome e email_invalido, na ordem do backend', async () => {
+    const criar = (nome: string, email: string) =>
+      erroDe(api.acesso.criarConta({ nome, email, senha: '12345678', aceite_termos: true }))
+    expect((await criar('  ', 'x@y.com')).codigo).toBe('sem_nome')
+    expect((await criar('Bia', 'bia@')).codigo).toBe('email_invalido')
+    expect((await criar('Bia', 'ANA@email.com')).codigo).toBe('email_em_uso') // sem diferenciar maiúsculas
+  })
+
+  it('B · vitrine sem esgotadas; o detalhe responde; filtro inválido → 400', async () => {
+    await entrarComo('ana@email.com')
+    await api.consumidor.reservar(4, 2) // o molho (loja 3) tinha 2 livres
+    expect((await api.consumidor.listarOfertas()).map((o) => o.id)).not.toContain(4)
+    expect((await api.consumidor.obterOferta(4)).livre).toBe(0)
+
+    const e = await erroDe(api.consumidor.listarOfertas({ categoria: 'pao' as never }))
+    expect([e.status, e.codigo]).toEqual([400, 'parametro_invalido'])
+    expect((await erroDe(api.consumidor.minhasReservas('todas' as never))).codigo).toBe('parametro_invalido')
+  })
+
+  it('B · loja sem coordenada vai para o fim da lista por distância, com distancia_km null', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    await api.configuracao.atualizarLoja(1, { latitude: null, longitude: null })
+    const lista = await api.consumidor.listarOfertas({ lat: -20.81, lng: -49.37 })
+    const ultimas = lista.slice(-3)
+    expect(ultimas.every((o) => o.loja.id === 1 && o.distancia_km === null)).toBe(true)
+    expect(lista[0].distancia_km).not.toBeNull()
+  })
+
+  it('C · ofertas sem estado: ativas (fim mais próximo) e depois encerradas (mais recente)', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const todas = await api.operacao.listarOfertas(1)
+    const estados = todas.map((o) => o.estado)
+    expect(estados.indexOf('encerrada')).toBe(estados.lastIndexOf('ativa') + 1)
+    const ativas = todas.filter((o) => o.estado === 'ativa').map((o) => o.fim)
+    const encerradas = todas.filter((o) => o.estado === 'encerrada').map((o) => o.fim)
+    expect(ativas).toEqual([...ativas].sort())
+    expect(encerradas).toEqual([...encerradas].sort().reverse())
+  })
+
+  it('C · oferta de outra loja → 404; erros do ajuste na ordem do backend', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    expect((await erroDe(api.operacao.obterOferta(1, 3))).status).toBe(404) // a 3 é da loja 2
+    const codigo = async (quantidade: number, motivo: string, oferta = 1) =>
+      (await erroDe(api.operacao.ajustar(1, oferta, { quantidade, motivo }))).codigo
+    expect(await codigo(0, '')).toBe('quantidade_invalida')
+    expect(await codigo(1, '  ')).toBe('sem_motivo')
+    expect(await codigo(1, 'x'.repeat(201))).toBe('motivo_longo')
+    expect(await codigo(1, 'Danificada', 3)).toBe('nao_encontrada')
+    expect(await codigo(1, 'Danificada', 6)).toBe('oferta_encerrada')
+    const acima = await erroDe(api.operacao.ajustar(1, 1, { quantidade: 99, motivo: 'Danificada' }))
+    expect([acima.codigo, acima.message, acima.corpo]).toEqual([
+      'acima_do_livre',
+      'Só dá para ajustar unidades livres; as reservadas não entram.',
+      expect.objectContaining({ livre: 6 }),
+    ])
   })
 })

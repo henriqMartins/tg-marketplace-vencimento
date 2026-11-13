@@ -121,7 +121,7 @@ describe('A3 · Criar conta', () => {
     await usuario.click(screen.getByRole('checkbox', { name: /Li e aceito os termos/ }))
     await usuario.click(screen.getByRole('button', { name: 'Criar conta' }))
     await waitFor(() =>
-      expect(screen.getByLabelText('E-mail')).toHaveAccessibleDescription('Já existe uma conta com este e-mail.'),
+      expect(screen.getByLabelText('E-mail')).toHaveAccessibleDescription('Já existe uma conta com esse e-mail.'),
     )
   })
 
