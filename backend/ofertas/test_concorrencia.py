@@ -279,6 +279,52 @@ class TestEquipeSimultanea(Disputa):
                     loja=loja, papel=Papel.RESPONSAVEL).count(), 1)      # a loja tem dono
 
 
+class TestRebaixarSimultaneo(Disputa):
+    """
+    Pedido 4 do front: os DOIS responsáveis rebaixam um ao outro a funcionário no
+    mesmo instante. Mesmo perigo da remoção (a loja ficaria sem responsável),
+    mesma trava, mesmo resultado: só um consegue.
+    """
+
+    def test_dois_responsaveis_se_rebaixando_sobra_um(self):
+        from . import servico_equipe
+        from .models import Papel, Vinculo
+
+        loja = self.produto.loja
+        a, b = self.pessoas[0], self.pessoas[1]
+        for rodada in range(RODADAS):
+            with self.subTest(rodada=rodada):
+                Vinculo.objects.filter(loja=loja).delete()
+                va = Vinculo.objects.create(usuario=a, loja=loja, papel=Papel.RESPONSAVEL)
+                vb = Vinculo.objects.create(usuario=b, loja=loja, papel=Papel.RESPONSAVEL)
+                barreira = threading.Barrier(2)
+                certos, recusas, erros = [], [], []
+
+                def rebaixar(quem, alvo):
+                    try:
+                        barreira.wait()
+                        servico_equipe.trocar_papel(loja.id, alvo.id, Papel.FUNCIONARIO, quem)
+                        certos.append(alvo.id)
+                    except servico_equipe.ErroEquipe as erro:
+                        recusas.append(erro.codigo)
+                    except Exception as erro:
+                        erros.append(erro)
+                    finally:
+                        connection.close()
+
+                threads = [threading.Thread(target=rebaixar, args=(a, vb)),
+                           threading.Thread(target=rebaixar, args=(b, va))]
+                for t in threads:
+                    t.start()
+                for t in threads:
+                    t.join()
+
+                self.assertEqual(erros, [])
+                self.assertEqual((len(certos), recusas), (1, ["sem_permissao"]))
+                self.assertEqual(Vinculo.objects.filter(
+                    loja=loja, papel=Papel.RESPONSAVEL).count(), 1)
+
+
 @skipUnless(os.environ.get("CONTROLE_NEGATIVO") == "1",
             "controle negativo: ligue com CONTROLE_NEGATIVO=1")
 class TestControleNegativo(Disputa):

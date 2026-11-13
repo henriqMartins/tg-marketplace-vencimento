@@ -80,6 +80,15 @@ def _codigo_sequencial() -> Callable[[int], str]:
     return lambda id_reserva: f"R{id_reserva:05d}"
 
 
+def prazo_de_retirada(agora: float, janela: float, fim: float) -> float:
+    """
+    Até quando a pessoa pode retirar se reservar AGORA (regra 21): a janela,
+    mas nunca depois do fim da oferta. É o expira_em que a reserva grava; a
+    vitrine usa a mesma função para mostrar o horário ANTES de reservar.
+    """
+    return min(agora + janela, fim)
+
+
 class Oferta:
     """
     Um lote separado e publicado com desconto.
@@ -204,6 +213,9 @@ class Oferta:
         return [r for r in self.reservas.values()
                 if r.estado is EstadoReserva.RESERVADA]
 
+    def prazo_de_retirada(self, agora: float) -> float:
+        return prazo_de_retirada(agora, self.janela_reserva, self.fim_da_oferta)
+
     # ------------------------------------------------------------ operações
 
     def reservar(self, pedido: int, agora: float) -> Optional[Reserva]:
@@ -232,7 +244,7 @@ class Oferta:
             codigo=self._gerar_codigo(id_reserva),
             criada_em=agora,
             # janela nunca passa do fim da oferta (21)
-            expira_em=min(agora + self.janela_reserva, self.fim_da_oferta),
+            expira_em=self.prazo_de_retirada(agora),
         )
         self.livre -= quantidade
         self.reservas[id_reserva] = reserva

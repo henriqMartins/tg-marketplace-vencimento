@@ -60,10 +60,12 @@ class Vitrine(APIView):
         if faixa and faixa not in FAIXAS_DE_DESCONTO:
             return erro(400, "Faixa de desconto inválida.", "parametro_invalido")
 
-        ofertas = consultas.vitrine(timezone.now(), lat=lat, lng=lng, categoria=categoria,
+        agora = timezone.now()
+        ofertas = consultas.vitrine(agora, lat=lat, lng=lng, categoria=categoria,
                                     faixa_desconto=faixa, q=p.get("q") or None)
         return Response([
-            apresentacao.oferta_vitrine(o, o.livre_vitrine, getattr(o, "distancia", None))
+            apresentacao.oferta_vitrine(o, o.livre_vitrine, getattr(o, "distancia", None),
+                                        servico.retirar_ate(o, agora))
             for o in ofertas])
 
 
@@ -81,7 +83,8 @@ class DetalheOferta(APIView):
         encerrada = (oferta.estado == dominio.EstadoOferta.ENCERRADA.value
                      or oferta.fim <= agora)
         livre = 0 if encerrada else oferta.livre_vitrine
-        corpo = apresentacao.oferta_vitrine(oferta, livre)
+        prazo = None if encerrada else servico.retirar_ate(oferta, agora)
+        corpo = apresentacao.oferta_vitrine(oferta, livre, retirar_ate=prazo)
         corpo["estado"] = "encerrada" if encerrada else "ativa"
         return Response(corpo)
 

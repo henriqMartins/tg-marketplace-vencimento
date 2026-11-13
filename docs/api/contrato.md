@@ -123,9 +123,14 @@ eles a lista não é ordenada por distância), `categoria`, `faixa_desconto`, `q
   "validade": "2026-10-28",
   "fim": "2026-10-27T23:59:00-03:00",
   "janela_horas": 4,
+  "retirar_ate": "2026-10-22T20:00:00-03:00",  // se reservar AGORA: mín(agora + janela, fim)
   "fita": { "cor": "branco", "bimestre": "set–out", "ano": 2026 }
 }]
 ```
+`retirar_ate` (pedido 1, aceito em 13/11/2026): calculado pelo **domínio** no momento da
+leitura (`dominio.prazo_de_retirada`, a mesma função que grava o `expira_em` da reserva).
+Vem na vitrine e no detalhe; `null` na oferta encerrada. Arredondado ao segundo. O valor
+oficial continua sendo o `expira_em` da reserva criada.
 
 ### `GET /api/ofertas/{id}` (pública)
 `200 OfertaVitrine` · `404 nao_encontrada`. Oferta encerrada vem com `livre: 0` e
@@ -226,7 +231,8 @@ id da reserva.
 ```jsonc
 // RetiradaPrevia
 { "reserva": ReservaLoja, "codigo": "482917", "total": "6.28",
-  "produto": "Iogurte natural 170 g", "fita": Fita }
+  "produto": "Iogurte natural 170 g", "fita": Fita,
+  "validade": "2026-10-28" }      // pedido 3: a amostra da fita sempre com a data exata
 // RetiradaFeita
 { "reserva": ReservaLoja, "total": "6.28", "retirada_por": "Carlos Lima",
   "oferta": { "id": 1, "estoque": Estoque } }
@@ -348,6 +354,9 @@ Pronto em 13/11/2026. Detalhes que valem para o mock:
   o `409 fim_ja_passou` protege.
 - Erros do POST de vínculo: `400 email_invalido`, `400 papel_invalido`. O e-mail é comparado
   sem diferenciar maiúsculas. A pessoa precisa **já ter conta**.
+- PATCH de vínculo (pedido 4, aceito em 13/11/2026): promove ou rebaixa. Mesmo papel = `200`
+  sem mudar nada. Trava a loja como o DELETE: dois responsáveis se rebaixando ao mesmo
+  tempo não zeram a equipe.
 - DELETE: `404 nao_encontrado` (vínculo de outra loja ou inexistente). Remover alguém **não
   apaga a conta**: a pessoa volta a ser só consumidora. A lista vem com responsáveis primeiro.
 
@@ -357,6 +366,7 @@ Pronto em 13/11/2026. Detalhes que valem para o mock:
 | `PATCH /api/lojas/{lojaId}` | campos de `LojaConfig` | `200 LojaConfig` | `400` por campo |
 | `GET /api/lojas/{lojaId}/vinculos` | — | `200 [Vinculo]` | — |
 | `POST /api/lojas/{lojaId}/vinculos` | `{email, papel}` | `201 Vinculo` | `404 conta_nao_existe`, `409 ja_vinculado` |
+| `PATCH /api/lojas/{lojaId}/vinculos/{id}` | `{papel}` | `200 Vinculo` | `400 papel_invalido`, `404 nao_encontrado`, `409 proprio_vinculo`, `409 ultimo_responsavel` |
 | `DELETE /api/lojas/{lojaId}/vinculos/{id}` | — | `204` | `409 ultimo_responsavel`, `409 proprio_vinculo` |
 
 ```jsonc

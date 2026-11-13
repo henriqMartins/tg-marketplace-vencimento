@@ -43,8 +43,8 @@ def produto_resumo(produto) -> dict:
     return {"nome": produto.nome, "categoria": produto.categoria}
 
 
-def oferta_vitrine(oferta, livre: int, distancia_km=None) -> dict:
-    """OfertaVitrine do contrato."""
+def oferta_vitrine(oferta, livre: int, distancia_km=None, retirar_ate=None) -> dict:
+    """OfertaVitrine do contrato. `retirar_ate`: prazo se reservar agora (None = encerrada)."""
     return {
         "id": oferta.id,
         "produto": produto_resumo(oferta.produto),
@@ -57,6 +57,7 @@ def oferta_vitrine(oferta, livre: int, distancia_km=None) -> dict:
         "validade": oferta.validade.isoformat(),
         "fim": quando(oferta.fim),
         "janela_horas": horas(oferta.janela),
+        "retirar_ate": quando(retirar_ate),
         "fita": fita(oferta.validade),
     }
 
@@ -153,7 +154,8 @@ def retirada_previa(reserva) -> dict:
     """RetiradaPrevia (L12): o que conferir antes de entregar."""
     return {"reserva": reserva_loja(reserva), "codigo": reserva.codigo,
             "total": total(reserva), "produto": reserva.oferta.produto.nome,
-            "fita": fita(reserva.oferta.validade)}
+            "fita": fita(reserva.oferta.validade),
+            "validade": reserva.oferta.validade.isoformat()}     # pedido 3: a data exata
 
 
 def retirada_feita(reserva, oferta) -> dict:
