@@ -365,12 +365,14 @@ export interface LojaConfig {
   id: number
   nome: string
   endereco: string
-  latitude: number
-  longitude: number
+  /** null = sem coordenada (a loja vai para o fim da lista por distância). Vão sempre juntas. */
+  latitude: number | null
+  longitude: number | null
   /** Opções: 1, 2, 4, 8, 12, 24. */
   janela_padrao_horas: number
   /** 0–7 dias. */
   margem_fim_dias: number
+  /** 1–30 dias, sempre maior que a margem. */
   antecedencia_aviso_dias: number
 }
 

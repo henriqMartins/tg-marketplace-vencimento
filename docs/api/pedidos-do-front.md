@@ -61,3 +61,17 @@ código com `// PEDIDO-API n`.
 - Enquanto não houver: o mock simula (`// PEDIDO-API 3`); sem o campo, a L13 mostra o nome da cor e o
   bimestre ("Fita Branco · set–out 2026"), sem a amostra de cor.
 - Decisão (preenchida no main): ...
+
+### 4 · Trocar o papel de alguém da equipe (aberto)
+- Tela: G6 (Configurações da loja, desktop) — coluna Papel da tabela Equipe
+- Grupo do contrato: E
+- O que falta: uma rota para mudar o papel de um vínculo que já existe. O contrato só tem criar
+  (`POST …/vinculos`) e remover (`DELETE …/vinculos/{id}`).
+- Por que a tela precisa: a especificação da G6 mostra "Papel (selo para você, `select` para os
+  outros)". Hoje, promover a Juliana a responsável exige removê-la e adicioná-la de novo.
+- Proposta de formato: `PATCH /api/lojas/{lojaId}/vinculos/{id}` com `{papel}` → `200 Vinculo`.
+  Só responsável. Erros: `400 papel_invalido`, `404 nao_encontrado`, `409 proprio_vinculo` (mudar o
+  próprio papel) e `409 ultimo_responsavel` (rebaixar o último responsável).
+- Enquanto não houver: a G6 mostra o papel só como selo para todos (`// PEDIDO-API 4`); o mock não
+  simula a rota.
+- Decisão (preenchida no main): ...

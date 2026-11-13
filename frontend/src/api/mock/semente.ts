@@ -27,12 +27,23 @@ export interface UsuarioMock {
   nome: string
   email: string
   senha: string
-  vinculos: VinculoEu[]
+  vinculos: VinculoMock[]
+}
+
+/** Vínculo com id (o DELETE de vínculo usa o id); o `Eu` devolve sem ele. */
+export interface VinculoMock extends VinculoEu {
+  id: number
 }
 
 export interface LojaMock extends LojaResumo {
   /** Distância fingida até "você" (o mock não calcula Haversine). */
   distancia_km: number
+  // Configuração (grupo E)
+  latitude: number | null
+  longitude: number | null
+  janela_padrao_horas: number
+  margem_fim_dias: number
+  antecedencia_aviso_dias: number
 }
 
 export interface OfertaMock {
@@ -107,22 +118,24 @@ export function criarSemente(agora: Date): BancoMock {
       nome: 'Carlos Lima',
       email: 'carlos@vilanova.com.br',
       senha: SENHA_MOCK,
-      vinculos: [{ loja: { id: 1, nome: 'Mercadinho Vila Nova' }, papel: 'responsavel' }],
+      vinculos: [{ id: 101, loja: { id: 1, nome: 'Mercadinho Vila Nova' }, papel: 'responsavel' }],
     },
     {
       id: USUARIO.juliana,
       nome: 'Juliana Prado',
       email: 'juliana.prado@email.com',
       senha: SENHA_MOCK,
-      vinculos: [{ loja: { id: 1, nome: 'Mercadinho Vila Nova' }, papel: 'funcionario' }],
+      vinculos: [{ id: 102, loja: { id: 1, nome: 'Mercadinho Vila Nova' }, papel: 'funcionario' }],
     },
     { id: USUARIO.ana, nome: 'Ana Souza', email: 'ana@email.com', senha: SENHA_MOCK, vinculos: [] },
   ]
 
+  // Regras das ofertas iguais às do seed (janela 4 h, margem 1 dia); coordenadas do contrato.
+  const regras = { janela_padrao_horas: JANELA_HORAS, margem_fim_dias: MARGEM_DIAS, antecedencia_aviso_dias: 10 }
   const lojas: LojaMock[] = [
-    { id: 1, nome: 'Mercadinho Vila Nova', endereco: 'Rua das Palmeiras, 410 · Boa Vista', distancia_km: 0.4 },
-    { id: 2, nome: 'Empório Santa Cruz', endereco: 'Av. Brasil, 1290 · Santa Cruz', distancia_km: 1.1 },
-    { id: 3, nome: 'Mercado Bom Preço', endereco: 'Rua Ipiranga, 77 · Centro', distancia_km: 1.8 },
+    { id: 1, nome: 'Mercadinho Vila Nova', endereco: 'Rua das Palmeiras, 410 · Boa Vista', distancia_km: 0.4, latitude: -20.8113, longitude: -49.3758, ...regras },
+    { id: 2, nome: 'Empório Santa Cruz', endereco: 'Av. Brasil, 1290 · Santa Cruz', distancia_km: 1.1, latitude: -20.8051, longitude: -49.3812, ...regras },
+    { id: 3, nome: 'Mercado Bom Preço', endereco: 'Rua Ipiranga, 77 · Centro', distancia_km: 1.8, latitude: -20.8197, longitude: -49.3796, ...regras },
   ]
 
   /** Oferta do seed; `venceEm` = dias de hoje até a validade. */

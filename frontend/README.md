@@ -20,7 +20,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F7a · Mock do grupo F + G1 painel, G3 histórico | ✅ |
 | F7b · G4 ofertas no computador | ✅ |
 | F7c · Mock do grupo G + G2 projeção | ✅ |
-| F7d · Mock do grupo E + G6/L14 configurações | — |
+| F7d · Mock do grupo E + G6/L14 configurações | ✅ |
 
 ## Decisões do frontend
 
@@ -59,6 +59,11 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 13/11/2026 | Chegada de 1 h ou 4 h no mock responde 501 `chegada_so_na_api` ("disponível só com a API real"): o `rodadas.csv` só tem a chegada de 2 h |
 | 13/11/2026 | G2: os controles só valem ao clicar "Atualizar projeção"; o cenário aplicado fica na URL (`?lote=&procura=&chegada=`). Janela inicial de 4 h, sem nenhum texto de recomendação (testado) |
 | 13/11/2026 | Gráfico da G2: verde `primary` × laranja `discount` ficam a ΔE 6,1 para protanopia (validador do dataviz); compensado com textura diagonal na barra de bloqueados, valores escritos, legenda e tabela |
+| 13/11/2026 | `git merge main` antes do grupo E: o contrato do E já estava ✅ no main (PATCH parcial que não grava nada se um campo falha, `antecedencia_menor_que_margem`, antecedência 1–30, coordenadas juntas ou `null`, `email_invalido`/`papel_invalido`). O mock E segue essas regras com as frases do backend |
+| 13/11/2026 | L14 e G6 são **uma tela** (`ConfiguracoesLoja`): cartões lado a lado a partir de ~800 px; no celular o e-mail e o papel ficam embaixo do nome. Dados e regras salvam juntos pela barra "Alterações não salvas" (só aparece com mudança; o PATCH leva só o que mudou); a equipe muda na hora, com confirmação para remover |
+| 13/11/2026 | Papel na equipe só como selo: trocar o papel não tem rota no contrato (PEDIDO-API 4) |
+| 13/11/2026 | Endereço → coordenada (Nominatim) continua para a F8: ao editar o endereço, a tela avisa que a distância segue o endereço anterior |
+| 13/11/2026 | G2 começa pela janela padrão da loja (grupo E); sem ela, 4 h |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

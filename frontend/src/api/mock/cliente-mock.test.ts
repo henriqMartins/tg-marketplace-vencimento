@@ -202,7 +202,7 @@ describe('mock · vitrine', () => {
   })
 
   it('grupos ainda sem mock avisam a etapa', async () => {
-    await expect(api.configuracao.obterLoja(1)).rejects.toThrow('etapa F8')
+    await expect(api.lotes.listarProdutos(1)).rejects.toThrow('etapa F8')
   })
 })
 
@@ -414,5 +414,72 @@ describe('mock · projeção (grupo G)', () => {
     expect(e.message).toBe('Projeção com chegada de 4 h disponível só com a API real.')
     await entrarComo('juliana.prado@email.com')
     expect((await erroDe(api.projecao.projecao(1))).status).toBe(403)
+  })
+})
+
+describe('mock · configuração da loja (grupo E)', () => {
+  it('leitura com qualquer vínculo; escrita só do responsável (403)', async () => {
+    await entrarComo('juliana.prado@email.com')
+    expect((await api.configuracao.obterLoja(1)).janela_padrao_horas).toBe(4)
+    expect((await api.configuracao.listarVinculos(1)).map((v) => v.usuario.nome)).toEqual(['Carlos Lima', 'Juliana Prado'])
+    expect((await erroDe(api.configuracao.atualizarLoja(1, { nome: 'X' }))).status).toBe(403)
+    expect((await erroDe(api.configuracao.criarVinculo(1, { email: 'ana@email.com', papel: 'funcionario' }))).status).toBe(403)
+  })
+
+  it('PATCH parcial; um campo errado e nada é gravado', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const nova = await api.configuracao.atualizarLoja(1, { nome: '  Vila Nova Express ', janela_padrao_horas: 8 })
+    expect(nova).toMatchObject({ nome: 'Vila Nova Express', janela_padrao_horas: 8, margem_fim_dias: 1 })
+    // O nome novo aparece também no vínculo de quem está logado.
+    expect((await api.acesso.eu()).vinculos[0]).toEqual({ loja: { id: 1, nome: 'Vila Nova Express' }, papel: 'responsavel' })
+
+    const e = await erroDe(api.configuracao.atualizarLoja(1, { nome: 'Outro nome', janela_padrao_horas: 3 }))
+    expect([e.status, e.codigo]).toEqual([400, 'janela_invalida'])
+    expect((await api.configuracao.obterLoja(1)).nome).toBe('Vila Nova Express') // nada mudou
+  })
+
+  it('antecedência precisa ser maior que a margem (no par final); limites de cada campo', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const codigo = async (campos: object) => (await erroDe(api.configuracao.atualizarLoja(1, campos))).codigo
+    expect(await codigo({ antecedencia_aviso_dias: 1 })).toBe('antecedencia_menor_que_margem') // margem é 1
+    expect(await codigo({ margem_fim_dias: 7, antecedencia_aviso_dias: 7 })).toBe('antecedencia_menor_que_margem')
+    expect(await codigo({ antecedencia_aviso_dias: 31 })).toBe('antecedencia_invalida')
+    expect(await codigo({ margem_fim_dias: 8 })).toBe('margem_invalida')
+    expect(await codigo({ nome: '   ' })).toBe('sem_nome')
+    expect(await codigo({ latitude: -20.8 })).toBe('coordenadas_incompletas')
+    expect(await codigo({ latitude: 95, longitude: 0 })).toBe('coordenadas_invalidas')
+    const semCoordenada = await api.configuracao.atualizarLoja(1, { latitude: null, longitude: null })
+    expect([semCoordenada.latitude, semCoordenada.longitude]).toEqual([null, null])
+    expect((await api.configuracao.atualizarLoja(1, { margem_fim_dias: 0, antecedencia_aviso_dias: 1 })).margem_fim_dias).toBe(0)
+  })
+
+  it('equipe: adicionar pelo e-mail da conta (404, 409) e remover (409 próprio)', async () => {
+    await entrarComo('carlos@vilanova.com.br')
+    const codigoAo = async (p: Promise<unknown>) => {
+      const e = await erroDe(p)
+      return [e.status, e.codigo]
+    }
+    expect(await codigoAo(api.configuracao.criarVinculo(1, { email: 'ninguem@email.com', papel: 'funcionario' }))).toEqual([
+      404,
+      'conta_nao_existe',
+    ])
+    expect(await codigoAo(api.configuracao.criarVinculo(1, { email: 'Juliana.Prado@email.com', papel: 'funcionario' }))).toEqual([
+      409,
+      'ja_vinculado',
+    ])
+    expect(await codigoAo(api.configuracao.criarVinculo(1, { email: 'ana@', papel: 'funcionario' }))).toEqual([400, 'email_invalido'])
+
+    const ana = await api.configuracao.criarVinculo(1, { email: 'ANA@email.com', papel: 'funcionario' })
+    expect(ana).toMatchObject({ usuario: { nome: 'Ana Souza', email: 'ana@email.com' }, papel: 'funcionario', eu: false })
+
+    const eu = (await api.configuracao.listarVinculos(1)).find((v) => v.eu)!
+    expect(await codigoAo(api.configuracao.removerVinculo(1, eu.id))).toEqual([409, 'proprio_vinculo'])
+    expect(await codigoAo(api.configuracao.removerVinculo(1, 99999))).toEqual([404, 'nao_encontrado'])
+
+    await api.configuracao.removerVinculo(1, ana.id)
+    expect((await api.configuracao.listarVinculos(1)).map((v) => v.usuario.nome)).toEqual(['Carlos Lima', 'Juliana Prado'])
+    // A conta continua: a Ana volta a ser só consumidora.
+    await entrarComo('ana@email.com')
+    expect((await api.acesso.eu()).vinculos).toEqual([])
   })
 })

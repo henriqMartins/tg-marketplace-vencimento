@@ -3,8 +3,8 @@
  * Segue o contrato (formatos, códigos de erro); as regras que só o backend tem
  * ficam fingidas em regras-fingidas.ts. Só src/api/index.ts importa este arquivo.
  *
- * Grupos prontos no mock: A (acesso), B (consumidor), C (operação da loja) e F (gestor).
- * D–G entram junto com as telas deles (F7–F8) — decidido 11/11/2026.
+ * Grupos prontos no mock: A, B, C, E (configuração da loja), F (gestor) e G (projeção).
+ * D entra com as telas dele (F8) — decidido 11/11/2026.
  */
 import type {
   ApiAcesso,
@@ -19,16 +19,19 @@ import type {
 } from '../cliente'
 import { ErroApi, mensagemPadrao } from '../erros'
 import type {
+  EntradaVinculo,
   Eu,
   Estoque,
   FaixaDesconto,
   ItemHistorico,
+  LojaConfig,
   LojaResumo,
   OfertaLoja,
   OfertaVitrine,
   Reserva,
   ReservaLoja,
   Sessao,
+  VinculoLoja,
 } from '../tipos'
 import { dataBrasilia, isoBrasilia } from './datas'
 import {
@@ -42,6 +45,7 @@ import {
   quantidadeReservada,
 } from './regras-fingidas'
 import { carregar, salvar, type Guarda } from './persistencia'
+import { conferirParFinal, ErroDeCampo, mudancasDaLoja, paraLojaConfig } from './config-loja'
 import { calcularProjecao } from './projecao'
 import { criarSemente, type BancoMock, type OfertaMock, type ReservaMock, type UsuarioMock } from './semente'
 
@@ -104,7 +108,14 @@ export function criarClienteMock({
 
   // ---------- Conversões: modelo interno → formato do contrato ----------
 
-  const paraEu = ({ id, nome, email, vinculos }: UsuarioMock): Eu => ({ id, nome, email, vinculos })
+  // Vínculo do contrato: sem o id interno e com o nome ATUAL da loja (o PATCH pode renomear).
+  const paraEu = ({ id, nome, email, vinculos }: UsuarioMock): Eu => ({
+    id,
+    nome,
+    email,
+    vinculos: vinculos.map((v) => ({ loja: { id: v.loja.id, nome: lojaPorId(v.loja.id).nome }, papel: v.papel })),
+  })
+  const lojaPorId = (lojaId: number) => banco.lojas.find((l) => l.id === lojaId)!
 
   function lojaResumo(lojaId: number): LojaResumo {
     const { id, nome, endereco } = banco.lojas.find((l) => l.id === lojaId)!
@@ -536,6 +547,89 @@ export function criarClienteMock({
       }),
   }
 
+  // ---------- E · Configuração da loja ----------
+
+  const EMAIL_VALIDO = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+
+  /** Vínculos da loja como o contrato mostra: responsáveis primeiro. */
+  function vinculosDa(lojaId: number, eu: UsuarioMock): VinculoLoja[] {
+    return banco.usuarios
+      .flatMap((u) =>
+        u.vinculos
+          .filter((v) => v.loja.id === lojaId)
+          .map((v) => ({ id: v.id, usuario: { nome: u.nome, email: u.email }, papel: v.papel, eu: u.id === eu.id })),
+      )
+      .sort((a, b) => Number(b.papel === 'responsavel') - Number(a.papel === 'responsavel') || a.id - b.id)
+  }
+
+  const configuracao: ApiConfiguracao = {
+    obterLoja: (lojaId) =>
+      responder(() => {
+        vinculoCom(lojaId) // leitura: qualquer vínculo
+        return paraLojaConfig(lojaPorId(lojaId))
+      }),
+
+    atualizarLoja: (lojaId, campos) =>
+      responder((): LojaConfig => {
+        responsavelDe(lojaId)
+        const loja = lojaPorId(lojaId)
+        try {
+          const mudancas = mudancasDaLoja(campos)
+          conferirParFinal({ ...loja, ...mudancas })
+          Object.assign(loja, mudancas) // só grava depois de tudo conferido
+        } catch (e) {
+          if (e instanceof ErroDeCampo) throw erro(400, e.codigo, e.message)
+          throw e
+        }
+        return paraLojaConfig(loja)
+      }),
+
+    listarVinculos: (lojaId) =>
+      responder(() => {
+        const { usuario } = vinculoCom(lojaId)
+        return vinculosDa(lojaId, usuario)
+      }),
+
+    criarVinculo: (lojaId, entrada: EntradaVinculo) =>
+      responder(() => {
+        responsavelDe(lojaId)
+        const eu = usuarioLogado()
+        const email = typeof entrada.email === 'string' ? entrada.email.trim() : ''
+        if (!EMAIL_VALIDO.test(email)) throw erro(400, 'email_invalido', 'Informe um e-mail válido.')
+        if (entrada.papel !== 'responsavel' && entrada.papel !== 'funcionario') {
+          throw erro(400, 'papel_invalido', 'Papel: responsavel ou funcionario.')
+        }
+        const pessoa = banco.usuarios.find((u) => u.email.toLowerCase() === email.toLowerCase())
+        if (!pessoa) {
+          throw erro(404, 'conta_nao_existe', 'Não existe conta com esse e-mail. Peça para a pessoa se cadastrar.')
+        }
+        if (pessoa.vinculos.some((v) => v.loja.id === lojaId)) {
+          throw erro(409, 'ja_vinculado', 'Essa pessoa já faz parte da equipe.')
+        }
+        const novo = { id: banco.proximoId++, loja: { id: lojaId, nome: lojaPorId(lojaId).nome }, papel: entrada.papel }
+        pessoa.vinculos.push(novo)
+        return vinculosDa(lojaId, eu).find((v) => v.id === novo.id)!
+      }),
+
+    removerVinculo: (lojaId, vinculoId) =>
+      responder(() => {
+        responsavelDe(lojaId)
+        const eu = usuarioLogado()
+        const dono = banco.usuarios.find((u) => u.vinculos.some((v) => v.id === vinculoId && v.loja.id === lojaId))
+        if (!dono) throw erro(404, 'nao_encontrado', 'Essa pessoa não faz parte da equipe desta loja.')
+        if (dono.id === eu.id) {
+          throw erro(409, 'proprio_vinculo', 'Você não pode remover o próprio acesso; peça a outro responsável.')
+        }
+        const vinculo = dono.vinculos.find((v) => v.id === vinculoId)!
+        const responsaveis = vinculosDa(lojaId, eu).filter((v) => v.papel === 'responsavel').length
+        if (vinculo.papel === 'responsavel' && responsaveis <= 1) {
+          throw erro(409, 'ultimo_responsavel', 'A loja precisa de pelo menos um responsável.') // reforço: nunca zerar
+        }
+        // Remover tira o vínculo, não a conta: a pessoa volta a ser só consumidora.
+        dono.vinculos = dono.vinculos.filter((v) => v.id !== vinculoId)
+      }),
+  }
+
   // ---------- G · Projeção ----------
 
   const projecao: ApiProjecao = {
@@ -557,7 +651,7 @@ export function criarClienteMock({
     consumidor,
     operacao,
     lotes: pendente<ApiLotes>('lotes', 'F8'),
-    configuracao: pendente<ApiConfiguracao>('configuracao', 'F8'),
+    configuracao,
     gestor,
     projecao,
 

@@ -16,7 +16,7 @@ const LOTES: (FaixaLote | null)[] = [null, '5-14', '15-24', '25-34', '35-44', '4
 const PROCURAS: (FaixaProcura | null)[] = [null, '0.3-0.8', '0.8-1.3', '1.3-1.8', '1.8-2.3', '2.3-3.0']
 const CHEGADAS: Chegada[] = [1, 2, 4]
 
-/** Começa pela janela de 4 h (a padrão das lojas no exemplo do contrato). Não é recomendação. */
+/** Sem a configuração da loja, começa pela de 4 h. Nenhuma das duas é recomendação. */
 const JANELA_INICIAL = 4
 
 /** Sempre uma casa ("13,0"), para os números se alinharem no gráfico e na tabela. */
@@ -53,7 +53,10 @@ export function G2Projecao() {
   const [parametros, setParametros] = useSearchParams()
   const aplicado = lerCenario(parametros)
   const [rascunho, setRascunho] = useState<Cenario>(aplicado)
-  const [janela, setJanela] = useState(JANELA_INICIAL)
+  // Começa pela janela que a loja usa hoje (grupo E), para comparar com as outras.
+  const loja = useQuery({ queryKey: ['loja-config', lojaId], queryFn: () => api.configuracao.obterLoja(lojaId) })
+  const [escolhida, setJanela] = useState<number | null>(null)
+  const janela = escolhida ?? loja.data?.janela_padrao_horas ?? JANELA_INICIAL
 
   const projecao = useQuery({
     queryKey: ['projecao', lojaId, aplicado.lote, aplicado.procura, aplicado.chegada],
