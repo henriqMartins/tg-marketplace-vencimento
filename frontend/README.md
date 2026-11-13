@@ -23,7 +23,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F7d · Mock do grupo E + G6/L14 configurações | ✅ |
 | F8a · Mock alinhado ao contrato da main (A, B, C) | ✅ |
 | F8b · Mock do grupo D | ✅ |
-| F8c · L4 lotes, L3 cadastro do lote, L2 novo produto | — |
+| F8c · L4 lotes, L3 cadastro do lote, L2 novo produto | ✅ |
 | F8d · L5 avisos, L6 conferência, L8 adiar, L7 publicar | — |
 | F8e · G5 lotes e fitas no computador | — |
 | F8f · Endereço → coordenada (Nominatim) na L14/G6 | — |
@@ -77,6 +77,11 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 13/11/2026 | Mock do grupo D (`mock/grupo-d.ts`) copia `backend/ofertas/api_lotes.py` e `servico_lotes.py`: mesma ordem de validação, códigos e frases. Regras em `regras-fingidas.ts`: "conferir" calculado (nunca gravado), agrupado/novo/colisão, grupo em oferta não recebe lote, lote mais próximo puxa a referência e desfaz adiamento além do limite, adiar até a véspera do último dia, preço meio para cima em centavos inteiros |
 | 13/11/2026 | Semente do D (`mock/semente-lotes.ts`): os 5 avisos e os grupos do protótipo com datas relativas a hoje; as ofertas 1, 2, 5 e 6 têm grupo; a cor sai sempre da validade. `avisos_para_conferir` passa a ser contado (4 na semente: o achocolatado está adiado). Publicar cria a oferta de verdade (L9, G4 e vitrine) |
 | 13/11/2026 | Todos os grupos (A–G) têm mock; o `pendente` saiu. Chave do mock `tg.mock.v4` |
+| 13/11/2026 | L3: o card da fita aparece **depois** de salvar, com o resultado da API (agrupado, novo grupo ou colisão com `role=alert`), a instrução "Cole a fita preta…" e "Cadastrar outro lote" / "Ver lotes e fitas" (decisão 1a da F8: a cor é calculada só no backend e não há rota de prévia). Antes de salvar, o card só explica de onde vem a cor |
+| 13/11/2026 | L3: validade digitada com máscara "dd/mm/aaaa" (`util/data-digitada.ts`); a tela só confere se a data existe no calendário, e "já venceu" vem da API (`validade_passada`) embaixo do campo |
+| 13/11/2026 | L2 ↔ L3: "+ Novo produto" leva o texto da busca (`?nome=`) e salvar volta para a L3 com o produto escolhido (`?produto=id`). Os dois formulários são componentes (`FormLote`, `FormProduto`) para o modal da G5 |
+| 13/11/2026 | L4: grupos `encerrado` não aparecem (já saíram da gôndola); aviso leva à L6 e grupo em oferta à L10; filtro de cor na URL (`?cor=`), pedido à API |
+| 13/11/2026 | `AmostraFita` ganhou o tamanho `destaque` (64 px, L3) e a `BolinhaFita` decorativa (só ao lado do nome da cor, nos chips) |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

@@ -70,3 +70,37 @@
   background: var(--fita-preto);
   border-color: var(--fita-preto);
 }
+
+/* Card da fita da L3 (resultado do cadastro do lote). */
+.destaque {
+  gap: 14px;
+}
+
+.destaque .cor {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+}
+
+.textoDestaque {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nomeDestaque {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.bolinha {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  /* Sem cor de borda aqui: o branco usa a borda da classe de cor para aparecer no fundo claro. */
+  border-width: 1.5px;
+  border-style: solid;
+  border-radius: 999px;
+}

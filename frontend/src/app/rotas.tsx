@@ -23,6 +23,9 @@ import { C6Reserva } from '../telas/consumidor/C6Reserva'
 import { C8MinhasReservas } from '../telas/consumidor/C8MinhasReservas'
 import { C9Perfil } from '../telas/consumidor/C9Perfil'
 import { L1Inicio } from '../telas/loja/L1Inicio'
+import { L2Produto } from '../telas/loja/L2Produto'
+import { L3Lote } from '../telas/loja/L3Lote'
+import { L4Lotes } from '../telas/loja/L4Lotes'
 import { L9Ofertas } from '../telas/loja/L9Ofertas'
 import { L10Oferta } from '../telas/loja/L10Oferta'
 import { L11Ajuste } from '../telas/loja/L11Ajuste'
@@ -91,9 +94,9 @@ export const rotas: RouteObject[] = [
                 element: <LayoutLoja />,
                 children: [
                   { index: true, element: <L1Inicio /> },
-                  tela('produtos/novo', 'L2', 'Novo produto', 'F8'),
-                  tela('lotes/novo', 'L3', 'Cadastro do lote', 'F8'),
-                  tela('lotes', 'L4 / G5', 'Lotes e fitas', 'F8', true),
+                  { path: 'produtos/novo', element: <L2Produto /> },
+                  { path: 'lotes/novo', element: <L3Lote /> },
+                  { path: 'lotes', element: <L4Lotes />, handle: LARGA }, // G5 (computador) no 8e
                   tela('avisos', 'L5', 'Avisos de validade', 'F8'),
                   tela('avisos/:avisoId', 'L6', 'Conferência na gôndola', 'F8'),
                   tela('avisos/:avisoId/publicar', 'L7', 'Revisar e publicar oferta', 'F8'),
