@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import api_config as e
 from . import api_consumidor as c
+from . import api_gestor as f
 from . import api_loja as l
 from . import api_lotes as d
 
@@ -43,4 +44,8 @@ urlpatterns = [
     path("lojas/<int:loja_id>/vinculos", e.Equipe.as_view(), name="vinculos"),
     path("lojas/<int:loja_id>/vinculos/<int:vinculo_id>", e.MembroDaEquipe.as_view(),
          name="vinculo"),
+
+    # Grupo F do contrato (gestor): só o responsável
+    path("lojas/<int:loja_id>/indicadores", f.Indicadores.as_view(), name="indicadores"),
+    path("lojas/<int:loja_id>/historico", f.Historico.as_view(), name="historico"),
 ]
