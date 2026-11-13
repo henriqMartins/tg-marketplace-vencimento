@@ -1,6 +1,6 @@
 /*
- * Mapa de rotas (especificação, "Mapa de rotas sugerido"). Cada tela ainda não feita
- * aparece como "em construção", com a etapa em que entra.
+ * Mapa de rotas (especificação, "Mapa de rotas sugerido"). Todas as telas da
+ * especificação estão aqui desde a F8.
  */
 import type { RouteObject } from 'react-router'
 import { Galeria } from '../galeria/Galeria'
@@ -11,7 +11,6 @@ import { LayoutRaiz } from './layouts/LayoutRaiz'
 import { ExigeLogin, ExigeVinculo, SoVisitante } from './protecao'
 import { A1Abertura } from './telas/A1Abertura'
 import { NaoEncontrada } from './telas/NaoEncontrada'
-import { TelaEmConstrucao } from './telas/TelaEmConstrucao'
 import { TelaCriarConta } from '../telas/acesso/TelaCriarConta'
 import { TelaEntrar } from '../telas/acesso/TelaEntrar'
 import { TelaEscolher } from '../telas/acesso/TelaEscolher'
@@ -26,6 +25,9 @@ import { L1Inicio } from '../telas/loja/L1Inicio'
 import { L2Produto } from '../telas/loja/L2Produto'
 import { L3Lote } from '../telas/loja/L3Lote'
 import { L4Lotes } from '../telas/loja/L4Lotes'
+import { L5Avisos } from '../telas/loja/L5Avisos'
+import { L6Conferencia } from '../telas/loja/L6Conferencia'
+import { L7Publicar } from '../telas/loja/L7Publicar'
 import { L9Ofertas } from '../telas/loja/L9Ofertas'
 import { L10Oferta } from '../telas/loja/L10Oferta'
 import { L11Ajuste } from '../telas/loja/L11Ajuste'
@@ -36,12 +38,6 @@ import { G2Projecao } from '../telas/gestor/G2Projecao'
 import { G3Historico } from '../telas/gestor/G3Historico'
 import { G4Ofertas } from '../telas/gestor/G4Ofertas'
 import { useVisaoGestor } from './tela'
-
-const tela = (path: string | undefined, codigo: string, titulo: string, etapa: string, larga = false): RouteObject => ({
-  ...(path === undefined ? { index: true } : { path }),
-  element: <TelaEmConstrucao codigo={codigo} titulo={titulo} etapa={etapa} />,
-  handle: (larga ? { largura: 'larga' } : {}) satisfies HandleRota,
-})
 
 const LARGA = { largura: 'larga' } satisfies HandleRota
 
@@ -97,9 +93,9 @@ export const rotas: RouteObject[] = [
                   { path: 'produtos/novo', element: <L2Produto /> },
                   { path: 'lotes/novo', element: <L3Lote /> },
                   { path: 'lotes', element: <L4Lotes />, handle: LARGA }, // G5 (computador) no 8e
-                  tela('avisos', 'L5', 'Avisos de validade', 'F8'),
-                  tela('avisos/:avisoId', 'L6', 'Conferência na gôndola', 'F8'),
-                  tela('avisos/:avisoId/publicar', 'L7', 'Revisar e publicar oferta', 'F8'),
+                  { path: 'avisos', element: <L5Avisos /> },
+                  { path: 'avisos/:avisoId', element: <L6Conferencia /> },
+                  { path: 'avisos/:avisoId/publicar', element: <L7Publicar /> },
                   { path: 'ofertas', element: <OfertasDaLoja />, handle: LARGA },
                   { path: 'ofertas/:ofertaId', element: <L10Oferta /> },
                   { path: 'ofertas/:ofertaId/ajuste', element: <L11Ajuste /> },

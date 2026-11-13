@@ -24,7 +24,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F8a · Mock alinhado ao contrato da main (A, B, C) | ✅ |
 | F8b · Mock do grupo D | ✅ |
 | F8c · L4 lotes, L3 cadastro do lote, L2 novo produto | ✅ |
-| F8d · L5 avisos, L6 conferência, L8 adiar, L7 publicar | — |
+| F8d · L5 avisos, L6 conferência, L8 adiar, L7 publicar | ✅ |
 | F8e · G5 lotes e fitas no computador | — |
 | F8f · Endereço → coordenada (Nominatim) na L14/G6 | — |
 | F9 · PWA | — |
@@ -82,6 +82,11 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 13/11/2026 | L2 ↔ L3: "+ Novo produto" leva o texto da busca (`?nome=`) e salvar volta para a L3 com o produto escolhido (`?produto=id`). Os dois formulários são componentes (`FormLote`, `FormProduto`) para o modal da G5 |
 | 13/11/2026 | L4: grupos `encerrado` não aparecem (já saíram da gôndola); aviso leva à L6 e grupo em oferta à L10; filtro de cor na URL (`?cor=`), pedido à API |
 | 13/11/2026 | `AmostraFita` ganhou o tamanho `destaque` (64 px, L3) e a `BolinhaFita` decorativa (só ao lado do nome da cor, nos chips) |
+| 13/11/2026 | L6 só conta (como a especificação decidiu em 05/11, apesar de a prancha ainda mostrar o desconto); o máximo é o `recebido` do grupo. A contagem vai para a L7 pela URL (`?separado=N`); sem ela, a L7 volta para a L6 |
+| 13/11/2026 | L8 (adiar): Amanhã / Em 2 dias / Em 3 dias / Escolher data; opções depois do `adiar_ate_max` da API ficam desabilitadas. As datas das opções saem do relógio do aparelho, mas o limite e a validação são da API |
+| 13/11/2026 | L7: preço sugerido da API, desconto 30% marcado de início (como no protótipo), janela padrão da loja; prévia "De R$ 4,49 por R$ 3,14" com a mesma conta do backend (`previaDesconto`, meio centavo para cima), avisando que o valor final é o gravado. `409 fim_ja_passou` vira a frase da especificação |
+| 13/11/2026 | Oferta publicada **sem** a frase "Quem ativou os avisos de oferta foi notificado": o push (grupo H) está fora até 09/11, e a frase seria falsa |
+| 13/11/2026 | Todas as rotas da especificação têm a tela de verdade: a tela "em construção" saiu |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

@@ -23,10 +23,13 @@ export function hojeEmBrasilia(agora: Date): Data {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(agora)
 }
 
-function voltarDias(data: Data, dias: number): Data {
+/** Data de calendário + n dias ("2026-10-31" + 1 → "2026-11-01"). Só para opções de tela. */
+export function somarDias(data: Data, dias: number): Data {
   const [ano, mes, dia] = data.split('-').map(Number)
-  return new Date(Date.UTC(ano, mes - 1, dia - dias)).toISOString().slice(0, 10)
+  return new Date(Date.UTC(ano, mes - 1, dia + dias)).toISOString().slice(0, 10)
 }
+
+const voltarDias = (data: Data, dias: number) => somarDias(data, -dias)
 
 /** Intervalo inclusivo: 7 dias = hoje e os 6 anteriores. */
 export function intervaloDo(periodo: Periodo, agora: Date): { de: Data; ate: Data } {

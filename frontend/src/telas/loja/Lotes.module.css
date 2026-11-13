@@ -224,3 +224,162 @@ a.cartaoGrupo:hover {
   text-decoration: none;
   box-shadow: 0 6px 18px rgb(0 0 0 / 0.2);
 }
+
+/* ---------- L5–L8 (avisos até a publicação) ---------- */
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tituloTela {
+  font: var(--texto-titulo-tela);
+}
+
+.prazo {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.prazoUrgente {
+  color: var(--urgent);
+}
+
+.prazoAdiado {
+  color: var(--warn-text);
+}
+
+.gradeOpcoes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.gradeJanelas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ladrilho {
+  min-height: 48px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  color: var(--ink);
+  font: 700 15px / 1 var(--fonte);
+  cursor: pointer;
+}
+
+.ladrilho:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ladrilhoAtivo {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.semBorda {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.duasColunas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.precoOferta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: var(--raio-campo);
+  background: var(--primary-soft);
+}
+
+.valorOferta {
+  color: var(--primary-dark);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.seloDesconto {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: var(--raio-pilula);
+  background: var(--discount);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.destaqueNumero {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.cartaoFim {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.caixaAviso {
+  padding: 4px 12px;
+  border-radius: var(--raio-campo);
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.centro {
+  text-align: center;
+}
+
+.circulo {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--raio-pilula);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.resumoOferta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0;
+  text-align: left;
+}
+
+.resumoOferta dt {
+  color: var(--muted);
+  font: var(--texto-legenda);
+}
+
+.resumoOferta dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
