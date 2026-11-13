@@ -371,8 +371,25 @@ Pronto em 13/11/2026. Detalhes que valem para o mock:
 Opções da janela: 1, 2, 4, 8, 12, 24 h. Margem: 0–7 dias. Mudanças valem só para lotes e
 ofertas novos.
 
-## F · Gestor 📝
+## F · Gestor ✅
 Só **responsável**.
+
+Pronto em 13/11/2026. Detalhes que valem para o mock:
+- **Período** (decidido 13/11/2026): `de` e `ate` são dias de Brasília, os dois incluídos.
+  Sem eles: últimos 30 dias (hoje incluído). `400 periodo_invalido` se a data não for
+  `AAAA-MM-DD`, se `de` > `ate` ou se passar de 1 ano. Vale para as duas rotas.
+- **Cada número usa a data do próprio evento** (decidido 13/11/2026): reservas criadas,
+  parciais e recusas pela criação; encerradas, taxas e `semanas` pelo `encerrada_em` (a
+  expirada conta na hora em que **venceu**); perda pelo `fim` da oferta. Uma reserva criada
+  em 30/10 e retirada em 02/11 é "criada" em outubro e "retirada" em novembro.
+- **Taxas `null`** quando não há reserva encerrada no período (a tela mostra "—", não 0%).
+  Taxas com 3 casas.
+- `semanas`: começam na **segunda-feira**; toda semana que toca o período aparece, mesmo
+  com zeros (o gráfico não tem buraco).
+- Histórico: itens **criados** no período, do mais recente ao mais antigo, sem paginação.
+  `total_reservas` e `total_recusas` são do período inteiro (não mudam com `estado`/`q`).
+  `q` busca no nome do produto ou no final do código (a recusa não tem código).
+  `400 estado_invalido`. O código vem sempre mascarado (`codigo_final`, 3 dígitos).
 
 ### `GET /api/lojas/{lojaId}/indicadores?de=2026-10-01&ate=2026-10-31`
 Antes de calcular, o backend faz a varredura (expira vencidas, encerra ofertas no fim).

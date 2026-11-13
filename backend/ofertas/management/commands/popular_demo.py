@@ -13,7 +13,7 @@ comportamento real, não números escritos à mão.
 Rodar de novo não duplica: se a conta do Carlos já existe, o comando não faz nada.
 Para recomeçar do zero no banco local: python manage.py flush, depois popular_demo.
 """
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -22,6 +22,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from ofertas import servico, servico_lotes
+from ofertas.calendario import BRASILIA
 from ofertas.fita import fita
 from ofertas.models import Loja, Papel, Produto, Vinculo
 
@@ -65,6 +66,32 @@ class Command(BaseCommand):
         return servico_lotes.publicar(grupo.id, separado, Decimal(preco), desconto, janela,
                                       agora=agora)
 
+    def oferta_passada(self, produto, inicio, separado, preco, retiradas, expiradas,
+                       canceladas, esgotar, equipe, clientes):
+        """
+        Uma oferta que já aconteceu (para o painel ter histórico). Começa em `inicio`
+        e termina 2 dias depois; a varredura do fim a encerra e a sobra vira perda.
+        Com `esgotar`: alguém pede mais do que sobrou (parcial) e o próximo é recusado.
+        """
+        quem = lambda i: clientes[i % len(clientes)]
+        h = lambda horas: inicio + timedelta(hours=horas)
+        g = self.lote(produto, inicio.date() + timedelta(days=3), separado + 2, equipe,
+                      inicio - timedelta(days=1))
+        oferta = self.publicar(g, separado, preco, 30, 4, inicio)
+        for i in range(retiradas):
+            r = servico.reservar(oferta.id, quem(i), 1, agora=h(1))
+            servico.retirar(produto.loja_id, r.codigo, equipe, agora=h(2))
+        for i in range(expiradas):                                   # vencem em h(7)
+            servico.reservar(oferta.id, quem(i + 1), 1, agora=h(3))
+        for i in range(canceladas):
+            r = servico.reservar(oferta.id, quem(i), 1, agora=h(3))
+            servico.cancelar(r.id, agora=h(4))
+        if esgotar:
+            oferta.refresh_from_db()
+            r = servico.reservar(oferta.id, clientes[0], oferta.livre + 1, agora=h(5))
+            servico.retirar(produto.loja_id, r.codigo, equipe, agora=h(6))
+            servico.reservar(oferta.id, clientes[1], 1, agora=h(6))       # recusa
+
     # ------------------------------------------------------------ cenário
 
     def popular(self, agora):
@@ -90,8 +117,31 @@ class Command(BaseCommand):
         Vinculo.objects.create(usuario=juliana, loja=vila, papel=Papel.FUNCIONARIO)
         Vinculo.objects.create(usuario=rosa, loja=emporio, papel=Papel.RESPONSAVEL)
 
-        # 1. Iogurte: em oferta, com uma reserva ativa, uma retirada e uma cancelada.
         iogurte = self.produto(vila, "Iogurte natural 170 g", "laticinios")
+        leite = self.produto(vila, "Leite integral 1 L", "leite")
+        requeijao = self.produto(vila, "Requeijão cremoso 200 g", "laticinios")
+        pao = self.produto(vila, "Pão de forma 500 g", "mercearia")
+
+        # 0. As 4 semanas anteriores (o painel G1 e o histórico G3 precisam de passado).
+        #    Cada linha: semanas atrás, produto, separado, preço, retiradas, expiradas,
+        #    canceladas, esgotou (parcial + recusa).
+        historico = [
+            (4, iogurte, 10, "4.49", 6, 2, 1, False),
+            (3, leite, 15, "5.29", 9, 3, 1, False),
+            (3, pao, 4, "8.99", 2, 0, 0, True),
+            (2, requeijao, 8, "7.90", 4, 2, 0, False),
+            (2, iogurte, 12, "4.49", 8, 1, 2, True),
+            (1, leite, 15, "5.29", 10, 2, 1, False),
+            (1, requeijao, 6, "7.90", 3, 1, 0, True),
+        ]
+        for semanas, produto, separado, preco, ret, exp, canc, esgotar in historico:
+            inicio = datetime.combine(hoje - timedelta(weeks=semanas), time(10, 0),
+                                      tzinfo=BRASILIA)
+            self.oferta_passada(produto, inicio, separado, preco, ret, exp, canc, esgotar,
+                                juliana, [ana, bruno])
+        servico.varrer(agora=agora)          # a "ronda": expira o que venceu, encerra o passado
+
+        # 1. Iogurte: em oferta, com uma reserva ativa, uma retirada e uma cancelada.
         g = self.lote(iogurte, dia(4), 24, juliana, anteontem)
         oferta = self.publicar(g, 12, "4.49", 30, 4, ontem)
         # (os eventos de uma oferta vão sempre na ordem do tempo, como na vida real)
@@ -102,7 +152,6 @@ class Command(BaseCommand):
         servico.reservar(oferta.id, ana, 2, agora=horas_atras(1))
 
         # 2. Leite: DOIS lotes na mesma fita viram UM grupo (referência = data mais próxima).
-        leite = self.produto(vila, "Leite integral 1 L", "leite")
         primeira = dia(6)
         segunda = dia(8) if _mesma_fita(primeira, dia(8)) else dia(4)   # longe da virada do bimestre
         self.lote(leite, segunda, 12, juliana, anteontem)
@@ -112,14 +161,12 @@ class Command(BaseCommand):
 
         # 3. Requeijão: reserva PARCIAL (pediu 3, só havia 2) e uma reserva que VENCEU
         #    (a janela de 4 h passou; expira sozinha na próxima leitura — sem worker).
-        requeijao = self.produto(vila, "Requeijão cremoso 200 g", "laticinios")
         g = self.lote(requeijao, dia(5), 6, juliana, anteontem)
         oferta = self.publicar(g, 4, "7.90", 30, 4, ontem)
         servico.reservar(oferta.id, bruno, 2, agora=horas_atras(6))     # vence 2 h atrás
         servico.reservar(oferta.id, ana, 3, agora=horas_atras(3))       # leva só 2 (ainda ativa)
 
         # 4. Pão de forma: esgotou; quem chegou depois foi RECUSADO (comprador bloqueado).
-        pao = self.produto(vila, "Pão de forma 500 g", "mercearia")
         g = self.lote(pao, dia(3), 2, juliana, anteontem)
         oferta = self.publicar(g, 2, "8.99", 50, 2, ontem)
         r = servico.reservar(oferta.id, ana, 2, agora=horas_atras(4))

@@ -7,6 +7,7 @@ pelos serviços reais, então qualquer furo de regra apareceria aqui.
 
 Rodar (dentro de backend/):  python manage.py test ofertas.test_popular_demo
 """
+from datetime import timedelta
 from io import StringIO
 
 from django.contrib.auth import get_user_model
@@ -15,7 +16,7 @@ from django.db.models import F
 from django.test import TestCase
 from django.utils import timezone
 
-from . import servico
+from . import indicadores, servico
 from .models import Grupo, Loja, Oferta, Produto, Recusa, Reserva
 from .servico_lotes import situacao_exibida
 
@@ -57,7 +58,7 @@ class TestPopularDemo(TestCase):
         self.assertEqual(Oferta.objects.filter(estado="ativa").count(), 5)
         estados = set(Reserva.objects.values_list("estado", flat=True))
         self.assertEqual(estados, {"reservada", "retirada", "cancelada", "expirada"})
-        self.assertEqual(Recusa.objects.count(), 1)                          # bloqueado: recusa
+        self.assertEqual(Recusa.objects.count(), 4)              # 1 de hoje + 3 do passado
         self.assertTrue(Reserva.objects.filter(quantidade__lt=F("pedido")).exists())  # parcial
 
         hoje = timezone.localdate()
@@ -67,7 +68,20 @@ class TestPopularDemo(TestCase):
         self.assertEqual(situacoes, {"Presunto fatiado 200 g": "conferir",
                                      "Doce de leite 400 g": "adiado"})
         self.assertTrue(grupos.filter(colisao_validade__isnull=False).exists())  # colisão
-        leite = grupos.get(produto__nome="Leite integral 1 L")
+        leite = grupos.get(produto__nome="Leite integral 1 L", oferta__estado="ativa")
         self.assertEqual(leite.lotes.count(), 2)                                 # 2 lotes, 1 grupo
         # Datas de 3 a 150 dias à frente: 3 ou 4 bimestres, conforme o dia em que roda.
         self.assertGreaterEqual(len({g.cor for g in grupos}), 3)
+
+    def test_painel_dos_ultimos_30_dias_tem_historico(self):
+        """O vídeo mostra o G1: as 4 semanas de passado têm de aparecer nele."""
+        servico.varrer()
+        hoje = timezone.localdate()
+        painel = indicadores.calcular(self.vila.id, hoje - timedelta(days=29), hoje)
+        # Passado: 42 retiradas + 3 dos "esgotou", 11 expiradas, 5 canceladas.
+        # Hoje: 2 retiradas (iogurte, pão), 1 expirada (requeijão), 1 cancelada (iogurte).
+        self.assertEqual(painel["encerradas"],
+                         {"total": 65, "retiradas": 47, "expiradas": 12, "canceladas": 6})
+        self.assertEqual(painel["bloqueados"]["recusas"], 4)
+        self.assertGreater(painel["perda_unidades"], 0)
+        self.assertEqual(Oferta.objects.filter(estado="encerrada").count(), 7)

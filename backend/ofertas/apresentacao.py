@@ -240,3 +240,20 @@ def vinculo(v, quem) -> dict:
         "papel": v.papel,
         "eu": v.usuario_id == quem.id,
     }
+
+
+# ---------------------------------------------------------------- painel do gestor
+
+def item_reserva(r) -> dict:
+    """Linha do histórico (G3) para uma reserva. Código MASCARADO, como no balcão."""
+    return {"tipo": "reserva", "criada_em": quando(r.criada_em), "codigo_final": r.codigo[-3:],
+            "produto": r.oferta.produto.nome, "quantidade": r.quantidade, "pedido": r.pedido,
+            "cliente": cliente(r.consumidor), "estado": r.estado,
+            "encerrada_em": quando(r.encerrada_em)}
+
+
+def item_recusa(r) -> dict:
+    """Linha do histórico (G3) para uma recusa: pediu e levou 0 (comprador bloqueado)."""
+    return {"tipo": "recusa", "criada_em": quando(r.criada_em), "codigo_final": None,
+            "produto": r.oferta.produto.nome, "quantidade": 0, "pedido": r.pedido,
+            "cliente": cliente(r.consumidor), "estado": "recusa", "encerrada_em": None}
