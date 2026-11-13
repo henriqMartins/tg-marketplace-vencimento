@@ -371,6 +371,21 @@ ofertas novos (o `fim` e o `aviso_em` são gravados quando nascem). A antecedên
 (1–30 dias) tem de ser **maior que a margem**: senão o aviso chegaria depois do último dia
 da oferta.
 
+**Dados de demonstração** (para gravar o vídeo): tudo **fictício**, com datas relativas
+a hoje e criado pelos serviços reais (fita, grupo, fim e estoque saem pelas regras do sistema).
+
+```powershell
+cd backend
+..\.venv\Scripts\python manage.py popular_demo        # rodar de novo não duplica
+..\.venv\Scripts\python manage.py flush               # (apaga TUDO do banco local, para recomeçar)
+```
+
+Contas (senha de todas: `demo1234`): `carlos@example.com` (responsável do Mercadinho Vila
+Nova), `juliana@example.com` (funcionária), `ana@example.com` e `bruno@example.com`
+(consumidores), `rosa@example.com` (responsável do Empório São Jorge, a ~3 km). O cenário
+tem ofertas com reserva ativa, retirada, cancelada, vencida, parcial e recusa; um aviso
+para conferir, um adiado, um grupo com dois lotes e uma colisão de ciclo de fita.
+
 **Rodar a simulação:**
 
 ```powershell
@@ -433,12 +448,12 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 12/11/2026 | Backend (etapa 9): rotas da operação da loja (grupo C) — resumo do dia, ofertas da loja com estoque, detalhe com reservas (código mascarado), ajuste e retirada no balcão; cada recusa do domínio ganhou um **código** (`acima_do_livre`, `venceu`...) que a API traduz; retirada vencida já grava a expiração | Domínio: 16 testes novos (50 ok). Backend: 31 testes da loja (sem vínculo → 403; oferta de outra loja → 404; código inteiro nunca vai para a loja; vencido → 409 mesmo depois da ronda) + **5 balcões com o mesmo código ao mesmo tempo: 1 retira, 4 recusados, nada em dobro** (5 rodadas) · backend: 146 ok + 1 pulado |
 | 12/11/2026 | Backend (etapa 10a): lote, fita e aviso (grupo D) — produtos, registro de lote com agrupamento por produto + cor + ano e aviso de colisão de ciclo, grupos de fita, avisos (adiar até a véspera do último dia, descartar), **publicação da oferta pelo domínio**; "conferir" calculado pela data, sem worker | 13 testes puros (fim 23:59 de Brasília; limite do adiar; novo/agrupado/colisão) + 37 da API (referência = data mais próxima; grupo publicado não recebe lote; separado acima do recebido → 400; publicada aparece na vitrine) + **5 lotes simultâneos do mesmo produto → 1 grupo só** (5 rodadas) · migração aplicada, desfeita e reaplicada · backend: 197 ok + 1 pulado |
 | 13/11/2026 | Backend (etapa 10b): configuração da loja e equipe (grupo E) — ler/alterar as regras da loja (janela padrão, margem, antecedência, coordenadas), listar, adicionar e remover pessoas da equipe; **permissão por método** (ler = vínculo, mudar = responsável) | 33 testes da API (funcionário lê mas não altera → 403; erro em um campo não grava nenhum; antecedência ≤ margem → 400; mudança não mexe em aviso já agendado; e-mail sem conta → 404; já vinculado → 409; próprio vínculo → 409) + **2 responsáveis removendo um ao outro ao mesmo tempo → sobra 1** (5 rodadas; sem a trava, as 5 falham) · backend: 231 ok + 1 pulado |
+| 13/11/2026 | Backend: dados de demonstração para o vídeo (`manage.py popular_demo`) — 2 lojas, equipe, consumidores e o cenário completo (reservas em todos os estados, parcial, recusa, avisos, colisão de fita), **criados pelos serviços reais** | 4 testes (rodar 2 vezes não duplica; conservação fecha em todas as ofertas; cenário do vídeo presente) · rodado no banco local e conferido pela API (login, resumo do dia, vitrine, avisos) · backend: 235 ok + 1 pulado |
 
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Backend: dados de demonstração para o vídeo (`manage.py popular_demo`, dados fictícios) |
 | ⏳ | Backend (etapa 11): indicadores dos painéis e histórico |
 | ⏳ | Backend (etapa 13): projeção a partir do resumo de `resultados_n5000` |
 | ⏳ | Frontend (worktree `frontend`, etapas F0–F9 do `docs/frontend/BRIEFING-agente.md`), integrado por grupo do contrato |
