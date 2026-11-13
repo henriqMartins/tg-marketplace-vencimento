@@ -9,6 +9,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from django.utils import timezone
 
 from .fita import fita
+from .servico_lotes import oferta_do_grupo
 
 
 def quando(dt):
@@ -160,3 +161,52 @@ def retirada_feita(reserva, oferta) -> dict:
     return {"reserva": reserva_loja(reserva), "total": total(reserva),
             "retirada_por": reserva.retirada_por.nome or reserva.retirada_por.email,
             "oferta": {"id": oferta.id, "estoque": estoque(oferta)}}
+
+
+# ---------------------------------------------------------------- lote, fita e aviso
+
+def produto_loja(produto, ultimo_preco_original=None) -> dict:
+    """Produto (L2, busca da L3). margem_fim_dias null = usa a da loja."""
+    return {
+        "id": produto.id,
+        "nome": produto.nome,
+        "categoria": produto.categoria,
+        "margem_fim_dias": produto.margem_fim.days if produto.margem_fim is not None else None,
+        "margem_efetiva_dias": produto.margem_efetiva().days,
+        "ultimo_preco_original": (dinheiro(ultimo_preco_original)
+                                  if ultimo_preco_original is not None else None),
+    }
+
+
+def lote(l) -> dict:
+    return {"id": l.id, "validade": l.validade.isoformat(), "quantidade": l.quantidade,
+            "recebido_em": l.recebido_em.isoformat()}
+
+
+def _data(d):
+    return d.isoformat() if d else None
+
+
+def grupo(g, situacao: str, com_lotes: bool = False) -> dict:
+    """
+    Grupo de fita. `situacao` é a EXIBIDA (servico_lotes.situacao_exibida), que
+    inclui "conferir". Na lista vêm só as contagens; `com_lotes` traz os lotes.
+    """
+    lotes = sorted(g.lotes.all(), key=lambda l: (l.validade, l.id))
+    oferta = oferta_do_grupo(g)
+    corpo = {
+        "id": g.id,
+        "produto": {"id": g.produto.id, "nome": g.produto.nome},
+        "fita": fita(g.referencia),
+        "referencia": g.referencia.isoformat(),
+        "situacao": situacao,
+        "aviso_em": g.aviso_em.isoformat(),
+        "adiado_ate": _data(g.adiado_ate),
+        "colisao": {"validade": g.colisao_validade.isoformat()} if g.colisao_validade else None,
+        "qtd_lotes": len(lotes),
+        "recebido": sum(l.quantidade for l in lotes),
+        "oferta_id": oferta.id if oferta else None,
+    }
+    if com_lotes:
+        corpo["lotes"] = [lote(l) for l in lotes]
+    return corpo

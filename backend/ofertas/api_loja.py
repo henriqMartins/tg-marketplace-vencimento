@@ -20,7 +20,8 @@ from contas.permissoes import EhDaLoja, papel_na_loja
 from dominio import ErroDominio
 
 from . import apresentacao, consultas, servico
-from .models import Loja, Oferta, Reserva
+from .models import Grupo, Loja, Oferta, Reserva
+from .servico_lotes import para_conferir
 
 ATIVA = dominio.EstadoReserva.RESERVADA.value
 EXPIRADA = dominio.EstadoReserva.EXPIRADA.value
@@ -101,7 +102,8 @@ class ResumoDoDia(RotaDaLoja):
             "aguardando_retirada": ativas.count(),
             "expiram_em_1h": ativas.filter(expira_em__lte=agora + timedelta(hours=1)).count(),
             "ofertas_ativas": ofertas.count(),
-            "avisos_para_conferir": 0,               # os avisos nascem na etapa 10
+            "avisos_para_conferir": Grupo.objects.filter(          # etapa 10a
+                para_conferir(timezone.localdate(agora)), produto__loja_id=loja_id).count(),
         })
 
 

@@ -174,7 +174,7 @@ Exigem vínculo com a loja `{lojaId}` (funcionário ou responsável), senão `40
 Pronto em 12/11/2026. Detalhes que valem para o mock:
 - Antes de responder, o backend passa a ronda **só daquela loja**: reservas vencidas já
   vêm como `expirada` e ofertas que passaram do `fim` já vêm `encerrada` (sobra = perda).
-- `avisos_para_conferir` vem **sempre 0** até a etapa 10 (os avisos ainda não existem).
+- `avisos_para_conferir` conta os grupos em situação `conferir` (desde a etapa 10a).
 - `aguardando_retirada` e `expiram_em_1h` contam **reservas** (pessoas a atender), não unidades.
 - `ofertas` sem `estado` devolve as ativas (por `fim`, a que acaba antes primeiro) e depois
   as encerradas (por `fim` desc.). `estado` inválido → `400 parametro_invalido`.
@@ -232,14 +232,33 @@ id da reserva.
   "oferta": { "id": 1, "estoque": Estoque } }
 ```
 
-## D · Lote, fita e aviso 📝
+## D · Lote, fita e aviso ✅
 Exigem vínculo com a loja. Decisões de 05/11/2026 já aplicadas.
+
+Pronto em 12/11/2026. Detalhes que valem para o mock:
+- **Situação "conferir" é calculada**, não gravada: `aguardando` cujo `aviso_em` ≤ hoje, ou
+  `adiado` cujo `adiado_ate` ≤ hoje (o adiado volta a ser aviso no dia escolhido).
+- **Grupo que já virou oferta não recebe lote** (decidido 12/11/2026): o lote abre grupo
+  novo (`resultado: "novo"`). A colisão vale também contra grupo em oferta (a fita igual
+  ainda está na gôndola).
+- Lote que vence **antes** da referência a puxa para trás (e o `aviso_em` junto). Se o
+  grupo estava adiado além do novo limite, o adiamento é desfeito (volta a `aguardando`).
+- Respostas de **um** grupo (lote, aviso, adiar, descartar) trazem `lotes`; a lista
+  `/grupos` traz sempre `qtd_lotes` e `recebido`, e `lotes` só com `?com_lotes=1`.
+- `recebido_em` é a data do registro (hoje, horário de Brasília).
+- Grupo que não está em aviso (inclusive depois de publicado ou descartado) → `404
+  nao_encontrado` nas rotas `/avisos/{id}...`. Publicar duas vezes: a segunda dá `404`.
+- A oferta publicada tem `validade` = referência do grupo e `fim` = 23:59 de
+  (validade − margem efetiva).
 
 ### Produtos (L2, busca da L3)
 | Método e rota | Entrada | Saída |
 |---|---|---|
 | `GET /api/lojas/{lojaId}/produtos?q=` | — | `200 [Produto]` |
 | `POST /api/lojas/{lojaId}/produtos` | `{nome, categoria, margem_fim_dias: int\|null}` | `201 Produto` |
+
+Erros do cadastro: `400 sem_nome`, `400 nome_longo` (> 120), `400 categoria_invalida`,
+`400 margem_invalida` (fora de 0–7 ou não inteiro). `?q=` busca por parte do nome.
 
 ```jsonc
 // Produto
@@ -260,6 +279,8 @@ Entrada `{produto: id, validade: "2026-12-18", quantidade: 24}`.
 ```
 Grupo = produto + cor + **ano do bimestre**. "Colisão" = existe grupo ativo do mesmo
 produto e mesma cor, mas de outro ano: cria grupo novo, avisa e não bloqueia.
+Erros: `400 validade_invalida` (não é `AAAA-MM-DD`), `400 validade_passada`,
+`400 quantidade_invalida`, `404 nao_encontrado` (produto de outra loja ou inexistente).
 
 ### `GET /api/lojas/{lojaId}/grupos?cor=&situacao=` (L4, G5)
 ```jsonc
@@ -284,9 +305,9 @@ O aviso é o grupo em situação `conferir` ou `adiado`; o `avisoId` é o id do 
 |---|---|---|---|
 | `GET /api/lojas/{lojaId}/avisos` | — | `200 {antecedencia_dias, avisos: [Aviso]}` (por referência mais próxima) | — |
 | `GET /api/lojas/{lojaId}/avisos/{id}` | — | `200 AvisoDetalhe` | `404` |
-| `POST /api/lojas/{lojaId}/avisos/{id}/adiar` | `{ate: "2026-11-03"}` | `200 Grupo` | `400 apos_limite` |
-| `POST /api/lojas/{lojaId}/avisos/{id}/descartar` | `{motivo: "sem_unidades" \| "outro_destino"}` | `200 Grupo` (`encerrado`) | — |
-| `POST /api/lojas/{lojaId}/avisos/{id}/publicar` | `{separado, preco_original, desconto, janela_horas, confirmou_separacao: true}` | `201 {oferta}` (objeto do grupo C) | `400 sem_confirmacao`, `400 preco_invalido`, `409 fim_ja_passou` |
+| `POST /api/lojas/{lojaId}/avisos/{id}/adiar` | `{ate: "2026-11-03"}` | `200 Grupo` | `400 apos_limite` (com `adiar_ate_max`), `400 data_invalida` (hoje ou antes) |
+| `POST /api/lojas/{lojaId}/avisos/{id}/descartar` | `{motivo: "sem_unidades" \| "outro_destino"}` | `200 Grupo` (`encerrado`) | `400 motivo_invalido` |
+| `POST /api/lojas/{lojaId}/avisos/{id}/publicar` | `{separado, preco_original, desconto, janela_horas, confirmou_separacao: true}` | `201 {oferta}` (objeto do grupo C) | `400 sem_confirmacao`, `400 separado_invalido`, `400 acima_do_recebido` (com `recebido`), `400 preco_invalido`, `400 desconto_invalido`, `400 janela_invalida`, `409 fim_ja_passou` |
 
 ```jsonc
 // Aviso (item da lista)

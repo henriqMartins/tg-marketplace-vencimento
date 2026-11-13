@@ -21,3 +21,22 @@ def fita(validade: date) -> dict:
     da mesma cor em anos diferentes (é o que gera o aviso de colisão de ciclo)."""
     bimestre = (validade.month - 1) // 2
     return {"cor": CORES[bimestre], "bimestre": BIMESTRES[bimestre], "ano": validade.year}
+
+
+# 📖 ESTUDAR: a regra do agrupamento (decidida 05/11 e 12/11/2026), sem banco.
+# `ativos` = grupos do produto que NÃO estão encerrados; cada um tem cor, ano,
+# referencia e `aberto` (True = ainda não virou oferta, pode receber lote).
+#   1. existe grupo ABERTO da mesma cor e do mesmo ano  -> "agrupado" nele;
+#   2. senão, existe grupo ativo da mesma cor e de OUTRO ano -> "colisao":
+#      cria grupo novo e avisa (na gôndola, duas fitas iguais de anos diferentes);
+#   3. senão -> "novo".
+def classificar_lote(validade: date, ativos) -> tuple:
+    """Devolve (resultado, grupo_onde_entra | None, validade_da_colisao | None)."""
+    minha = fita(validade)
+    for g in ativos:
+        if g.aberto and g.cor == minha["cor"] and g.ano == minha["ano"]:
+            return "agrupado", g, None
+    for g in ativos:
+        if g.cor == minha["cor"] and g.ano != minha["ano"]:
+            return "colisao", None, g.referencia
+    return "novo", None, None

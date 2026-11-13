@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import api_consumidor as c
 from . import api_loja as l
+from . import api_lotes as d
 
 # Prefixo /api/ vem do config/urls.py.
 urlpatterns = [
@@ -23,4 +24,16 @@ urlpatterns = [
     path("lojas/<int:loja_id>/reservas/ativa", l.PreviaDaRetirada.as_view(),
          name="previa-da-retirada"),
     path("lojas/<int:loja_id>/retiradas", l.Retirar.as_view(), name="retirar"),
+
+    # Grupo D do contrato (lote, fita e aviso): exigem vínculo com <loja_id>
+    path("lojas/<int:loja_id>/produtos", d.Produtos.as_view(), name="produtos"),
+    path("lojas/<int:loja_id>/lotes", d.RegistrarLote.as_view(), name="lotes"),
+    path("lojas/<int:loja_id>/grupos", d.Grupos.as_view(), name="grupos"),
+    path("lojas/<int:loja_id>/avisos", d.Avisos.as_view(), name="avisos"),
+    path("lojas/<int:loja_id>/avisos/<int:grupo_id>", d.AvisoDetalhe.as_view(), name="aviso"),
+    path("lojas/<int:loja_id>/avisos/<int:grupo_id>/adiar", d.Adiar.as_view(), name="adiar"),
+    path("lojas/<int:loja_id>/avisos/<int:grupo_id>/descartar", d.Descartar.as_view(),
+         name="descartar"),
+    path("lojas/<int:loja_id>/avisos/<int:grupo_id>/publicar", d.Publicar.as_view(),
+         name="publicar"),
 ]

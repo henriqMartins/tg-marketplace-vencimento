@@ -187,6 +187,50 @@ class TestRetiradaSimultanea(Disputa):
                 self.conferir_conta(oferta, [None] * PESSOAS)
 
 
+class TestLotesSimultaneos(Disputa):
+    """
+    Etapa 10a: 5 funcionários registram, ao mesmo tempo, lotes do MESMO produto com
+    a MESMA fita (preta, 2026). Tem de nascer UM grupo só, com os 5 lotes. Sem a
+    trava do produto, cada um poderia não ver o grupo do outro e abrir o seu.
+    """
+
+    LOTES = 5
+
+    def test_5_lotes_do_mesmo_produto_formam_um_grupo(self):
+        from . import servico_lotes
+        from .models import Grupo, Lote
+
+        for rodada in range(RODADAS):
+            with self.subTest(rodada=rodada):
+                produto = Produto.objects.create(loja=self.produto.loja, nome=f"Leite {rodada}")
+                barreira = threading.Barrier(self.LOTES)
+                resultados, erros = [], []
+
+                def registrar(i):
+                    try:
+                        barreira.wait()
+                        _, _, resultado, _ = servico_lotes.registrar_lote(
+                            produto.id, date(2026, 12, 10 + i), 6, self.pessoas[i], agora=T0)
+                        resultados.append(resultado)
+                    except Exception as erro:
+                        erros.append(erro)
+                    finally:
+                        connection.close()
+
+                threads = [threading.Thread(target=registrar, args=(i,)) for i in range(self.LOTES)]
+                for t in threads:
+                    t.start()
+                for t in threads:
+                    t.join()
+
+                self.assertEqual(erros, [])
+                self.assertEqual(Grupo.objects.filter(produto=produto).count(), 1)
+                self.assertEqual(sorted(resultados), ["agrupado"] * 4 + ["novo"])
+                grupo = Grupo.objects.get(produto=produto)
+                self.assertEqual(Lote.objects.filter(grupo=grupo).count(), self.LOTES)
+                self.assertEqual(grupo.referencia, date(2026, 12, 10))   # a mais próxima
+
+
 @skipUnless(os.environ.get("CONTROLE_NEGATIVO") == "1",
             "controle negativo: ligue com CONTROLE_NEGATIVO=1")
 class TestControleNegativo(Disputa):
