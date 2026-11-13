@@ -32,7 +32,18 @@ from typing import Callable, Dict, List, Optional
 
 
 class ErroDominio(Exception):
-    """Operação proibida pelas regras (ex.: ajustar mais do que o livre)."""
+    """
+    Operação proibida pelas regras (ex.: ajustar mais do que o livre).
+
+    `codigo` diz QUAL regra recusou (ex.: "acima_do_livre"); quem chama decide
+    o que fazer por ele, nunca pela frase. `dados` leva números úteis para a
+    resposta (ex.: o livre atual). Sem código, vale "regra".
+    """
+
+    def __init__(self, mensagem: str, codigo: str = "regra", **dados):
+        super().__init__(mensagem)
+        self.codigo = codigo
+        self.dados = dados
 
 
 class EstadoReserva(Enum):
@@ -202,7 +213,8 @@ class Oferta:
         """
         self._exigir_ativa(agora)
         if pedido <= 0:
-            raise ErroDominio("o pedido precisa ser de pelo menos 1 unidade")
+            raise ErroDominio("o pedido precisa ser de pelo menos 1 unidade",
+                              codigo="pedido_invalido")
 
         # Antes de olhar o livre, devolve o que já expirou até agora.
         self.expirar_vencidas(agora)
@@ -254,10 +266,14 @@ class Oferta:
 
     def retirar(self, id_reserva: int, codigo: str, agora: float) -> Reserva:
         """Cliente apresenta o código e leva tudo (22)."""
-        self.expirar_vencidas(agora)               # chegou tarde? já expirou
+        vencidas = self.expirar_vencidas(agora)    # chegou tarde? já expirou
+        if any(r.id == id_reserva for r in vencidas):
+            # A expiração acima JÁ aconteceu (estado mudou, livre devolvido):
+            # quem chamou pode gravar esse estado antes de responder a recusa.
+            raise ErroDominio("a reserva venceu antes da retirada", codigo="venceu")
         reserva = self._reserva_ativa(id_reserva)
         if codigo != reserva.codigo:
-            raise ErroDominio("código de retirada inválido")
+            raise ErroDominio("código de retirada inválido", codigo="codigo_invalido")
         reserva.estado = EstadoReserva.RETIRADA
         self.retirado += reserva.quantidade        # tudo ou nada
         self.verificar_invariantes()
@@ -267,13 +283,15 @@ class Oferta:
         """Lojista baixa unidades (20): só do livre e sempre com motivo."""
         self._exigir_ativa(agora)
         if quantidade <= 0:
-            raise ErroDominio("o ajuste precisa ser de pelo menos 1 unidade")
+            raise ErroDominio("o ajuste precisa ser de pelo menos 1 unidade",
+                              codigo="quantidade_invalida")
         if not motivo or not motivo.strip():
-            raise ErroDominio("o ajuste precisa de um motivo")
+            raise ErroDominio("o ajuste precisa de um motivo", codigo="sem_motivo")
         self.expirar_vencidas(agora)
         if quantidade > self.livre:
             raise ErroDominio("unidade reservada não pode ser ajustada; "
-                              f"livre atual: {self.livre}")
+                              f"livre atual: {self.livre}",
+                              codigo="acima_do_livre", livre=self.livre)
         self.livre -= quantidade
         self.ajustado += quantidade
         self.ajustes.append((quantidade, motivo.strip()))
@@ -286,9 +304,10 @@ class Oferta:
         sobra no livre vira perda. Devolve a quantidade perdida.
         """
         if self.estado is EstadoOferta.ENCERRADA:
-            raise ErroDominio("a oferta já foi encerrada")
+            raise ErroDominio("a oferta já foi encerrada", codigo="oferta_encerrada")
         if agora < self.fim_da_oferta:
-            raise ErroDominio("a oferta só encerra no fim programado")
+            raise ErroDominio("a oferta só encerra no fim programado",
+                              codigo="antes_do_fim")
         self.expirar_vencidas(agora)
         self.perda = self.livre
         self.livre = 0
@@ -310,15 +329,16 @@ class Oferta:
 
     def _exigir_ativa(self, agora: float) -> None:
         if self.estado is not EstadoOferta.ATIVA:
-            raise ErroDominio("a oferta está encerrada")
+            raise ErroDominio("a oferta está encerrada", codigo="oferta_encerrada")
         if agora >= self.fim_da_oferta:
-            raise ErroDominio("a oferta já chegou ao fim")
+            raise ErroDominio("a oferta já chegou ao fim", codigo="oferta_encerrada")
 
     def _reserva_ativa(self, id_reserva: int) -> Reserva:
         reserva = self.reservas.get(id_reserva)
         if reserva is None:
-            raise ErroDominio("reserva inexistente")
+            raise ErroDominio("reserva inexistente", codigo="reserva_inexistente")
         if reserva.estado is not EstadoReserva.RESERVADA:
             raise ErroDominio(
-                f"a reserva não está ativa (estado: {reserva.estado.value})")
+                f"a reserva não está ativa (estado: {reserva.estado.value})",
+                codigo="nao_ativa")
         return reserva

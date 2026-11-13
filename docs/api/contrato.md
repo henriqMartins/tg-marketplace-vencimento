@@ -10,8 +10,8 @@ Status de cada grupo:
 
 | Grupo | Telas | Status | Etapa do backend |
 |---|---|---|---|
-| A · Acesso | A1–A5, C9 | 📝 | 6 |
-| B · Consumidor | C2–C8 | 📝 | 8 |
+| A · Acesso | A1–A5, C9 | ✅ | 6 |
+| B · Consumidor | C2–C8 | ✅ | 8 |
 | C · Operação da loja | L1, L9–L13 | 📝 | 9 |
 | D · Lote, fita e aviso | L2–L8, L4/G5 | 📝 | 10 |
 | E · Configuração da loja | L14/G6 | 📝 | 10 |
@@ -25,8 +25,8 @@ Status de cada grupo:
 
 - **Prefixo:** todas as rotas de tela começam com `/api/`. Fora dele só ficam `/health`
   (servidor acordado?) e `/tarefas/varrer` (agendamento diário).
-- **Autenticação:** cabeçalho `Authorization: Token <chave>` (token do DRF — tipo de
-  token ainda a confirmar na etapa 6; o formato do cabeçalho pode mudar só aqui).
+- **Autenticação:** cabeçalho `Authorization: Token <chave>` (token do DRF, confirmado
+  em 06/11/2026; não expira sozinho — `POST /api/auth/sair` o invalida).
   Sem token numa rota protegida → `401`. Com token, mas sem papel → `403`.
 - **Datas e horas:** ISO 8601 com fuso, ex.: `"2026-10-22T20:00:00-03:00"`.
   Datas sem hora (validade): `"2026-10-28"`. A tela formata; não calcula.
@@ -68,7 +68,12 @@ Status de cada grupo:
 
 ---
 
-## A · Acesso 📝
+## A · Acesso ✅
+
+Pronto em 11/11/2026. Além dos erros da tabela, a criação de conta também pode
+devolver `400 sem_nome` e `400 email_invalido`. E-mail não diferencia maiúsculas
+(`Ana@x.com` = `ana@x.com`). Login errado responde igual para e-mail inexistente e
+senha errada (não revela quem tem conta).
 
 | Método e rota | Entrada | Saída | Erros |
 |---|---|---|---|
@@ -84,9 +89,23 @@ Status de cada grupo:
   "vinculos": [ { "loja": { "id": 1, "nome": "Mercadinho Vila Nova" }, "papel": "responsavel" } ]
 }
 ```
-Sem vínculos = consumidor. "Esqueci minha senha" **ainda em aberto** (exige envio de e-mail).
+Sem vínculos = consumidor. "Esqueci minha senha" fica **para depois de 09/11** (exige
+envio de e-mail): o link da A2 só orienta a pessoa, sem chamar a API.
 
-## B · Consumidor 📝
+## B · Consumidor ✅
+
+Pronto em 11/11/2026. Detalhes que valem para o mock:
+- A vitrine **não lista ofertas esgotadas** (`livre` 0) nem encerradas; o detalhe
+  `GET /api/ofertas/{id}` responde para ambas (decidido 11/11/2026).
+- Filtro inválido (`categoria`, `faixa_desconto`, `lat`/`lng` que não são número) →
+  `400 parametro_invalido`. O mesmo para `estado` inválido em `minhas-reservas`.
+- `GET /api/minhas-reservas` **sem** `estado` devolve as ativas (por `expira_em`) e
+  depois as encerradas (por `encerrada_em` desc.).
+- Antes de responder reservas, o backend expira as vencidas: a tela nunca recebe
+  `reservada` numa reserva que já venceu.
+- Loja sem coordenada aparece no fim da lista ordenada por distância, com `distancia_km: null`.
+- **CORS:** a API só aceita chamadas do navegador vindas dos endereços em
+  `CORS_ALLOWED_ORIGINS` (local: `http://localhost:5173`).
 
 ### `GET /api/ofertas` — vitrine (pública: não exige login)
 Parâmetros, todos opcionais: `lat`, `lng` (coordenada já convertida **no navegador**; sem
@@ -149,8 +168,24 @@ Outros erros: `401` (tela leva a A2 e volta), `409 oferta_encerrada`, `400 pedid
 
 A tela C6 revalida com `GET /api/reservas/{id}` a cada 30 s; se `estado` mudar, vai para C7.
 
-## C · Operação da loja 📝
+## C · Operação da loja ✅
 Exigem vínculo com a loja `{lojaId}` (funcionário ou responsável), senão `403`.
+
+Pronto em 12/11/2026. Detalhes que valem para o mock:
+- Antes de responder, o backend passa a ronda **só daquela loja**: reservas vencidas já
+  vêm como `expirada` e ofertas que passaram do `fim` já vêm `encerrada` (sobra = perda).
+- `avisos_para_conferir` conta os grupos em situação `conferir` (desde a etapa 10a).
+- `aguardando_retirada` e `expiram_em_1h` contam **reservas** (pessoas a atender), não unidades.
+- `ofertas` sem `estado` devolve as ativas (por `fim`, a que acaba antes primeiro) e depois
+  as encerradas (por `fim` desc.). `estado` inválido → `400 parametro_invalido`.
+- Oferta de outra loja → `404 nao_encontrada` (não `403`).
+- `ReservaLoja.cliente` = primeiro nome + inicial do último ("Ana Souza" → "Ana S.").
+  Reservas da oferta ativa por `expira_em`; da encerrada, por `criada_em`.
+- **Código errado e código vencido são respostas diferentes:** se o código pertence a uma
+  reserva desta loja que venceu nas últimas 24 h, a prévia e a retirada respondem
+  `409 venceu` (mesmo que a ronda já a tenha expirado); senão, `404 nao_encontrada`.
+  Código fora do formato (não são 6 dígitos em texto) → `404`.
+- Dois balcões com o mesmo código ao mesmo tempo: um recebe `200`, o outro `404`.
 
 ### `GET /api/lojas/{lojaId}/resumo-do-dia`
 ```jsonc
@@ -176,12 +211,14 @@ O mesmo objeto + `"reservas": [ReservaLoja]` (ativas na oferta ativa; todas na e
 
 ### `POST /api/lojas/{lojaId}/ofertas/{id}/ajustes`
 Entrada `{quantidade, motivo}` → `201 {"estoque": Estoque}`.
-Erros: `409 acima_do_livre` (com `"livre": 6` no corpo), `400 sem_motivo`, `409 oferta_encerrada`.
+Erros: `409 acima_do_livre` (com `"livre": 6` no corpo — o livre **já sem** as vencidas),
+`400 sem_motivo`, `400 quantidade_invalida` (não é inteiro ≥ 1), `400 motivo_longo` (> 200),
+`409 oferta_encerrada`, `404 nao_encontrada`.
 
 ### Retirada (L12 → L13)
 | Método e rota | Entrada | Saída | Erros |
 |---|---|---|---|
-| `GET /api/lojas/{lojaId}/reservas/ativa?codigo=482917` | — | `200 RetiradaPrevia` | `404 nao_encontrada` |
+| `GET /api/lojas/{lojaId}/reservas/ativa?codigo=482917` | — | `200 RetiradaPrevia` | `404 nao_encontrada`, `409 venceu` |
 | `POST /api/lojas/{lojaId}/retiradas` | `{codigo}` | `200 RetiradaFeita` | `404 nao_encontrada`, `409 venceu` |
 
 A retirada é por **loja + código** (o código prova que o cliente está no balcão), não pelo
@@ -195,14 +232,33 @@ id da reserva.
   "oferta": { "id": 1, "estoque": Estoque } }
 ```
 
-## D · Lote, fita e aviso 📝
+## D · Lote, fita e aviso ✅
 Exigem vínculo com a loja. Decisões de 05/11/2026 já aplicadas.
+
+Pronto em 12/11/2026. Detalhes que valem para o mock:
+- **Situação "conferir" é calculada**, não gravada: `aguardando` cujo `aviso_em` ≤ hoje, ou
+  `adiado` cujo `adiado_ate` ≤ hoje (o adiado volta a ser aviso no dia escolhido).
+- **Grupo que já virou oferta não recebe lote** (decidido 12/11/2026): o lote abre grupo
+  novo (`resultado: "novo"`). A colisão vale também contra grupo em oferta (a fita igual
+  ainda está na gôndola).
+- Lote que vence **antes** da referência a puxa para trás (e o `aviso_em` junto). Se o
+  grupo estava adiado além do novo limite, o adiamento é desfeito (volta a `aguardando`).
+- Respostas de **um** grupo (lote, aviso, adiar, descartar) trazem `lotes`; a lista
+  `/grupos` traz sempre `qtd_lotes` e `recebido`, e `lotes` só com `?com_lotes=1`.
+- `recebido_em` é a data do registro (hoje, horário de Brasília).
+- Grupo que não está em aviso (inclusive depois de publicado ou descartado) → `404
+  nao_encontrado` nas rotas `/avisos/{id}...`. Publicar duas vezes: a segunda dá `404`.
+- A oferta publicada tem `validade` = referência do grupo e `fim` = 23:59 de
+  (validade − margem efetiva).
 
 ### Produtos (L2, busca da L3)
 | Método e rota | Entrada | Saída |
 |---|---|---|
 | `GET /api/lojas/{lojaId}/produtos?q=` | — | `200 [Produto]` |
 | `POST /api/lojas/{lojaId}/produtos` | `{nome, categoria, margem_fim_dias: int\|null}` | `201 Produto` |
+
+Erros do cadastro: `400 sem_nome`, `400 nome_longo` (> 120), `400 categoria_invalida`,
+`400 margem_invalida` (fora de 0–7 ou não inteiro). `?q=` busca por parte do nome.
 
 ```jsonc
 // Produto
@@ -223,6 +279,8 @@ Entrada `{produto: id, validade: "2026-12-18", quantidade: 24}`.
 ```
 Grupo = produto + cor + **ano do bimestre**. "Colisão" = existe grupo ativo do mesmo
 produto e mesma cor, mas de outro ano: cria grupo novo, avisa e não bloqueia.
+Erros: `400 validade_invalida` (não é `AAAA-MM-DD`), `400 validade_passada`,
+`400 quantidade_invalida`, `404 nao_encontrado` (produto de outra loja ou inexistente).
 
 ### `GET /api/lojas/{lojaId}/grupos?cor=&situacao=` (L4, G5)
 ```jsonc
@@ -247,9 +305,9 @@ O aviso é o grupo em situação `conferir` ou `adiado`; o `avisoId` é o id do 
 |---|---|---|---|
 | `GET /api/lojas/{lojaId}/avisos` | — | `200 {antecedencia_dias, avisos: [Aviso]}` (por referência mais próxima) | — |
 | `GET /api/lojas/{lojaId}/avisos/{id}` | — | `200 AvisoDetalhe` | `404` |
-| `POST /api/lojas/{lojaId}/avisos/{id}/adiar` | `{ate: "2026-11-03"}` | `200 Grupo` | `400 apos_limite` |
-| `POST /api/lojas/{lojaId}/avisos/{id}/descartar` | `{motivo: "sem_unidades" \| "outro_destino"}` | `200 Grupo` (`encerrado`) | — |
-| `POST /api/lojas/{lojaId}/avisos/{id}/publicar` | `{separado, preco_original, desconto, janela_horas, confirmou_separacao: true}` | `201 {oferta}` (objeto do grupo C) | `400 sem_confirmacao`, `400 preco_invalido`, `409 fim_ja_passou` |
+| `POST /api/lojas/{lojaId}/avisos/{id}/adiar` | `{ate: "2026-11-03"}` | `200 Grupo` | `400 apos_limite` (com `adiar_ate_max`), `400 data_invalida` (hoje ou antes) |
+| `POST /api/lojas/{lojaId}/avisos/{id}/descartar` | `{motivo: "sem_unidades" \| "outro_destino"}` | `200 Grupo` (`encerrado`) | `400 motivo_invalido` |
+| `POST /api/lojas/{lojaId}/avisos/{id}/publicar` | `{separado, preco_original, desconto, janela_horas, confirmou_separacao: true}` | `201 {oferta}` (objeto do grupo C) | `400 sem_confirmacao`, `400 separado_invalido`, `400 acima_do_recebido` (com `recebido`), `400 preco_invalido`, `400 desconto_invalido`, `400 janela_invalida`, `409 fim_ja_passou` |
 
 ```jsonc
 // Aviso (item da lista)
@@ -272,8 +330,26 @@ O aviso é o grupo em situação `conferir` ou `adiado`; o `avisoId` é o id do 
 - **Adiar:** no máximo até `adiar_ate_max`. Ex.: validade 05/11, margem 1 dia → a oferta
   iria até 04/11, 23:59 → adiar até 03/11.
 
-## E · Configuração da loja 📝
+## E · Configuração da loja ✅
 Leitura: vínculo com a loja. Escrita: **só responsável** (`403` para funcionário).
+
+Pronto em 13/11/2026. Detalhes que valem para o mock:
+- **PATCH parcial:** só os campos enviados mudam. Se **um** campo está errado, **nada** é
+  gravado (`400` com o código do primeiro erro). `id` e campos desconhecidos são ignorados.
+- Erros do PATCH: `400 sem_nome`, `400 nome_longo` (> 120), `400 sem_endereco`,
+  `400 endereco_longo` (> 255), `400 janela_invalida`, `400 margem_invalida`,
+  `400 antecedencia_invalida` (fora de **1–30**), `400 coordenadas_incompletas`
+  (latitude e longitude vão **juntas**; as duas `null` apagam), `400 coordenadas_invalidas`
+  (não é número, ou fora de −90..90 / −180..180).
+- **Antecedência > margem** (decidido 13/11/2026): senão o aviso chega depois do último dia
+  da oferta. Conferido no par final (o que veio + o que já estava gravado): `400
+  antecedencia_menor_que_margem`, tanto ao baixar a antecedência quanto ao subir a margem.
+  Margem própria de produto maior que a antecedência não é barrada aqui; na publicação,
+  o `409 fim_ja_passou` protege.
+- Erros do POST de vínculo: `400 email_invalido`, `400 papel_invalido`. O e-mail é comparado
+  sem diferenciar maiúsculas. A pessoa precisa **já ter conta**.
+- DELETE: `404 nao_encontrado` (vínculo de outra loja ou inexistente). Remover alguém **não
+  apaga a conta**: a pessoa volta a ser só consumidora. A lista vem com responsáveis primeiro.
 
 | Método e rota | Entrada | Saída | Erros |
 |---|---|---|---|

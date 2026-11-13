@@ -122,7 +122,7 @@ class TestCancelarERetirar(Base):
         self.assertConservacao()
 
     def test_retirar_com_codigo_certo(self):
-        r = servico.retirar(self.loja.id, self.r.codigo, agora=depois(1))
+        r = servico.retirar(self.loja.id, self.r.codigo, self.joao, agora=depois(1))
         self.assertEqual((r.id, r.estado), (self.r.id, "retirada"))
         self.assertEqual(self.recarregar().retirado, 3)
         self.assertConservacao()
@@ -130,17 +130,58 @@ class TestCancelarERetirar(Base):
     def test_codigo_certo_em_loja_errada_nao_acha(self):
         loja2 = Loja.objects.create(nome="Empório da Rosa", endereco="Rua B, 2")
         with self.assertRaises(ErroDominio):
-            servico.retirar(loja2.id, self.r.codigo, agora=depois(1))
+            servico.retirar(loja2.id, self.r.codigo, self.joao, agora=depois(1))
 
     def test_codigo_inexistente(self):
         codigo_errado = "000000" if self.r.codigo != "000000" else "111111"
-        with self.assertRaises(ErroDominio):
-            servico.retirar(self.loja.id, codigo_errado, agora=depois(1))
+        with self.assertRaises(ErroDominio) as ctx:
+            servico.retirar(self.loja.id, codigo_errado, self.joao, agora=depois(1))
+        self.assertEqual(ctx.exception.codigo, "nao_encontrada")
 
     def test_retirar_depois_da_janela_recusado(self):
-        with self.assertRaises(ErroDominio):
-            servico.retirar(self.loja.id, self.r.codigo, agora=depois(5))
+        with self.assertRaises(ErroDominio) as ctx:
+            servico.retirar(self.loja.id, self.r.codigo, self.joao, agora=depois(5))
+        self.assertEqual(ctx.exception.codigo, "venceu")
         self.assertEqual(self.recarregar().retirado, 0)
+
+    def test_retirada_vencida_ja_grava_a_expiracao(self):
+        # A recusa não desfaz a expiração: a reserva sai gravada como expirada
+        # e as 3 unidades voltam ao livre na mesma hora (a tela da oferta já acerta).
+        with self.assertRaises(ErroDominio):
+            servico.retirar(self.loja.id, self.r.codigo, self.joao, agora=depois(5))
+        self.r.refresh_from_db()
+        self.assertEqual(self.r.estado, "expirada")
+        self.assertIsNone(self.r.retirada_por)
+        self.assertEqual(self.recarregar().livre, 10)
+        self.assertConservacao()
+
+
+class TestEncerradaEmERetiradaPor(Base):
+    """Fatos do momento: quando a reserva encerrou e quem fez a retirada."""
+
+    def setUp(self):
+        super().setUp()
+        self.r = servico.reservar(self.oferta.id, self.ana, 3, agora=T0)   # vence em T0+4h
+
+    def test_ativa_nao_tem_encerrada_em(self):
+        self.assertIsNone(self.r.encerrada_em)
+        self.assertIsNone(self.r.retirada_por)
+
+    def test_retirada_grava_hora_e_quem_estava_no_balcao(self):
+        r = servico.retirar(self.loja.id, self.r.codigo, self.joao, agora=depois(1))
+        self.assertEqual((r.encerrada_em, r.retirada_por), (depois(1), self.joao))
+
+    def test_cancelada_grava_a_hora_do_cancelamento(self):
+        r = servico.cancelar(self.r.id, agora=depois(2))
+        self.assertEqual(r.encerrada_em, depois(2))
+        self.assertIsNone(r.retirada_por)
+
+    def test_expirada_conta_na_hora_em_que_venceu_nao_na_que_foi_processada(self):
+        # Venceu às T0+4h, mas só foi processada 1 dia depois (expiração preguiçosa).
+        # Decidido 11/11/2026: vale a hora em que venceu (o painel conta no dia certo).
+        servico.varrer(agora=depois(28))
+        self.r.refresh_from_db()
+        self.assertEqual((self.r.estado, self.r.encerrada_em), ("expirada", depois(4)))
 
 
 class TestAjusteEEncerrar(Base):
@@ -161,7 +202,7 @@ class TestAjusteEEncerrar(Base):
 
     def test_encerrar_transforma_sobra_em_perda(self):
         r = servico.reservar(self.oferta.id, self.ana, 3, agora=T0)
-        servico.retirar(self.loja.id, r.codigo, agora=depois(1))
+        servico.retirar(self.loja.id, r.codigo, self.joao, agora=depois(1))
         perda = servico.encerrar(self.oferta.id, agora=depois(7 * 24))
         of = self.recarregar()
         self.assertEqual((perda, of.perda, of.livre, of.estado), (7, 7, 0, "encerrada"))

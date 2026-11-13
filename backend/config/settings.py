@@ -46,6 +46,11 @@ ALLOWED_HOSTS = [h.strip() for h in
 # Token do endpoint de varredura (/tarefas/varrer). Vazio = endpoint recusa sempre.
 CRON_TOKEN = os.environ.get("CRON_TOKEN", "")
 
+# CORS: só estes endereços (o frontend) podem chamar a API pelo navegador.
+# Ex.: "http://localhost:5173,https://tg.vercel.app". Vazio = nenhum site de fora.
+CORS_ALLOWED_ORIGINS = [o.strip() for o in
+                        os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",") if o.strip()]
+
 
 # Application definition
 
@@ -57,15 +62,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',     # o "crachá": tabela de tokens do DRF
+    'corsheaders',                  # CORS (decidido 11/11/2026)
     'contas',
     'ofertas',
 ]
+
+REST_FRAMEWORK = {
+    # Crachá no cabeçalho:  Authorization: Token <chave>  (decidido 06/11/2026)
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.TokenAuthentication"],
+    # Padrão FECHADO: toda rota exige login, salvo as que liberam de propósito.
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "EXCEPTION_HANDLER": "config.erros.tratar_erro",
+}
 
 # Usuário próprio desde o início: trocar depois que as tabelas existem é uma das
 # reformas mais difíceis do Django. Login único; papéis vêm do Vinculo (ofertas).
 AUTH_USER_MODEL = 'contas.Usuario'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',      # tem de vir antes de quem responde
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

@@ -71,6 +71,33 @@ class TestMargem(Base):
         self.assertBancoRecusa(lambda: Produto.objects.create(
             loja=self.loja, nome="X", margem_fim=timedelta(days=-1)))
 
+    def test_margem_acima_de_7_dias_recusada(self):
+        # Contrato: margem de 0 a 7 dias (loja e produto).
+        self.assertBancoRecusa(lambda: Produto.objects.create(
+            loja=self.loja, nome="X", margem_fim=timedelta(days=8)))
+        self.assertBancoRecusa(lambda: Loja.objects.create(
+            nome="Y", endereco="Rua C", margem_fim=timedelta(days=8)))
+
+
+class TestColunasDaEtapa7(Base):
+
+    def test_loja_nasce_com_janela_de_4h_e_aviso_de_10_dias(self):
+        self.assertEqual(self.loja.janela_padrao, timedelta(hours=4))
+        self.assertEqual(self.loja.antecedencia_aviso_dias, 10)
+
+    def test_janela_padrao_so_nas_opcoes(self):
+        # Opções do contrato: 1, 2, 4, 8, 12 ou 24 h. 3 h não existe.
+        self.assertBancoRecusa(lambda: Loja.objects.create(
+            nome="Y", endereco="Rua C", janela_padrao=timedelta(hours=3)))
+
+    def test_categoria_fora_da_lista_recusada(self):
+        self.assertBancoRecusa(lambda: Produto.objects.create(
+            loja=self.loja, nome="X", categoria="bebidas"))
+
+    def test_categoria_da_lista_aceita(self):
+        leite = Produto.objects.create(loja=self.loja, nome="Leite", categoria="leite")
+        self.assertEqual(leite.categoria, "leite")
+
 
 class TestTravasOferta(Base):
 
@@ -107,6 +134,16 @@ class TestTravasReserva(Base):
         # "R00001" é o código de teste do domínio: no banco real não entra.
         self.assertBancoRecusa(lambda: self.nova_reserva(codigo="R00001"))
 
+    def test_ativa_nao_tem_encerrada_em(self):
+        self.assertBancoRecusa(lambda: self.nova_reserva(encerrada_em=AGORA))
+
+    def test_encerrada_precisa_de_encerrada_em(self):
+        self.assertBancoRecusa(lambda: self.nova_reserva(estado="cancelada"))
+
+    def test_retirada_por_so_em_reserva_retirada(self):
+        self.assertBancoRecusa(lambda: self.nova_reserva(
+            estado="cancelada", encerrada_em=AGORA, retirada_por=self.joao))
+
 
 class TestCodigoDeRetirada(Base):
     """O código é único entre as reservas ATIVAS da MESMA loja."""
@@ -125,7 +162,7 @@ class TestCodigoDeRetirada(Base):
         self.assertEqual(Reserva.objects.filter(codigo="123456").count(), 2)
 
     def test_mesmo_codigo_se_a_antiga_ja_foi_retirada_aceito(self):
-        self.nova_reserva(estado="retirada")
+        self.nova_reserva(estado="retirada", encerrada_em=AGORA, retirada_por=self.joao)
         outra = self.nova_oferta()
         self.nova_reserva(oferta=outra)
         self.assertEqual(Reserva.objects.filter(codigo="123456").count(), 2)

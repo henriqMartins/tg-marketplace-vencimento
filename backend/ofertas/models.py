@@ -16,9 +16,25 @@ from django.db.models import F, Q
 
 import dominio
 
+from .fita import CORES
+
 # Os estados vêm do domínio (regra 1): o banco aceita exatamente os mesmos.
 ESTADOS_OFERTA = [(e.value, e.value) for e in dominio.EstadoOferta]
 ESTADOS_RESERVA = [(e.value, e.value) for e in dominio.EstadoReserva]
+
+# Contrato: margem de 0 a 7 dias; janela padrão só nestas opções.
+MARGEM_MAXIMA = timedelta(days=7)
+JANELAS_PERMITIDAS = [timedelta(hours=h) for h in (1, 2, 4, 8, 12, 24)]
+
+
+class Categoria(models.TextChoices):
+    """Lista ÚNICA do contrato, a mesma na vitrine (C2) e no cadastro (L2)."""
+    MERCEARIA = "mercearia", "Mercearia"
+    ENLATADOS = "enlatados", "Enlatados"
+    LATICINIOS = "laticinios", "Laticínios"
+    LEITE = "leite", "Leite"
+    FRIOS = "frios", "Frios"
+    DOCES = "doces", "Doces"
 
 
 class Loja(models.Model):
@@ -29,11 +45,18 @@ class Loja(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     # Margem padrão da loja; o produto pode ter a própria (decidido 23/10/2026).
     margem_fim = models.DurationField(default=timedelta(days=1))
+    # Janela que já vem preenchida ao publicar (L7); o lojista pode trocar na oferta.
+    janela_padrao = models.DurationField(default=timedelta(hours=4))
+    # Quantos dias antes da validade o aviso aparece para o lojista (L5).
+    antecedencia_aviso_dias = models.PositiveSmallIntegerField(default=10)
 
     class Meta:
         constraints = [
-            models.CheckConstraint(condition=Q(margem_fim__gte=timedelta(0)),
-                                   name="loja_margem_nao_negativa"),
+            models.CheckConstraint(
+                condition=Q(margem_fim__gte=timedelta(0)) & Q(margem_fim__lte=MARGEM_MAXIMA),
+                name="loja_margem_de_0_a_7_dias"),
+            models.CheckConstraint(condition=Q(janela_padrao__in=JANELAS_PERMITIDAS),
+                                   name="loja_janela_padrao_permitida"),
         ]
 
     def __str__(self):
@@ -68,13 +91,20 @@ class Vinculo(models.Model):
 class Produto(models.Model):
     loja = models.ForeignKey(Loja, on_delete=models.PROTECT, related_name="produtos")
     nome = models.CharField(max_length=120)
+    # A API exige a categoria ao cadastrar; o padrão só cobre linhas antigas e testes.
+    categoria = models.CharField(max_length=12, choices=Categoria.choices,
+                                 default=Categoria.MERCEARIA)
     # Opcional: vazio (None) = usa a margem da loja.
     margem_fim = models.DurationField(null=True, blank=True)
 
     class Meta:
         constraints = [
-            models.CheckConstraint(condition=Q(margem_fim__gte=timedelta(0)),
-                                   name="produto_margem_nao_negativa"),
+            # Vazio (NULL) passa: "usa a da loja". Preenchida: de 0 a 7 dias.
+            models.CheckConstraint(
+                condition=Q(margem_fim__gte=timedelta(0)) & Q(margem_fim__lte=MARGEM_MAXIMA),
+                name="produto_margem_de_0_a_7_dias"),
+            models.CheckConstraint(condition=Q(categoria__in=Categoria.values),
+                                   name="produto_categoria_valida"),
         ]
 
     def margem_efetiva(self) -> timedelta:
@@ -87,10 +117,95 @@ class Produto(models.Model):
         return self.nome
 
 
+class Situacao(models.TextChoices):
+    """
+    Situação GRAVADA do grupo de fita. O contrato ainda mostra "conferir", que
+    NÃO é gravado: é "aguardando"/"adiado" cujo dia já chegou (calculado na leitura,
+    sem precisar de ninguém "acordar" o grupo todo dia — regra 6, sem worker).
+    """
+    AGUARDANDO = "aguardando", "Aguardando"   # aviso ainda não chegou (ou chegou: "conferir")
+    ADIADO = "adiado", "Adiado"               # lojista adiou o aviso até adiado_ate
+    EM_OFERTA = "em_oferta", "Em oferta"      # virou oferta (ver Oferta.grupo)
+    ENCERRADO = "encerrado", "Encerrado"      # "não vai para oferta" (descartado)
+
+
+ABERTAS = [Situacao.AGUARDANDO, Situacao.ADIADO]   # ainda podem receber lote e ser publicadas
+
+
+class MotivoDescarte(models.TextChoices):
+    SEM_UNIDADES = "sem_unidades", "Não sobrou unidade"
+    OUTRO_DESTINO = "outro_destino", "Teve outro destino"
+
+
+class Grupo(models.Model):
+    """
+    Grupo de fita = produto + cor + ano do bimestre (decidido 05/11/2026).
+    Junta os lotes do mesmo produto que levam a MESMA fita na gôndola. O aviso e a
+    publicação são do grupo, não de cada lote.
+    """
+
+    produto = models.ForeignKey(Produto, on_delete=models.PROTECT, related_name="grupos")
+    cor = models.CharField(max_length=10, choices=[(c, c) for c in CORES])
+    ano = models.PositiveSmallIntegerField()
+    referencia = models.DateField()               # a validade MAIS PRÓXIMA entre os lotes
+    aviso_em = models.DateField()                 # referência − antecedência da loja
+    situacao = models.CharField(max_length=12, choices=Situacao.choices,
+                                default=Situacao.AGUARDANDO)
+    adiado_ate = models.DateField(null=True, blank=True)
+    colisao_validade = models.DateField(null=True, blank=True)   # grupo de outro ano, mesma cor
+    motivo_descarte = models.CharField(max_length=14, choices=MotivoDescarte.choices,
+                                       blank=True, default="")
+    criado_em = models.DateTimeField()
+
+    class Meta:
+        constraints = [
+            # A trava do banco do agrupamento: no máximo UM grupo aberto por
+            # produto + cor + ano. Dois lotes chegando juntos não abrem dois grupos.
+            models.UniqueConstraint(
+                fields=["produto", "cor", "ano"], condition=Q(situacao__in=ABERTAS),
+                name="grupo_um_aberto_por_produto_cor_ano"),
+            models.CheckConstraint(condition=Q(situacao__in=Situacao.values),
+                                   name="grupo_situacao_valida"),
+            models.CheckConstraint(condition=Q(cor__in=CORES), name="grupo_cor_valida"),
+            # Adiado TEM data; as outras situações não têm.
+            models.CheckConstraint(
+                condition=(Q(situacao=Situacao.ADIADO, adiado_ate__isnull=False)
+                           | (~Q(situacao=Situacao.ADIADO) & Q(adiado_ate__isnull=True))),
+                name="grupo_adiado_ate_coerente"),
+            # Motivo de descarte só no grupo encerrado sem oferta.
+            models.CheckConstraint(
+                condition=Q(motivo_descarte="") | Q(situacao=Situacao.ENCERRADO),
+                name="grupo_motivo_so_se_encerrado"),
+        ]
+
+    def __str__(self):
+        return f"{self.produto} — fita {self.cor} {self.ano}"
+
+
+class Lote(models.Model):
+    """O que chegou na loja (L3). A informação nasce aqui: não há integração com estoque."""
+
+    grupo = models.ForeignKey(Grupo, on_delete=models.PROTECT, related_name="lotes")
+    validade = models.DateField()
+    quantidade = models.PositiveIntegerField()
+    recebido_em = models.DateField()
+    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                              related_name="lotes")
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(quantidade__gte=1), name="lote_quantidade_positiva"),
+        ]
+
+
 class Oferta(models.Model):
     """O lote publicado. Os números são os mesmos do dominio.Oferta."""
 
     produto = models.ForeignKey(Produto, on_delete=models.PROTECT, related_name="ofertas")
+    # O grupo de fita que virou esta oferta. Vazio só em ofertas criadas direto
+    # (testes antigos, admin); pela API, toda oferta nasce de um grupo.
+    grupo = models.OneToOneField(Grupo, on_delete=models.PROTECT, null=True, blank=True,
+                                 related_name="oferta")
     validade = models.DateField()                 # data do lote (base da fita colorida)
     preco_original = models.DecimalField(max_digits=10, decimal_places=2)
     preco = models.DecimalField(max_digits=10, decimal_places=2)
@@ -140,9 +255,26 @@ class Reserva(models.Model):
     expira_em = models.DateTimeField(db_index=True)   # fonte oficial da expiração
     estado = models.CharField(max_length=10, choices=ESTADOS_RESERVA,
                               default=dominio.EstadoReserva.RESERVADA.value)
+    # Quando saiu de "reservada". Expirada: a hora em que VENCEU (expira_em), não a
+    # hora em que o sistema percebeu (decidido 11/11/2026) — o painel conta no dia certo.
+    encerrada_em = models.DateTimeField(null=True, blank=True)
+    # Quem digitou o código no balcão (L13: "Retirada por Carlos Lima").
+    retirada_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                                     null=True, blank=True, related_name="retiradas_feitas")
 
     class Meta:
         constraints = [
+            # Ativa NÃO tem encerrada_em; encerrada TEM.
+            models.CheckConstraint(
+                condition=(Q(estado=dominio.EstadoReserva.RESERVADA.value, encerrada_em__isnull=True)
+                           | (~Q(estado=dominio.EstadoReserva.RESERVADA.value)
+                              & Q(encerrada_em__isnull=False))),
+                name="reserva_encerrada_em_coerente"),
+            # Só reserva retirada tem quem retirou.
+            models.CheckConstraint(
+                condition=Q(retirada_por__isnull=True)
+                          | Q(estado=dominio.EstadoReserva.RETIRADA.value),
+                name="reserva_retirada_por_so_se_retirada"),
             models.UniqueConstraint(fields=["oferta", "numero"],
                                     name="reserva_numero_unico_por_oferta"),
             models.CheckConstraint(condition=Q(quantidade__gte=1),

@@ -134,6 +134,151 @@ class TestParcial(Disputa):
                 self.conferir_conta(oferta, resultados)
 
 
+class TestRetiradaSimultanea(Disputa):
+    """
+    Etapa 9: o MESMO código digitado em vários balcões ao mesmo tempo (ex.: dois
+    funcionários atendendo o mesmo cliente). A trava faz um esperar o outro:
+    só um retira; os demais encontram a reserva já retirada. Ninguém leva em dobro.
+    """
+
+    BALCOES = 5
+
+    def test_mesmo_codigo_em_5_balcoes_so_um_retira(self):
+        from dominio import ErroDominio
+
+        for rodada in range(RODADAS):
+            with self.subTest(rodada=rodada):
+                oferta = self.nova_oferta(separado=10)
+                reserva = servico.reservar(oferta.id, self.pessoas[0], 3, agora=T0)
+                loja_id = self.produto.loja_id
+                barreira = threading.Barrier(self.BALCOES)
+                deram_certo, recusas, erros = [], [], []
+
+                def balcao(i):
+                    try:
+                        barreira.wait()
+                        deram_certo.append(servico.retirar(
+                            loja_id, reserva.codigo, self.pessoas[i + 1],
+                            agora=T0 + timedelta(hours=1)))
+                    except ErroDominio as erro:
+                        recusas.append(erro.codigo)
+                    except Exception as erro:            # erro inesperado = teste falha
+                        erros.append(erro)
+                    finally:
+                        connection.close()
+
+                threads = [threading.Thread(target=balcao, args=(i,))
+                           for i in range(self.BALCOES)]
+                for t in threads:
+                    t.start()
+                for t in threads:
+                    t.join()
+
+                self.assertEqual(erros, [])
+                self.assertEqual(len(deram_certo), 1)                  # 1 balcão retirou
+                self.assertEqual(len(recusas), self.BALCOES - 1)
+                # Chegou antes da retirada confirmar: achou a reserva, esperou a trava e,
+                # ao remontar a oferta (só com as reservas ATIVAS), ela já não estava lá
+                # (reserva_inexistente). Chegou depois: nem achou (nao_encontrada).
+                self.assertTrue(set(recusas) <= {"reserva_inexistente", "nao_encontrada"},
+                                recusas)
+                oferta.refresh_from_db()
+                self.assertEqual(oferta.retirado, 3)                   # não retirou em dobro
+                self.conferir_conta(oferta, [None] * PESSOAS)
+
+
+class TestLotesSimultaneos(Disputa):
+    """
+    Etapa 10a: 5 funcionários registram, ao mesmo tempo, lotes do MESMO produto com
+    a MESMA fita (preta, 2026). Tem de nascer UM grupo só, com os 5 lotes. Sem a
+    trava do produto, cada um poderia não ver o grupo do outro e abrir o seu.
+    """
+
+    LOTES = 5
+
+    def test_5_lotes_do_mesmo_produto_formam_um_grupo(self):
+        from . import servico_lotes
+        from .models import Grupo, Lote
+
+        for rodada in range(RODADAS):
+            with self.subTest(rodada=rodada):
+                produto = Produto.objects.create(loja=self.produto.loja, nome=f"Leite {rodada}")
+                barreira = threading.Barrier(self.LOTES)
+                resultados, erros = [], []
+
+                def registrar(i):
+                    try:
+                        barreira.wait()
+                        _, _, resultado, _ = servico_lotes.registrar_lote(
+                            produto.id, date(2026, 12, 10 + i), 6, self.pessoas[i], agora=T0)
+                        resultados.append(resultado)
+                    except Exception as erro:
+                        erros.append(erro)
+                    finally:
+                        connection.close()
+
+                threads = [threading.Thread(target=registrar, args=(i,)) for i in range(self.LOTES)]
+                for t in threads:
+                    t.start()
+                for t in threads:
+                    t.join()
+
+                self.assertEqual(erros, [])
+                self.assertEqual(Grupo.objects.filter(produto=produto).count(), 1)
+                self.assertEqual(sorted(resultados), ["agrupado"] * 4 + ["novo"])
+                grupo = Grupo.objects.get(produto=produto)
+                self.assertEqual(Lote.objects.filter(grupo=grupo).count(), self.LOTES)
+                self.assertEqual(grupo.referencia, date(2026, 12, 10))   # a mais próxima
+
+
+class TestEquipeSimultanea(Disputa):
+    """
+    Etapa 10b: os DOIS responsáveis da loja removem um ao outro no mesmo instante.
+    Sem a trava da loja, cada um vê "somos 2" e remove o outro: a loja fica sem
+    responsável e ninguém mais consegue configurá-la. Com a trava, um espera o
+    outro; o segundo descobre que já não é responsável e é recusado.
+    """
+
+    def test_dois_responsaveis_se_removendo_sobra_um(self):
+        from . import servico_equipe
+        from .models import Papel, Vinculo
+
+        loja = self.produto.loja
+        a, b = self.pessoas[0], self.pessoas[1]
+        for rodada in range(RODADAS):
+            with self.subTest(rodada=rodada):
+                Vinculo.objects.filter(loja=loja).delete()
+                va = Vinculo.objects.create(usuario=a, loja=loja, papel=Papel.RESPONSAVEL)
+                vb = Vinculo.objects.create(usuario=b, loja=loja, papel=Papel.RESPONSAVEL)
+                barreira = threading.Barrier(2)
+                removidos, recusas, erros = [], [], []
+
+                def remover(quem, alvo):
+                    try:
+                        barreira.wait()
+                        servico_equipe.remover(loja.id, alvo.id, quem)
+                        removidos.append(alvo.id)
+                    except servico_equipe.ErroEquipe as erro:
+                        recusas.append(erro.codigo)
+                    except Exception as erro:
+                        erros.append(erro)
+                    finally:
+                        connection.close()
+
+                threads = [threading.Thread(target=remover, args=(a, vb)),
+                           threading.Thread(target=remover, args=(b, va))]
+                for t in threads:
+                    t.start()
+                for t in threads:
+                    t.join()
+
+                self.assertEqual(erros, [])
+                self.assertEqual(len(removidos), 1)                      # só um conseguiu
+                self.assertEqual(recusas, ["sem_permissao"])             # o outro já não era
+                self.assertEqual(Vinculo.objects.filter(
+                    loja=loja, papel=Papel.RESPONSAVEL).count(), 1)      # a loja tem dono
+
+
 @skipUnless(os.environ.get("CONTROLE_NEGATIVO") == "1",
             "controle negativo: ligue com CONTROLE_NEGATIVO=1")
 class TestControleNegativo(Disputa):

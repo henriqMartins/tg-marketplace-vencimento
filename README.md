@@ -55,15 +55,21 @@ Legenda: ✅ existe · 🚧 planejado (ainda não existe)
 ├── spikes/spike_django/      ✅ prova dos 3 critérios do framework (referência, não é produção)
 ├── backend/                  ✅ API Django + DRF (vira a imagem Docker) — em construção
 │   ├── config/                  configuração (só por variável de ambiente) e /health
-│   ├── contas/                  usuário próprio (login único)
+│   ├── contas/                  usuário (login único por e-mail), crachá (token), porteiros por papel
 │   └── ofertas/                 Loja, Vínculo, Produto, Oferta, Reserva, Ajuste, Recusa
 │       ├── models.py               tabelas e travas do banco
 │       ├── servico.py              os 5 passos: transação → trava → reconstitui → regra → grava; varredura
 │       ├── views.py                endpoint da varredura (POST /tarefas/varrer, com token)
+│       ├── api_consumidor.py       rotas do consumidor (vitrine, reservar, minhas reservas, cancelar)
+│       ├── consultas.py            leitura da vitrine no SQL, com a distância por Haversine
+│       ├── apresentacao.py         monta o JSON no formato do contrato
+│       ├── fita.py                 cor da fita pela validade (bimestre → cor)
+│       ├── test_fita.py            os 12 meses e as viradas de bimestre e de ano
 │       ├── tests.py                testes das travas do banco
 │       ├── test_servico.py         testes do serviço
 │       ├── test_concorrencia.py    N pessoas ao mesmo tempo pela última unidade
-│       └── test_varredura.py       varredura idempotente e endpoint protegido
+│       ├── test_varredura.py       varredura idempotente e endpoint protegido
+│       └── test_api_consumidor.py  rotas do consumidor, Haversine e CORS
 ├── docs/
 │   ├── colinha-python.md     ✅ colinha de Python com exemplos do projeto
 │   ├── api/contrato.md       ✅ contrato da API: rotas, entradas, saídas (dono: backend)
@@ -281,6 +287,11 @@ $env:CONTROLE_NEGATIVO="1"; python manage.py test ofertas.test_concorrencia.Test
 **Servidor local:** `python manage.py runserver` (em `backend/`) → `http://localhost:8000/health`
 responde `{"status": "ok", "banco": "ok"}` (ou HTTP 503 se o banco estiver fora).
 
+> **"You don't have permission to access that port"?** O Windows às vezes reserva uma
+> faixa de portas para o Hyper-V/WSL (em 11/11/2026 era 7906–8005, que inclui a 8000).
+> Veja com `netsh interface ipv4 show excludedportrange protocol=tcp` e use outra porta,
+> ex.: `python manage.py runserver 8765`. A faixa pode mudar depois de reiniciar.
+
 **Varredura** (a "ronda" diária: devolve reservas vencidas e encerra ofertas que passaram
 do fim). Exige `CRON_TOKEN` no `.env`; sem ele, o endpoint responde 503 sempre.
 
@@ -292,6 +303,73 @@ curl.exe -X POST http://localhost:8000/tarefas/varrer -H "Authorization: Bearer 
 Sem token → 401 · token errado → 403 · GET → 405. Rodar duas vezes seguidas não devolve
 nada em dobro (idempotente). Oferta sendo usada por outra operação naquele instante é
 pulada e entra na próxima ronda.
+
+**Acesso** (grupo A do [contrato da API](docs/api/contrato.md)): conta, login, sair e "eu".
+O "crachá" é o token do DRF, enviado em `Authorization: Token <chave>`.
+
+```powershell
+curl.exe -X POST http://localhost:8000/api/auth/conta -H "Content-Type: application/json" -d '{\"nome\":\"Ana Souza\",\"email\":\"ana@email.com\",\"senha\":\"senha-boa-123\",\"aceite_termos\":true}'
+# → 201 {"token": "<chave>", "usuario": {"id": 1, "nome": "Ana Souza", "email": "ana@email.com", "vinculos": []}}
+curl.exe http://localhost:8000/api/eu -H "Authorization: Token <chave>"
+```
+
+Sem crachá numa rota protegida → 401; com crachá, mas sem papel na loja → 403. Erros
+sempre como `{"erro": "<frase>", "codigo": "<identificador>"}`.
+
+**Consumidor** (grupo B do contrato): vitrine e detalhe são públicos; reservar, minhas
+reservas, ver e cancelar exigem o crachá.
+
+```powershell
+curl.exe "http://localhost:8000/api/ofertas?lat=-20.8197&lng=-49.3794&categoria=laticinios"
+curl.exe -X POST http://localhost:8000/api/ofertas/1/reservas -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"pedido\":2}'
+# → 201 {"status": "confirmada" | "parcial", "reserva": {...}}  ·  409 {"status": "recusada", ...}
+```
+
+A vitrine ordena por distância (Haversine calculado no PostgreSQL) quando recebe `lat` e
+`lng`, e não grava a localização. Reserva de outra pessoa responde 404. O navegador só
+aceita chamadas vindas dos endereços em `CORS_ALLOWED_ORIGINS` (`.env`).
+
+**Operação da loja** (grupo C do contrato): exige crachá **e** vínculo com a loja do
+endereço (funcionário ou responsável); sem vínculo → 403.
+
+```powershell
+curl.exe http://localhost:8000/api/lojas/1/resumo-do-dia -H "Authorization: Token <chave>"
+curl.exe -X POST http://localhost:8000/api/lojas/1/ofertas/1/ajustes -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"quantidade\":1,\"motivo\":\"Danificada\"}'
+curl.exe "http://localhost:8000/api/lojas/1/reservas/ativa?codigo=482917" -H "Authorization: Token <chave>"
+curl.exe -X POST http://localhost:8000/api/lojas/1/retiradas -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"codigo\":\"482917\"}'
+```
+
+A loja vê o código da reserva **mascarado** (só os 3 últimos dígitos): quem tem o código
+inteiro é o cliente, que o apresenta no balcão. Código vencido responde `409 venceu`;
+código que não existe, `404`.
+
+**Lote, fita e aviso** (grupo D do contrato): do lote que chegou até a oferta na vitrine.
+
+```powershell
+curl.exe -X POST http://localhost:8000/api/lojas/1/lotes -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"produto\":3,\"validade\":\"2026-12-18\",\"quantidade\":24}'
+# → 201 {"resultado": "novo" | "agrupado" | "colisao", "grupo": {"fita": {"cor": "preto", ...}, ...}}
+curl.exe http://localhost:8000/api/lojas/1/avisos -H "Authorization: Token <chave>"
+curl.exe -X POST http://localhost:8000/api/lojas/1/avisos/4/publicar -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"separado\":10,\"preco_original\":\"4.49\",\"desconto\":30,\"janela_horas\":4,\"confirmou_separacao\":true}'
+```
+
+O lote entra no grupo **produto + cor da fita + ano**; o grupo vira aviso `antecedência`
+dias antes da validade mais próxima. A publicação monta a oferta **pelo domínio** (livre
+nasce igual ao separado) com fim às 23:59 de (validade − margem), horário de Brasília.
+
+**Configuração da loja e equipe** (grupo E do contrato, tela L14): ler é da equipe toda;
+mudar é só do responsável (o funcionário recebe `403`).
+
+```powershell
+curl.exe -X PATCH http://localhost:8000/api/lojas/1 -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"margem_fim_dias\":2,\"janela_padrao_horas\":8}'
+curl.exe -X POST http://localhost:8000/api/lojas/1/vinculos -H "Authorization: Token <chave>" -H "Content-Type: application/json" -d '{\"email\":\"juliana@email.com\",\"papel\":\"funcionario\"}'
+```
+
+A loja nunca fica sem responsável: ninguém remove o próprio vínculo (`409 proprio_vinculo`)
+e a remoção trava a linha da loja, então dois responsáveis removendo um ao outro ao
+mesmo tempo não zeram a equipe. Mudar margem ou antecedência vale só para lotes e
+ofertas novos (o `fim` e o `aviso_em` são gravados quando nascem). A antecedência do aviso
+(1–30 dias) tem de ser **maior que a margem**: senão o aviso chegaria depois do último dia
+da oferta.
 
 **Rodar a simulação:**
 
@@ -314,10 +392,14 @@ Regra da casa: **nenhum teste existente pode quebrar.**
 - Integração com PDV, importação de planilha, pagamento online, entrega, WhatsApp.
 
 **Decisões ainda em aberto:**
-- Login do consumidor e tipo de token da API (recomendação até aqui: token do próprio DRF).
-- Permissões de cada papel (responsável, funcionário) — etapa 6.
-- Serviço de push para a notificação de oferta nova.
-- Serviço que converte CEP/endereço em coordenada.
+- Serviço que converte CEP/endereço em coordenada (no navegador).
+- Lote/aviso: o que acontece quando o lojista não vai publicar; de onde vem o preço
+  normal sugerido; lista única de categorias.
+
+**Decididas recentemente:** login por e-mail e senha com token do DRF; "esqueci minha
+senha" fica para depois; permissões por papel (funcionário: operação da loja;
+responsável: tudo + configurações, equipe e painéis; consumidor: só as próprias
+reservas); push no padrão Web Push, depois de 09/11.
 
 ---
 
@@ -344,20 +426,20 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 23/10/2026 | Backend (etapa 2): modelos e travas do banco; papéis por vínculo; margem por loja/produto | 26 testes; migrações aplicadas, desfeitas e reaplicadas |
 | 23/10/2026 | Backend (etapa 3): serviço de reserva (5 passos com `select_for_update()`), código de retirada único por loja entre ativas | 41 testes |
 | 26/10/2026 | Backend (etapa 4): teste de concorrência + controle negativo | 20 clientes × 5 rodadas: 1 reserva e 19 recusas em todas; **sem a trava, 20 de 20 receberam "reservado" pela mesma unidade** em todas as rodadas · backend: 44 testes ok |
-
 | 05/11/2026 | Backend (etapa 5): varredura idempotente + endpoint `POST /tarefas/varrer` protegido por `CRON_TOKEN` | 11 testes (rodar 2× não devolve em dobro; oferta travada é pulada; 401/403/405/503) · backend: 55 testes ok |
+| 11/11/2026 | Backend (etapa 6): acesso — conta, login por e-mail, sair, "eu"; token do DRF; porteiros `EhDaLoja` e `EhResponsavel`; erros no formato do contrato | 16 testes (e-mail repetido com maiúscula, senha guardada só como hash, login errado sem revelar a conta, funcionário barrado no painel, vínculo de outra loja → 403) · backend: 71 ok + 1 pulado |
+| 11/11/2026 | Backend (etapa 7): colunas do contrato — categoria do produto (lista única), janela padrão e antecedência do aviso na loja, `encerrada_em` e `retirada_por` na reserva; margem limitada a 0–7 dias; cor da fita calculada pela validade | 16 testes novos (expirada conta na hora em que **venceu**, não na que foi processada; travas novas; fita nos 12 meses) · migração aplicada, desfeita e reaplicada · backend: 87 ok + 1 pulado |
+| 11/11/2026 | Backend (etapa 8): rotas do consumidor (grupo B) — vitrine com Haversine em SQL e filtros, detalhe, reservar (201 confirmada/parcial, 409 recusada), minhas reservas, ver e cancelar; CORS por variável de ambiente | 25 testes (distância igual à conta em Python; livre da vitrine desconta vencidas sem gravar; reserva de outra pessoa → 404; leitura expira a vencida antes de responder; CORS só para o frontend) · conferido ao vivo · backend: 112 ok + 1 pulado |
+| 12/11/2026 | Backend (etapa 9): rotas da operação da loja (grupo C) — resumo do dia, ofertas da loja com estoque, detalhe com reservas (código mascarado), ajuste e retirada no balcão; cada recusa do domínio ganhou um **código** (`acima_do_livre`, `venceu`...) que a API traduz; retirada vencida já grava a expiração | Domínio: 16 testes novos (50 ok). Backend: 31 testes da loja (sem vínculo → 403; oferta de outra loja → 404; código inteiro nunca vai para a loja; vencido → 409 mesmo depois da ronda) + **5 balcões com o mesmo código ao mesmo tempo: 1 retira, 4 recusados, nada em dobro** (5 rodadas) · backend: 146 ok + 1 pulado |
+| 12/11/2026 | Backend (etapa 10a): lote, fita e aviso (grupo D) — produtos, registro de lote com agrupamento por produto + cor + ano e aviso de colisão de ciclo, grupos de fita, avisos (adiar até a véspera do último dia, descartar), **publicação da oferta pelo domínio**; "conferir" calculado pela data, sem worker | 13 testes puros (fim 23:59 de Brasília; limite do adiar; novo/agrupado/colisão) + 37 da API (referência = data mais próxima; grupo publicado não recebe lote; separado acima do recebido → 400; publicada aparece na vitrine) + **5 lotes simultâneos do mesmo produto → 1 grupo só** (5 rodadas) · migração aplicada, desfeita e reaplicada · backend: 197 ok + 1 pulado |
+| 13/11/2026 | Backend (etapa 10b): configuração da loja e equipe (grupo E) — ler/alterar as regras da loja (janela padrão, margem, antecedência, coordenadas), listar, adicionar e remover pessoas da equipe; **permissão por método** (ler = vínculo, mudar = responsável) | 33 testes da API (funcionário lê mas não altera → 403; erro em um campo não grava nenhum; antecedência ≤ margem → 400; mudança não mexe em aviso já agendado; e-mail sem conta → 404; já vinculado → 409; próprio vínculo → 409) + **2 responsáveis removendo um ao outro ao mesmo tempo → sobra 1** (5 rodadas; sem a trava, as 5 falham) · backend: 231 ok + 1 pulado |
 
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Backend (etapa 6): login por e-mail e senha, token e permissões por papel |
-| ⏳ | Backend (etapa 7): migração com as colunas que faltam (categoria, janela padrão, antecedência, `encerrada_em`, `retirada_por`) |
-| ⏳ | Backend (etapa 8): endpoints do consumidor (vitrine, oferta, reservar, cancelar, minhas reservas) + CORS |
-| ⏳ | Backend (etapa 9): endpoints da operação da loja (retirada, ajuste, ofertas, resumo do dia) |
-| ⏳ | Backend (etapa 10): lote, fita, aviso e publicação + configuração da loja |
+| ⏳ | Backend: dados de demonstração para o vídeo (`manage.py popular_demo`, dados fictícios) |
 | ⏳ | Backend (etapa 11): indicadores dos painéis e histórico |
-| ⏳ | Backend (etapa 12): proximidade por Haversine em SQL |
 | ⏳ | Backend (etapa 13): projeção a partir do resumo de `resultados_n5000` |
 | ⏳ | Frontend (worktree `frontend`, etapas F0–F9 do `docs/frontend/BRIEFING-agente.md`), integrado por grupo do contrato |
 | ⏳ | **09/11/2026** — versão para a banca (artigo com os protótipos das telas) |

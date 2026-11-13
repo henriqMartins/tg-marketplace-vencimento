@@ -48,6 +48,18 @@ class TestVarrer(Base):
         self.assertEqual((resumo["encerradas"], resumo["perda"]), (1, 10))
         self.assertConservacao()
 
+    def test_varrer_so_uma_loja_nao_mexe_nas_outras(self):
+        # As telas da loja varrem só a própria loja antes de mostrar os números.
+        outra_loja = Loja.objects.create(nome="Empório da Rosa", endereco="Rua B, 2")
+        outra = self.nova_oferta(Produto.objects.create(loja=outra_loja, nome="Leite 1 L"))
+        servico.reservar(self.oferta.id, self.ana, 3, agora=T0)
+        servico.reservar(outra.id, self.bia, 2, agora=T0)
+        resumo = servico.varrer(agora=depois(5), loja_id=self.loja.id)
+        outra.refresh_from_db()
+        self.assertEqual(resumo["expiradas"], 1)
+        self.assertEqual(self.recarregar().livre, 10)      # desta loja: devolvido
+        self.assertEqual(outra.livre, 8)                   # da outra: intocado
+
     def test_nao_encerra_oferta_ainda_no_prazo(self):
         resumo = servico.varrer(agora=depois(24))
         self.assertEqual(self.recarregar().estado, "ativa")
