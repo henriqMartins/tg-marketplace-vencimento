@@ -22,7 +22,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F7c · Mock do grupo G + G2 projeção | ✅ |
 | F7d · Mock do grupo E + G6/L14 configurações | ✅ |
 | F8a · Mock alinhado ao contrato da main (A, B, C) | ✅ |
-| F8b · Mock do grupo D | — |
+| F8b · Mock do grupo D | ✅ |
 | F8c · L4 lotes, L3 cadastro do lote, L2 novo produto | — |
 | F8d · L5 avisos, L6 conferência, L8 adiar, L7 publicar | — |
 | F8e · G5 lotes e fitas no computador | — |
@@ -74,6 +74,9 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 13/11/2026 | Mock alinhado ao contrato da main (A, B e C ✅), com as frases e a ordem de validação do backend: vitrine sem ofertas esgotadas (o detalhe responde); `400 parametro_invalido`; loja sem coordenada no fim da lista por distância; `409 venceu` também na **prévia** da retirada, por até 24 h depois do prazo (antes: 30 min e só na confirmação); código fora do formato → 404; ofertas da loja sem `estado` = ativas e depois encerradas; reservas da oferta encerrada por `criada_em`; ajuste com `quantidade_invalida`/`motivo_longo`; criar conta com `sem_nome`/`email_invalido` |
 | 13/11/2026 | `409 acima_do_livre` agora com a frase do backend ("Só dá para ajustar unidades livres; as reservadas não entram."); a L11 continua baixando o máximo pelo `livre` do corpo |
 | 13/11/2026 | A3: `sem_nome` e `email_invalido` da API aparecem embaixo do campo, como o `email_em_uso` |
+| 13/11/2026 | Mock do grupo D (`mock/grupo-d.ts`) copia `backend/ofertas/api_lotes.py` e `servico_lotes.py`: mesma ordem de validação, códigos e frases. Regras em `regras-fingidas.ts`: "conferir" calculado (nunca gravado), agrupado/novo/colisão, grupo em oferta não recebe lote, lote mais próximo puxa a referência e desfaz adiamento além do limite, adiar até a véspera do último dia, preço meio para cima em centavos inteiros |
+| 13/11/2026 | Semente do D (`mock/semente-lotes.ts`): os 5 avisos e os grupos do protótipo com datas relativas a hoje; as ofertas 1, 2, 5 e 6 têm grupo; a cor sai sempre da validade. `avisos_para_conferir` passa a ser contado (4 na semente: o achocolatado está adiado). Publicar cria a oferta de verdade (L9, G4 e vitrine) |
+| 13/11/2026 | Todos os grupos (A–G) têm mock; o `pendente` saiu. Chave do mock `tg.mock.v4` |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

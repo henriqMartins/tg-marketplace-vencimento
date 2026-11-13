@@ -18,6 +18,7 @@ import type {
 } from '../tipos'
 import { dataBrasilia, somarDias, somarMinutos } from './datas'
 import { gerarHistorico } from './historico'
+import { sementeLotes } from './semente-lotes'
 import { fimDaOferta } from './regras-fingidas'
 
 // ---------- Modelo interno do mock (não é o formato do contrato) ----------
@@ -85,12 +86,52 @@ export interface RecusaMock {
   criada_em: Date
 }
 
+// ---------- Grupo D: produto, grupo de fita, lote ----------
+
+export interface ProdutoMock {
+  id: number
+  lojaId: number
+  nome: string
+  categoria: Categoria
+  /** null = usa a margem da loja. */
+  margem_fim_dias: number | null
+  /** Preço normal de uma oferta anterior à semente (o protótipo pré-preenche a L7). */
+  preco_anterior: Dinheiro | null
+}
+
+/** Situação GRAVADA. "conferir" nunca é gravada: sai da data (como no backend). */
+export type SituacaoGravada = 'aguardando' | 'adiado' | 'em_oferta' | 'encerrado'
+
+export interface GrupoMock {
+  id: number
+  produtoId: number
+  /** A validade mais próxima entre os lotes. A cor e o ano saem dela. */
+  referencia: Data
+  situacao: SituacaoGravada
+  aviso_em: Data
+  adiado_ate: Data | null
+  colisao_validade: Data | null
+  motivo_descarte: string | null
+  ofertaId: number | null
+}
+
+export interface LoteMock {
+  id: number
+  grupoId: number
+  validade: Data
+  quantidade: number
+  recebido_em: Data
+}
+
 export interface BancoMock {
   usuarios: UsuarioMock[]
   lojas: LojaMock[]
   ofertas: OfertaMock[]
   reservas: ReservaMock[]
   recusas: RecusaMock[]
+  produtos: ProdutoMock[]
+  grupos: GrupoMock[]
+  lotes: LoteMock[]
   /** token → id do usuário */
   tokens: Map<string, number>
   proximoId: number
@@ -107,6 +148,7 @@ export const USUARIO = {
 
 const MARGEM_DIAS = 1
 const JANELA_HORAS = 4
+const ANTECEDENCIA_DIAS = 10
 
 export function criarSemente(agora: Date): BancoMock {
   const hoje = dataBrasilia(agora)
@@ -131,7 +173,7 @@ export function criarSemente(agora: Date): BancoMock {
   ]
 
   // Regras das ofertas iguais às do seed (janela 4 h, margem 1 dia); coordenadas do contrato.
-  const regras = { janela_padrao_horas: JANELA_HORAS, margem_fim_dias: MARGEM_DIAS, antecedencia_aviso_dias: 10 }
+  const regras = { janela_padrao_horas: JANELA_HORAS, margem_fim_dias: MARGEM_DIAS, antecedencia_aviso_dias: ANTECEDENCIA_DIAS }
   const lojas: LojaMock[] = [
     { id: 1, nome: 'Mercadinho Vila Nova', endereco: 'Rua das Palmeiras, 410 · Boa Vista', distancia_km: 0.4, latitude: -20.8113, longitude: -49.3758, ...regras },
     { id: 2, nome: 'Empório Santa Cruz', endereco: 'Av. Brasil, 1290 · Santa Cruz', distancia_km: 1.1, latitude: -20.8051, longitude: -49.3812, ...regras },
@@ -238,6 +280,7 @@ export function criarSemente(agora: Date): BancoMock {
     ofertas: [...ofertas, ...historico.ofertas],
     reservas: [...reservas, ...historico.reservas],
     recusas: historico.recusas,
+    ...sementeLotes(hoje, ANTECEDENCIA_DIAS),
     tokens: new Map(),
     proximoId: 5000,
   }

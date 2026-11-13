@@ -200,10 +200,6 @@ describe('mock · vitrine', () => {
     const busca = await api.consumidor.listarOfertas({ q: 'QUEIJO MINAS' })
     expect(busca.map((o) => o.id)).toEqual([5])
   })
-
-  it('grupos ainda sem mock avisam a etapa', async () => {
-    await expect(api.lotes.listarProdutos(1)).rejects.toThrow('etapa F8')
-  })
 })
 
 describe('mock · gestor (grupo F)', () => {
@@ -319,7 +315,7 @@ describe('mock · grupo C (operação da loja)', () => {
       aguardando_retirada: 4,
       expiram_em_1h: 2,
       ofertas_ativas: 3,
-      avisos_para_conferir: 5,
+      avisos_para_conferir: 4, // grupos em "conferir" da semente do grupo D
     })
   })
 
@@ -546,5 +542,163 @@ describe('mock · acerto com o contrato da main (A, B, C)', () => {
       'Só dá para ajustar unidades livres; as reservadas não entram.',
       expect.objectContaining({ livre: 6 }),
     ])
+  })
+})
+
+describe('mock · lote, fita e aviso (grupo D)', () => {
+  // Semente: hoje = 22/10/2026, antecedência 10 dias, margem 1 dia.
+  beforeEach(() => entrarComo('juliana.prado@email.com')) // funcionária também opera lotes e avisos
+
+  it('avisos: conferir e adiado, do vencimento mais próximo; o resumo conta só os "conferir"', async () => {
+    const { antecedencia_dias, avisos } = await api.lotes.listarAvisos(1)
+    expect(antecedencia_dias).toBe(10)
+    expect(avisos.map((a) => [a.grupo.produto.nome, a.vence_em_dias, a.urgente, a.grupo.situacao])).toEqual([
+      ['Leite condensado 395 g', 6, true, 'conferir'],
+      ['Creme de leite 200 g', 8, false, 'conferir'],
+      ['Achocolatado em pó 400 g', 9, false, 'adiado'],
+      ['Salsicha hot dog 500 g', 10, false, 'conferir'],
+      ['Chocolate ao leite 90 g', 10, false, 'conferir'],
+    ])
+    expect(avisos[2].grupo.colisao).toEqual({ validade: '2025-10-28' }) // mesma cor (branco), ano anterior
+    expect((await api.operacao.resumoDoDia(1)).avisos_para_conferir).toBe(4)
+
+    agora = new Date('2026-10-23T08:00:00-03:00') // o adiado volta no dia escolhido
+    expect((await api.lotes.listarAvisos(1)).avisos[2].grupo.situacao).toBe('conferir')
+  })
+
+  it('L3 · os 3 resultados: agrupado (puxa a referência), colisão e novo', async () => {
+    const [feijao] = await api.lotes.listarProdutos(1, 'feijão')
+    const agrupado = await api.lotes.cadastrarLote(1, { produto: feijao.id, validade: '2027-02-10', quantidade: 12 })
+    expect(agrupado.resultado).toBe('agrupado')
+    expect(agrupado.grupo).toMatchObject({ referencia: '2027-02-10', aviso_em: '2027-01-31', qtd_lotes: 3, recebido: 52 })
+    expect(agrupado.grupo.fita).toEqual({ cor: 'vermelho', bimestre: 'jan–fev', ano: 2027 })
+    expect(agrupado.lote).toEqual({ id: expect.any(Number), validade: '2027-02-10', quantidade: 12, recebido_em: '2026-10-22' })
+
+    const colisao = await api.lotes.cadastrarLote(1, { produto: feijao.id, validade: '2028-02-15', quantidade: 5 })
+    expect(colisao.resultado).toBe('colisao')
+    expect(colisao.colisao).toEqual({ validade: '2027-02-10' })
+    expect(colisao.grupo.id).not.toBe(agrupado.grupo.id)
+
+    const [milho] = await api.lotes.listarProdutos(1, 'milho')
+    const novo = await api.lotes.cadastrarLote(1, { produto: milho.id, validade: '2026-12-18', quantidade: 24 })
+    expect([novo.resultado, novo.colisao, novo.grupo.fita.cor, novo.grupo.situacao]).toEqual(['novo', null, 'preto', 'aguardando'])
+  })
+
+  it('grupo que já virou oferta não recebe lote: abre grupo novo', async () => {
+    const [iogurte] = await api.lotes.listarProdutos(1, 'iogurte natural')
+    const r = await api.lotes.cadastrarLote(1, { produto: iogurte.id, validade: '2026-10-29', quantidade: 6 })
+    expect(r.resultado).toBe('novo')
+    expect(r.grupo.oferta_id).toBeNull()
+  })
+
+  it('erros do lote, na ordem do backend', async () => {
+    const codigo = async (produto: number, validade: string, quantidade: number) =>
+      (await erroDe(api.lotes.cadastrarLote(1, { produto, validade, quantidade }))).codigo
+    expect(await codigo(210, '2026-02-30', 1)).toBe('validade_invalida')
+    expect(await codigo(210, '2026-10-21', 1)).toBe('validade_passada')
+    expect(await codigo(210, '2026-12-01', 0)).toBe('quantidade_invalida')
+    expect(await codigo(99999, '2026-12-01', 1)).toBe('nao_encontrado')
+  })
+
+  it('aviso: fim previsto, limite do adiar, preço sugerido da última oferta', async () => {
+    const a = await api.lotes.obterAviso(1, 301) // leite condensado, validade 28/10
+    expect(a).toMatchObject({
+      preco_sugerido: '6.99',
+      janela_padrao_horas: 4,
+      fim_previsto: '2026-10-27T23:59:00-03:00',
+      adiar_ate_max: '2026-10-26',
+      margem_efetiva_dias: 1,
+    })
+    expect(a.grupo.lotes).toHaveLength(2)
+    expect((await erroDe(api.lotes.obterAviso(1, 310))).codigo).toBe('nao_encontrado') // feijão: ainda aguardando
+  })
+
+  it('adiar: depois de hoje e até a véspera do último dia', async () => {
+    expect((await erroDe(api.lotes.adiarAviso(1, 301, '2026-10-22'))).codigo).toBe('data_invalida')
+    const depois = await erroDe(api.lotes.adiarAviso(1, 301, '2026-10-27'))
+    expect([depois.codigo, depois.corpo]).toEqual(['apos_limite', expect.objectContaining({ adiar_ate_max: '2026-10-26' })])
+    const g = await api.lotes.adiarAviso(1, 301, '2026-10-25')
+    expect([g.situacao, g.adiado_ate]).toEqual(['adiado', '2026-10-25'])
+    expect((await api.operacao.resumoDoDia(1)).avisos_para_conferir).toBe(3)
+  })
+
+  it('"Não vai para oferta": encerra o grupo e o aviso some', async () => {
+    expect((await erroDe(api.lotes.descartarAviso(1, 302, 'vencido' as never))).codigo).toBe('motivo_invalido')
+    const g = await api.lotes.descartarAviso(1, 302, 'sem_unidades')
+    expect(g.situacao).toBe('encerrado')
+    expect((await api.lotes.listarAvisos(1)).avisos.map((a) => a.id)).not.toContain(302)
+    expect((await erroDe(api.lotes.obterAviso(1, 302))).status).toBe(404)
+  })
+
+  it('publicar: valida, arredonda meio para cima e cria a oferta de verdade', async () => {
+    const entrada = { separado: 12, preco_original: '4.49', desconto: 30, janela_horas: 4, confirmou_separacao: true as const }
+    const semConfirmar = await erroDe(api.lotes.publicarAviso(1, 301, { ...entrada, confirmou_separacao: false as never }))
+    expect(semConfirmar.codigo).toBe('sem_confirmacao')
+    const acima = await erroDe(api.lotes.publicarAviso(1, 301, { ...entrada, separado: 37 }))
+    expect([acima.codigo, acima.corpo]).toEqual(['acima_do_recebido', expect.objectContaining({ recebido: 36 })])
+    expect((await erroDe(api.lotes.publicarAviso(1, 301, { ...entrada, desconto: 25 }))).codigo).toBe('desconto_invalido')
+
+    const { oferta } = await api.lotes.publicarAviso(1, 301, entrada)
+    expect(oferta).toMatchObject({
+      produto: { nome: 'Leite condensado 395 g', categoria: 'mercearia' },
+      preco: '3.14', // 4,49 × 0,7 = 3,143
+      validade: '2026-10-28',
+      fim: '2026-10-27T23:59:00-03:00',
+      janela_horas: 4,
+      estado: 'ativa',
+      estoque: { separado: 12, livre: 12, reservado: 0, retirado: 0, ajustado: 0, perda: 0 },
+    })
+    expect((await api.operacao.listarOfertas(1, 'ativa')).map((o) => o.id)).toContain(oferta.id)
+    expect((await api.consumidor.listarOfertas()).map((o) => o.id)).toContain(oferta.id)
+    const grupo = (await api.lotes.listarGrupos(1, { situacao: 'em_oferta' })).find((g) => g.id === 301)!
+    expect(grupo.oferta_id).toBe(oferta.id)
+    expect((await erroDe(api.lotes.publicarAviso(1, 301, entrada))).status).toBe(404) // segundo clique
+    expect((await api.lotes.listarProdutos(1, 'condensado'))[0].ultimo_preco_original).toBe('4.49')
+  })
+
+  it('publicar: meio centavo arredonda para cima; fim que já passou → 409', async () => {
+    const entrada = { separado: 5, preco_original: '2.25', desconto: 50, janela_horas: 2, confirmou_separacao: true as const }
+    expect((await api.lotes.publicarAviso(1, 303, entrada)).oferta.preco).toBe('1.13') // 1,125
+
+    agora = new Date('2026-10-28T00:30:00-03:00') // o leite condensado saía da vitrine em 27/10, 23:59
+    const e = await erroDe(api.lotes.publicarAviso(1, 301, { ...entrada, preco_original: '6.99' }))
+    expect([e.status, e.codigo]).toEqual([409, 'fim_ja_passou'])
+  })
+
+  it('grupos: filtros por cor e situação; lotes só com com_lotes', async () => {
+    const emOferta = await api.lotes.listarGrupos(1, { situacao: 'em_oferta' })
+    expect(emOferta.map((g) => g.produto.nome)).toEqual(['Queijo minas frescal 250 g', 'Iogurte natural 170 g', 'Presunto fatiado 200 g'])
+    expect((await api.lotes.listarGrupos(1, { situacao: 'encerrado' })).map((g) => g.oferta_id)).toEqual([6]) // o requeijão
+    const vermelhos = await api.lotes.listarGrupos(1, { cor: 'vermelho' })
+    expect(vermelhos.map((g) => g.produto.nome)).toEqual(['Feijão carioca 1 kg'])
+    expect(vermelhos[0]).toMatchObject({ qtd_lotes: 2, recebido: 40 })
+    expect(vermelhos[0].lotes).toBeUndefined()
+    expect((await api.lotes.listarGrupos(1, { cor: 'vermelho', com_lotes: true }))[0].lotes).toHaveLength(2)
+    expect((await erroDe(api.lotes.listarGrupos(1, { cor: 'rosa' as never }))).codigo).toBe('parametro_invalido')
+  })
+
+  it('produtos: busca por parte do nome; cadastro com margem própria ou a da loja', async () => {
+    // Parte do nome, sem diferenciar maiúsculas, em ordem alfabética.
+    expect((await api.lotes.listarProdutos(1, 'LEITE')).map((p) => p.nome)).toEqual([
+      'Chocolate ao leite 90 g',
+      'Creme de leite 200 g',
+      'Leite condensado 395 g',
+      'Leite UHT integral 1 L',
+    ])
+    const codigo = async (nome: string, categoria: string, margem: number | null) =>
+      (await erroDe(api.lotes.criarProduto(1, { nome, categoria: categoria as never, margem_fim_dias: margem }))).codigo
+    expect(await codigo(' ', 'leite', null)).toBe('sem_nome')
+    expect(await codigo('Pão de forma', 'padaria', null)).toBe('categoria_invalida')
+    expect(await codigo('Pão de forma', 'mercearia', 8)).toBe('margem_invalida')
+
+    const p = await api.lotes.criarProduto(1, { nome: ' Atum em lata 170 g ', categoria: 'enlatados', margem_fim_dias: null })
+    expect(p).toMatchObject({ nome: 'Atum em lata 170 g', margem_fim_dias: null, margem_efetiva_dias: 1, ultimo_preco_original: null })
+    const proprio = await api.lotes.criarProduto(1, { nome: 'Pão de forma', categoria: 'mercearia', margem_fim_dias: 3 })
+    expect(proprio.margem_efetiva_dias).toBe(3)
+  })
+
+  it('sem vínculo com a loja: 403', async () => {
+    await entrarComo('ana@email.com')
+    expect((await erroDe(api.lotes.listarAvisos(1))).status).toBe(403)
   })
 })

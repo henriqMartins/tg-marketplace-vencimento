@@ -3,15 +3,14 @@
  * Segue o contrato (formatos, códigos de erro); as regras que só o backend tem
  * ficam fingidas em regras-fingidas.ts. Só src/api/index.ts importa este arquivo.
  *
- * Grupos prontos no mock: A, B, C, E (configuração da loja), F (gestor) e G (projeção).
- * D entra com as telas dele (F8) — decidido 11/11/2026.
+ * Todos os grupos do contrato (A–G) estão no mock. Os grupos D (grupo-d.ts) e E
+ * (config-loja.ts) ficam em arquivos próprios.
  */
 import type {
   ApiAcesso,
   ApiConfiguracao,
   ApiConsumidor,
   ApiGestor,
-  ApiLotes,
   ApiOperacao,
   ApiProjecao,
   ApiServidor,
@@ -47,6 +46,7 @@ import {
 } from './regras-fingidas'
 import { carregar, salvar, type Guarda } from './persistencia'
 import { conferirParFinal, ErroDeCampo, mudancasDaLoja, paraLojaConfig } from './config-loja'
+import { criarApiLotes } from './grupo-d'
 import { calcularProjecao } from './projecao'
 import { criarSemente, type BancoMock, type OfertaMock, type ReservaMock, type UsuarioMock } from './semente'
 
@@ -395,6 +395,17 @@ export function criarClienteMock({
     estoque: { ...o.estoque },
   })
 
+  // D · Lote, fita e aviso (grupo-d.ts). Fica aqui porque o resumo do dia conta os avisos.
+  const { avisosParaConferir, ...lotes } = criarApiLotes({
+    banco: () => banco,
+    agora,
+    responder,
+    erro,
+    vinculoCom,
+    lojaPorId,
+    paraOfertaLoja,
+  })
+
   /** Retirada é por LOJA + CÓDIGO: só acha reserva ativa desta loja. */
   const reservaAtivaPorCodigo = (lojaId: number, codigo: string) =>
     banco.reservas.find((r) => r.estado === 'reservada' && r.codigo === codigo && lojaDaReserva(r) === lojaId)
@@ -429,7 +440,7 @@ export function criarClienteMock({
           aguardando_retirada: ativas.length, // PEDIDO-API 2: conta RESERVAS (clientes), não unidades
           expiram_em_1h: ativas.filter((r) => r.expira_em.getTime() - momento <= 3600_000).length,
           ofertas_ativas: banco.ofertas.filter((o) => o.lojaId === lojaId && o.estado === 'ativa').length,
-          avisos_para_conferir: 5, // valor fixo do protótipo até o mock do grupo D (F8)
+          avisos_para_conferir: avisosParaConferir(lojaId), // grupos em "conferir" (calculado)
         }
       }),
 
@@ -689,7 +700,7 @@ export function criarClienteMock({
     acesso,
     consumidor,
     operacao,
-    lotes: pendente<ApiLotes>('lotes', 'F8'),
+    lotes,
     configuracao,
     gestor,
     projecao,
@@ -710,12 +721,4 @@ function abreviar(nome: string): string {
   const [primeiro, ...resto] = nome.trim().split(/\s+/)
   const ultimo = resto.at(-1)
   return ultimo ? `${primeiro} ${ultimo[0]}.` : primeiro
-}
-
-/** Grupo ainda sem mock: qualquer método rejeita dizendo em que etapa ele entra. */
-function pendente<T extends object>(parte: string, etapa: string): T {
-  return new Proxy({} as T, {
-    get: (_alvo, metodo) => () =>
-      Promise.reject(new Error(`Mock de ${parte}.${String(metodo)} ainda não feito (entra na etapa ${etapa}).`)),
-  })
 }

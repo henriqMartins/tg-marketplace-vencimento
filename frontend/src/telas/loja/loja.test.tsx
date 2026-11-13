@@ -17,7 +17,7 @@ describe('L1 · Início da loja', () => {
     await waitFor(() => expect(indicador('Aguardando retirada')).toHaveTextContent('4'))
     expect(indicador('Expiram em menos de 1 h')).toHaveTextContent('2')
     expect(indicador('Ofertas ativas')).toHaveTextContent('3')
-    expect(screen.getByRole('link', { name: /Avisos de validade/ })).toHaveTextContent('5 para conferir')
+    expect(screen.getByRole('link', { name: /Avisos de validade/ })).toHaveTextContent('4 para conferir')
   })
 
   it('funcionária: sem Configurações e sem a faixa do painel', async () => {
@@ -40,7 +40,7 @@ describe('L1 · Início da loja', () => {
   it('navegação da loja: contador de avisos vindo do resumo', async () => {
     await abrir('/loja/1', { email: JULIANA })
     const nav = await screen.findByRole('navigation', { name: 'Navegação da loja' })
-    await waitFor(() => expect(within(nav).getByRole('link', { name: /Avisos/ })).toHaveTextContent('5 para conferir'))
+    await waitFor(() => expect(within(nav).getByRole('link', { name: /Avisos/ })).toHaveTextContent('4 para conferir'))
   })
 })
 

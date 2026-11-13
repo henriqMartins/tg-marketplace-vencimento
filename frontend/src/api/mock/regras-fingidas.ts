@@ -6,9 +6,9 @@
  * Existem aqui apenas para as telas terem o que mostrar enquanto a API não está pronta.
  * Nenhuma tela pode importar este arquivo (regra no .oxlintrc.json).
  */
-import type { CorFita, Data, Dinheiro, EstadoReserva, Fita, Indicadores, Taxa } from '../tipos'
+import type { CorFita, Data, Dinheiro, EstadoReserva, Fita, Indicadores, ResultadoCadastroLote, SituacaoGrupo, Taxa } from '../tipos'
 import { dataBrasilia, fimDoDia, somarDias } from './datas'
-import type { BancoMock, ReservaMock } from './semente'
+import type { BancoMock, GrupoMock, OfertaMock, ReservaMock } from './semente'
 
 // ---------- Fita: uma cor por bimestre de vencimento, ciclo anual ----------
 
@@ -152,4 +152,60 @@ export function calcularIndicadores(banco: BancoMock, lojaId: number, de: Data, 
       .reduce((soma, o) => soma + o.estoque.perda, 0),
     semanas,
   }
+}
+
+// ---------- Lote, grupo de fita e aviso (backend/ofertas/fita.py, calendario.py, servico_lotes.py) ----------
+
+/**
+ * Situação que a TELA vê: a gravada + a data de hoje. "conferir" nunca é gravado:
+ * aguardando vira conferir quando o dia do aviso chega; adiado, quando o dia de voltar chega.
+ */
+export function situacaoExibida(g: GrupoMock, oferta: OfertaMock | undefined, hoje: Data): SituacaoGrupo {
+  if (g.situacao === 'em_oferta') return oferta?.estado === 'encerrada' ? 'encerrado' : 'em_oferta'
+  if (g.situacao === 'encerrado') return 'encerrado'
+  if (g.situacao === 'adiado') return g.adiado_ate! <= hoje ? 'conferir' : 'adiado'
+  return g.aviso_em <= hoje ? 'conferir' : 'aguardando'
+}
+
+/** O aviso é o grupo em "conferir" ou "adiado". */
+export const ehAviso = (s: SituacaoGrupo) => s === 'conferir' || s === 'adiado'
+
+/** Véspera do último dia da oferta. Ex.: validade 05/11, margem 1 → último dia 04/11 → adiar até 03/11. */
+export const adiarAteMax = (referencia: Data, margemDias: number) => somarDias(referencia, -margemDias - 1)
+
+/**
+ * Onde entra um lote novo. `ativos` = grupos do produto que não estão encerrados;
+ * `aberto` = ainda não virou oferta (pode receber lote).
+ *   1. grupo ABERTO da mesma cor e do mesmo ano → agrupado nele;
+ *   2. senão, grupo ativo da mesma cor e de OUTRO ano → colisão (grupo novo, com aviso);
+ *   3. senão → novo.
+ */
+export function classificarLote(
+  validade: Data,
+  ativos: { grupo: GrupoMock; aberto: boolean }[],
+): { resultado: ResultadoCadastroLote; grupo: GrupoMock | null; colisao: Data | null } {
+  const minha = fitaDe(validade)
+  for (const { grupo, aberto } of ativos) {
+    const f = fitaDe(grupo.referencia)
+    if (aberto && f.cor === minha.cor && f.ano === minha.ano) return { resultado: 'agrupado', grupo, colisao: null }
+  }
+  for (const { grupo } of ativos) {
+    const f = fitaDe(grupo.referencia)
+    if (f.cor === minha.cor && f.ano !== minha.ano) return { resultado: 'colisao', grupo: null, colisao: grupo.referencia }
+  }
+  return { resultado: 'novo', grupo: null, colisao: null }
+}
+
+/** Valor positivo com até 2 casas ("6.99" ou 6.99), abaixo de 100 milhões; senão null. */
+export function lerDinheiro(valor: unknown): Dinheiro | null {
+  if (typeof valor !== 'string' && typeof valor !== 'number') return null
+  const texto = String(valor).trim()
+  if (!/^\d+(\.\d{1,2})?$/.test(texto)) return null
+  const c = centavos(texto)
+  return c <= 0 || c >= 1e10 ? null : paraDinheiro(c)
+}
+
+/** preco = original × (1 − desconto/100), em centavos, meio para cima. Conta inteira, sem erro de float. */
+export function precoComDesconto(original: Dinheiro, desconto: number): Dinheiro {
+  return paraDinheiro(Math.floor((centavos(original) * (100 - desconto) + 50) / 100))
 }
