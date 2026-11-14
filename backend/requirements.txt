@@ -1,11 +1,14 @@
 # Rodar de dentro de backend/:  ..\.venv\Scripts\python -m pip install -r requirements.txt
--e ../dominio                 # as regras: instaladas, nunca copiadas (regra 1)
-Django>=5.2,<5.3              # 5.2 = versão com suporte longo (LTS), a mesma do spike
-djangorestframework
-psycopg[binary]               # "tradutor" Python <-> PostgreSQL
-dj-database-url               # traduz DATABASE_URL para o formato do Django
-python-dotenv                 # lê o .env em desenvolvimento (em produção não há .env)
-django-cors-headers           # CORS: autoriza o endereço do frontend a chamar a API
-gunicorn                      # servidor de produção (Render)
-drf-spectacular               # Swagger em /api/docs (só com DEBUG ligado)
-drf-spectacular-sidecar       # arquivos da página do Swagger, sem depender de CDN
+# Versões FIXAS (decidido 14/11/2026): a imagem do Render instala exatamente o que os
+# testes aprovaram no .venv. Para atualizar: muda aqui, roda os testes, commita.
+# O Dockerfile pula a linha "-e" e instala o dominio/ como pacote normal.
+-e ../dominio                       # as regras: instaladas, nunca copiadas (regra 1)
+Django==5.2.18                      # 5.2 = versão com suporte longo (LTS), a mesma do spike
+djangorestframework==3.18.3
+psycopg[binary]==3.3.6              # "tradutor" Python <-> PostgreSQL
+dj-database-url==3.1.2              # traduz DATABASE_URL para o formato do Django
+python-dotenv==1.2.4                # lê o .env em desenvolvimento (em produção não há .env)
+django-cors-headers==4.9.0          # CORS: autoriza o endereço do frontend a chamar a API
+gunicorn==26.2.0                    # servidor de produção (Render)
+drf-spectacular==0.30.0             # Swagger em /api/docs (só com DEBUG ligado)
+drf-spectacular-sidecar==2026.10.1  # arquivos da página do Swagger, sem depender de CDN

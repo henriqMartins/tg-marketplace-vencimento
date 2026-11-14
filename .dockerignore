@@ -1,0 +1,16 @@
+# Contexto do docker build (backend/Dockerfile). Lista de PERMITIDOS (decidido 14/11/2026):
+# ignora tudo e libera só o que a imagem precisa. Arquivo novo na raiz (um .env.neon,
+# notas pessoais...) nunca entra na imagem por acidente.
+*
+
+!dominio/
+!backend/
+
+# Dentro do que foi liberado, ficam de fora: testes, cache do Python e segredos.
+dominio/tests/
+**/test_*.py
+**/tests.py
+**/__pycache__/
+**/*.pyc
+**/.env*
+**/*.egg-info/
