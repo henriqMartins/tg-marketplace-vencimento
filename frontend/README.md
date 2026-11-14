@@ -104,6 +104,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 14/11/2026 | Contrato G: combinação sem rodadas → `rodadas: 0` e números `null`. Tipo `Projecao` aceita `null`; a G2 avisa "Nenhuma rodada simulada com essa combinação" e `formatarPercentual(null)` = "—" |
 | 14/11/2026 | Clientes http de todos os grupos (A–G), um arquivo por grupo em `src/api/http/`, com as rotas do `backend/*/urls.py`. A recusa da reserva (409 `{status: "recusada"}`) volta como resultado, como no mock; os outros 409 continuam erro. `com_lotes` vai como `1`. Testados com `fetch` falso (método, rota e corpo); falta conferir contra o servidor |
 | 14/11/2026 | PEDIDO-API 4 aceito: G6 com `select` de papel para os outros (selo para você), `PATCH …/vinculos/{id}`; o mock segue a ordem e as frases do backend (papel inválido, não encontrado, o próprio acesso, último responsável; mesmo papel = 200 sem mudar) |
+| 14/11/2026 | **Conferido contra o servidor** (`VITE_API=http`, backend local com `popular_demo`, front na porta 5173 por causa do CORS): G2 sem filtro = Tabela 5 (5.000 rodadas) e com lote 5–14, procura 2,3–3,0, chegada 4 h = 218 rodadas; 13 telas abertas com Carlos (G1, G2, G3, G4, G5, G6), Juliana (L1, L5, L4, L9, L12) e Ana (C2, C8, C9), sem erro no console nem resposta 4xx/5xx. Contas de demonstração: carlos@, juliana@ e ana@example.com, senha demo1234 |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
