@@ -58,7 +58,7 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 | A-1 | A1 | Abrir o app com o `runserver` **desligado**; ligar depois | Mostra "carregando/servidor acordando", sem travar; entra sozinho quando a API volta | Front aguenta a API dormindo (Render) |
 | A-2 | A2 | Entrar com `ana@example.com` / senha errada | Mensagem de erro, sem dizer se o e-mail existe | Login só por e-mail e senha |
 | A-3 | A2 | Entrar com `ANA@EXAMPLE.COM` / `demo1234` | Entra (e-mail não diferencia maiúscula) | — |
-| A-4 | A3 | Criar conta com e-mail já usado | `409`, mensagem "já existe" | Uma tabela de usuários só |
+| A-4 | A3 | Criar conta com e-mail já usado | `400 email_em_uso`, mensagem "já existe" embaixo do e-mail | Uma tabela de usuários só |
 | A-5 | A4 | Entrar como `carlos` | Oferece consumidor **e** a loja; `juliana` só a loja (operação); `ana` vai direto à vitrine | Papel por vínculo, login único |
 | A-6 | C9 | "Sair" e recarregar | Volta para A2; o token antigo não funciona mais 🔌 | Sair apaga o token |
 
