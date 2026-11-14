@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
@@ -26,5 +27,11 @@ urlpatterns = [
     path('health', views.health, name='health'),
     path('tarefas/varrer', ofertas_views.varrer, name='varrer'),
     path('api/', include('contas.urls')),          # grupo A do contrato (acesso)
-    path('api/', include('ofertas.urls')),         # grupos B, C e D do contrato
+    path('api/', include('ofertas.urls')),         # grupos B a G do contrato
 ]
+
+# Swagger (/api/docs e /api/schema): SÓ em desenvolvimento (decidido 14/11/2026).
+# Em produção (DEBUG desligado) as duas URLs nem existem: 404.
+if settings.DEBUG:
+    from . import documentacao
+    urlpatterns += documentacao.rotas()

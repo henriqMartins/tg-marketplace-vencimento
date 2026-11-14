@@ -7,3 +7,5 @@ dj-database-url               # traduz DATABASE_URL para o formato do Django
 python-dotenv                 # lê o .env em desenvolvimento (em produção não há .env)
 django-cors-headers           # CORS: autoriza o endereço do frontend a chamar a API
 gunicorn                      # servidor de produção (Render)
+drf-spectacular               # Swagger em /api/docs (só com DEBUG ligado)
+drf-spectacular-sidecar       # arquivos da página do Swagger, sem depender de CDN

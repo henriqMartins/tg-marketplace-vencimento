@@ -14,7 +14,7 @@ Trabalho de Graduação — Fatec Rio Preto, 2026 — Henrique Martins e Yan Hen
 | Parte | Situação |
 |---|---|
 | Domínio (regras da reserva) | ✅ pronto — 53 testes |
-| Backend (API) | ✅ todos os grupos do contrato (A a G) — 279 testes + 1 pulado |
+| Backend (API) | ✅ todos os grupos do contrato (A a G) — 285 testes + 1 pulado |
 | Simulação (Monte Carlo) | ✅ pronta, resultados no artigo — 16 testes |
 | Frontend (PWA) | 🔄 todas as telas prontas contra um **mock** do contrato (branch `frontend`); integração com a API real em andamento |
 | Vídeo do sistema | ⏳ para a apresentação final (17/11 a 02/12/2026) |
@@ -249,6 +249,11 @@ python manage.py popular_demo       # dados fictícios; rodar de novo não dupli
 python manage.py runserver          # http://localhost:8000/health → {"status": "ok", "banco": "ok"}
 ```
 
+**Testar as rotas no navegador (Swagger):** com `DJANGO_DEBUG=true` no `.env`, abra
+http://localhost:8000/api/docs. Chame `POST /api/auth/login` (ex.: `carlos@example.com` /
+`demo1234`), copie o `token`, clique em **Authorize** e cole `Token <chave>`. Com o debug
+desligado (produção), `/api/docs` e `/api/schema` não existem.
+
 Contas da demonstração (senha `demo1234`, tudo fictício): `carlos@example.com` (responsável do
 Mercadinho Vila Nova), `juliana@example.com` (funcionária), `ana@example.com` e
 `bruno@example.com` (consumidores), `rosa@example.com` (responsável do Empório São Jorge).
@@ -278,7 +283,7 @@ python limiar_referencia.py      # limiar "sem plataforma"
 |---|---|---|---|
 | Domínio | `python -m unittest discover -s tests -v` em `dominio/` | 53 | não |
 | Simulação | `python -m unittest -v` em `simulacao/` | 16 | não |
-| Backend | `python manage.py test` em `backend/` | 279 + 1 pulado | sim (cria e apaga `test_tg`) |
+| Backend | `python manage.py test` em `backend/` | 285 + 1 pulado | sim (cria e apaga `test_tg`) |
 
 Regra da casa: **nenhum teste existente pode quebrar.**
 
@@ -305,7 +310,10 @@ Regra da casa: **nenhum teste existente pode quebrar.**
 O formato completo de cada rota (entradas, saídas, erros) está no
 **[contrato da API](docs/api/contrato.md)**. Erros sempre como
 `{"erro": "<frase>", "codigo": "<identificador>"}`; autenticação por
-`Authorization: Token <chave>`.
+`Authorization: Token <chave>`. Para testar as rotas em desenvolvimento, use o **Swagger**
+em `/api/docs` (ver [Como rodar](#7-como-rodar)); as descrições dele ficam em
+[backend/config/documentacao.py](backend/config/documentacao.py), e o contrato continua
+sendo a referência oficial.
 
 | Grupo | Telas | Exemplos de rota | Quem |
 |---|---|---|---|
@@ -395,6 +403,7 @@ Um item só entra como ✅ depois de existir **e** ter sido verificado (a coluna
 | 13/11/2026 | Backend (etapa 11): painel do gestor (grupo F) — indicadores por período (reservas criadas, encerradas por estado, taxas de retirada e de expiração, compradores bloqueados = recusas + parciais, perda, série semanal) e histórico de reservas e recusas com filtros; **cada número pela data do próprio evento**; varredura antes de contar. `popular_demo` ganhou 4 semanas de passado | 18 testes (cenário de números conhecidos: 6/9 retiradas, 2 recusa+parcial, perda 15; abrir o painel varre e abrir de novo dá o mesmo número; criada às 22:00 e vencida às 02:00 conta em dias diferentes; taxa `null` sem encerradas; funcionário → 403) + painel da demonstração conferido contra a conta feita à mão (65 encerradas, perda 21) · backend: 254 ok + 1 pulado |
 | 13/11/2026 | Backend: os 4 pedidos do frontend aceitos — `retirar_ate` na vitrine e no detalhe (o prazo se reservar agora, calculado pela nova função do domínio `prazo_de_retirada`, a mesma que grava o `expira_em`), `validade` na prévia da retirada, **trocar o papel** de alguém da equipe (`PATCH` do vínculo, com a trava da loja) e o `aguardando_retirada` documentado como reservas | Domínio: 3 testes novos (o prazo mostrado = o `expira_em` gravado; nunca passa do fim) · 53 ok. Backend: 12 testes dos pedidos + **2 responsáveis se rebaixando ao mesmo tempo → sobra 1** (5 rodadas) · backend: 267 ok + 1 pulado · simulação: 16 ok |
 | 14/11/2026 | Backend (etapa 13): projeção (grupo G, tela G2) — comando `resumir_projecao` (só lê o CSV da simulação, biblioteca padrão) gera um resumo versionado de 525 células com **somas e contagens**; a rota filtra por faixa de lote, faixa de procura e chegada, soma e divide uma vez; não roda simulação no servidor | 12 testes (**sem filtro = Tabela 5**, número por número; faixas somam 5000 rodadas; chegada 1 h e 4 h diferem; soma-e-divide ≠ média de médias; resumo versionado = regenerado do CSV; filtro = média lida direto do CSV) · controle negativo: um número alterado no resumo → os 2 testes de consistência falham · backend: 279 ok + 1 pulado |
+| 14/11/2026 | Backend: **Swagger** para testar as rotas no navegador (`/api/docs`, drf-spectacular + sidecar, sem CDN), **só com DEBUG ligado**; descrições de todas as rotas num arquivo só (`config/documentacao.py`), com grupo do contrato, filtros, corpo de exemplo e respostas possíveis | 6 testes (toda rota DRF documentada no grupo certo; rotas públicas sem cadeado e as outras com; documento válido **sem nenhum aviso**; sem DEBUG → 404) · controle negativo: uma rota sem anotação → 2 testes falham · conferido ao vivo (login → Authorize → projeção 200) · backend: 285 ok + 1 pulado |
 
 ### Próximos passos
 

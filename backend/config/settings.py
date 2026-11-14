@@ -64,6 +64,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',     # o "crachá": tabela de tokens do DRF
     'corsheaders',                  # CORS (decidido 11/11/2026)
+    'drf_spectacular',              # Swagger (só as URLs dependem de DEBUG; 14/11/2026)
+    'drf_spectacular_sidecar',      # arquivos da página do Swagger, sem CDN
     'contas',
     'ofertas',
 ]
@@ -74,6 +76,42 @@ REST_FRAMEWORK = {
     # Padrão FECHADO: toda rota exige login, salvo as que liberam de propósito.
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "EXCEPTION_HANDLER": "config.erros.tratar_erro",
+    # Quem descreve as rotas para o Swagger (as descrições ficam em config/documentacao.py)
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# Swagger (/api/docs, só com DEBUG). O contrato oficial é docs/api/contrato.md.
+SPECTACULAR_SETTINGS = {
+    "TITLE": "TG — Marketplace de produtos próximos ao vencimento",
+    "DESCRIPTION": (
+        "Ferramenta para **testar** a API em desenvolvimento. O contrato oficial é "
+        "`docs/api/contrato.md`.\n\n"
+        "Rota protegida: chame **POST /api/auth/login** (ex.: `carlos@example.com` / "
+        "`demo1234`), copie o `token`, clique em **Authorize** e cole `Token <chave>`."),
+    "VERSION": "0",
+    "SERVE_INCLUDE_SCHEMA": False,               # a própria rota /api/schema fica fora da lista
+    "SWAGGER_UI_DIST": "SIDECAR",                # arquivos locais (drf_spectacular_sidecar)
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,            # o token sobrevive a recarregar a página
+        "docExpansion": "none",                  # grupos fechados ao abrir
+        "displayRequestDuration": True,
+    },
+    # Os grupos do contrato, na ordem do Swagger (o config/documentacao.py usa estes nomes)
+    "TAGS": [
+        {"name": "A · Acesso", "description": "Conta, login, sair e \"eu\". Telas A1–A5."},
+        {"name": "B · Consumidor",
+         "description": "Vitrine (pública), reservar, minhas reservas, cancelar. Telas C2–C8."},
+        {"name": "C · Operação da loja",
+         "description": "Exige vínculo com a loja. Resumo, ofertas, ajuste, retirada. L1, L9–L13."},
+        {"name": "D · Lote, fita e aviso",
+         "description": "Exige vínculo com a loja. Produtos, lotes, fitas, avisos, publicação."},
+        {"name": "E · Configuração da loja",
+         "description": "Ler: qualquer vínculo. Mudar: só o responsável. Telas L14/G6."},
+        {"name": "F · Gestor", "description": "Só o responsável. Indicadores e histórico (G1, G3)."},
+        {"name": "G · Projeção",
+         "description": "Só o responsável. Lê o resumo da simulação; não simula (G2)."},
+    ],
 }
 
 # Usuário próprio desde o início: trocar depois que as tabelas existem é uma das

@@ -3,6 +3,10 @@
 Versão 0 (05/11/2026). **Dono: backend** (branch `main`). O frontend lê este arquivo e
 não o altera: pedidos de mudança vão em [`pedidos-do-front.md`](pedidos-do-front.md).
 
+Para **testar** as rotas no navegador, o backend em desenvolvimento (`DJANGO_DEBUG=true`)
+serve um Swagger em `http://localhost:8000/api/docs`. Ele resume este contrato; se os
+dois divergirem, **vale este arquivo**.
+
 Status de cada grupo:
 - 📝 **combinado**: formato fechado; o frontend usa no mock;
 - 🔧 **em construção**: o backend está implementando;
