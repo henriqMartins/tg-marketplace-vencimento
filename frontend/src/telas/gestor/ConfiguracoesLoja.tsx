@@ -10,7 +10,7 @@ import { Campo } from '../../componentes/Campo'
 import { Contador } from '../../componentes/Contador'
 import { Esqueleto, EsqueletoLista } from '../../componentes/Esqueleto'
 import { FolhaInferior } from '../../componentes/FolhaInferior'
-import { MensagemErro } from '../../componentes/Mensagem'
+import { Mensagem, MensagemErro } from '../../componentes/Mensagem'
 import { Selo } from '../../componentes/Selo'
 import { useToast } from '../../componentes/toast/contexto'
 import { useLocal } from '../../localizacao/contexto'
@@ -50,7 +50,7 @@ export function ConfiguracoesLoja() {
   const consultas = useQueryClient()
   const { recarregarEu } = useSessao()
   const mostrarToast = useToast()
-  const { lojaId } = useLojaAtual()
+  const { lojaId, papel } = useLojaAtual()
   const loja = useQuery({ queryKey: ['loja-config', lojaId], queryFn: () => api.configuracao.obterLoja(lojaId) })
   const { geocodificarEndereco } = useLocal()
   // null = sem edição; o formulário mostra o que a API devolveu.
@@ -77,6 +77,8 @@ export function ConfiguracoesLoja() {
 
   if (loja.isPending) return <EsqueletoLista quantidade={3} rotulo="Carregando configurações…" />
   if (loja.isError) return <MensagemErro erro={loja.error} />
+  // Funcionária: consulta, sem editar (decidido 14/11/2026). A API também recusa (403).
+  if (papel !== 'responsavel') return <ConfiguracoesSoLeitura loja={loja.data} lojaId={lojaId} />
 
   const salvo = loja.data
   const form: Editaveis = rascunho ?? salvo
@@ -280,7 +282,7 @@ function Localizacao({ salvo, enderecoMudou }: { salvo: LojaConfig; enderecoMudo
 
 // ---------- Equipe ----------
 
-function Equipe({ lojaId }: { lojaId: number }) {
+function Equipe({ lojaId, podeEditar = true }: { lojaId: number; podeEditar?: boolean }) {
   const api = useApi()
   const consultas = useQueryClient()
   const mostrarToast = useToast()
@@ -332,7 +334,7 @@ function Equipe({ lojaId }: { lojaId: number }) {
                       {!desktop && (
                         <>
                           <span className={styles.ajuda}>{v.usuario.email}</span>
-                          <PapelNaEquipe vinculo={v} lojaId={lojaId} />
+                          <PapelNaEquipe vinculo={v} lojaId={lojaId} podeEditar={podeEditar} />
                         </>
                       )}
                     </span>
@@ -341,11 +343,11 @@ function Equipe({ lojaId }: { lojaId: number }) {
                 {desktop && <td>{v.usuario.email}</td>}
                 {desktop && (
                   <td>
-                    <PapelNaEquipe vinculo={v} lojaId={lojaId} />
+                    <PapelNaEquipe vinculo={v} lojaId={lojaId} podeEditar={podeEditar} />
                   </td>
                 )}
                 <td className={styles.colunaAcao}>
-                  {!v.eu && (
+                  {podeEditar && !v.eu && (
                     <button
                       type="button"
                       className={styles.botaoRemover}
@@ -365,8 +367,12 @@ function Equipe({ lojaId }: { lojaId: number }) {
         </table>
       )}
 
-      <AdicionarPessoa lojaId={lojaId} />
-      <p className={styles.ajuda}>A pessoa precisa ter criado a conta antes. Uma pessoa tem no máximo um vínculo por loja.</p>
+      {podeEditar && (
+        <>
+          <AdicionarPessoa lojaId={lojaId} />
+          <p className={styles.ajuda}>A pessoa precisa ter criado a conta antes. Uma pessoa tem no máximo um vínculo por loja.</p>
+        </>
+      )}
 
       <FolhaInferior
         forma={desktop ? 'modal' : 'folha'}
@@ -459,7 +465,8 @@ function AdicionarPessoa({ lojaId }: { lojaId: number }) {
  * Papel na equipe: selo para você; `select` para os outros (PEDIDO-API 4, aceito em 13/11/2026:
  * PATCH …/vinculos/{id}). Os limites (último responsável, o próprio acesso) vêm da API.
  */
-function PapelNaEquipe({ vinculo: v, lojaId }: { vinculo: VinculoLoja; lojaId: number }) {
+function PapelNaEquipe(props: { vinculo: VinculoLoja; lojaId: number; podeEditar: boolean }) {
+  const { vinculo: v, lojaId, podeEditar } = props
   const api = useApi()
   const consultas = useQueryClient()
   const mostrarToast = useToast()
@@ -471,10 +478,11 @@ function PapelNaEquipe({ vinculo: v, lojaId }: { vinculo: VinculoLoja; lojaId: n
     },
   })
 
-  if (v.eu) {
+  if (v.eu || !podeEditar) {
     return (
       <Selo variante={v.papel === 'responsavel' ? 'primary' : 'neutral'}>
-        {rotuloPapel(v.papel)} · você
+        {rotuloPapel(v.papel)}
+        {v.eu && ' · você'}
       </Selo>
     )
   }
@@ -506,3 +514,63 @@ const iniciais = (nome: string) =>
     .slice(0, 2)
     .join('')
     .toUpperCase()
+
+const dias = (n: number) => `${n} ${n === 1 ? 'dia' : 'dias'}`
+
+/**
+ * L14/G6 para quem não é responsável (decidido 14/11/2026): em mercadinho pequeno, quem
+ * atende o balcão costuma ser o mesmo que gerencia, então a funcionária consulta tudo,
+ * sem editar. Os valores são os que a API devolveu; não há nada para salvar.
+ */
+function ConfiguracoesSoLeitura({ loja, lojaId }: { loja: LojaConfig; lojaId: number }) {
+  return (
+    <div className={styles.tela}>
+      <header>
+        <h1 className={styles.titulo}>Configurações da loja</h1>
+        <p className={styles.subtitulo}>Mudanças valem para lotes e ofertas novos.</p>
+      </header>
+      <Mensagem tipo="info">Só o responsável da loja muda estas configurações. Aqui você consulta.</Mensagem>
+
+      <div className={styles.duasColunas}>
+        <section className={styles.cartao} aria-labelledby="titulo-dados">
+          <h2 id="titulo-dados" className={styles.tituloCartao}>
+            Dados da loja
+          </h2>
+          <dl className={styles.valores}>
+            <div>
+              <dt className={styles.rotulo}>Nome</dt>
+              <dd>{loja.nome}</dd>
+            </div>
+            <div>
+              <dt className={styles.rotulo}>Endereço</dt>
+              <dd>{loja.endereco}</dd>
+            </div>
+          </dl>
+          <Localizacao salvo={loja} enderecoMudou={false} />
+        </section>
+
+        <section className={styles.cartao} aria-labelledby="titulo-regras">
+          <h2 id="titulo-regras" className={styles.tituloCartao}>
+            Regras das ofertas
+          </h2>
+          <dl className={styles.valores}>
+            <div>
+              <dt className={styles.rotulo}>Janela de reserva padrão</dt>
+              <dd>{loja.janela_padrao_horas} h</dd>
+            </div>
+            <div>
+              <dt className={styles.rotulo}>Margem antes da validade</dt>
+              <dd>{dias(loja.margem_fim_dias)}</dd>
+            </div>
+            <div>
+              <dt className={styles.rotulo}>Antecedência do aviso</dt>
+              <dd>{dias(loja.antecedencia_aviso_dias)}</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+
+      <Equipe lojaId={lojaId} podeEditar={false} />
+    </div>
+  )
+}

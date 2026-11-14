@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { abrir, CARLOS } from '../../test/abrir'
+import { abrir, CARLOS, JULIANA } from '../../test/abrir'
 import { criarPecas, geocodificarFalso } from '../../test/pecas'
 
 const DESKTOP = 1280
@@ -200,5 +200,34 @@ describe('G6 · papel na equipe (PEDIDO-API 4, aceito)', () => {
     expect(alterar).toHaveBeenCalledWith(1, 102, 'responsavel')
     expect(await screen.findByText('Juliana Prado agora é Responsável.')).toBeInTheDocument()
     await waitFor(() => expect(screen.getByRole('combobox', { name: 'Papel de Juliana Prado' })).toHaveValue('responsavel'))
+  })
+})
+
+describe('L14 · funcionária consulta as configurações, sem editar (decidido 14/11/2026)', () => {
+  it('vê os dados, as regras e a equipe que a API devolveu', async () => {
+    await abrir('/loja/1/config', { email: JULIANA })
+    expect(await screen.findByText('Só o responsável da loja muda estas configurações. Aqui você consulta.')).toBeInTheDocument()
+    const dados = screen.getByRole('region', { name: 'Dados da loja' })
+    expect(dados).toHaveTextContent('Mercadinho Vila Nova')
+    expect(dados).toHaveTextContent('Rua das Palmeiras, 410 · Boa Vista')
+    const regras = screen.getByRole('region', { name: 'Regras das ofertas' })
+    expect(regras).toHaveTextContent('Janela de reserva padrão4 h')
+    expect(regras).toHaveTextContent('Margem antes da validade1 dia')
+    expect(regras).toHaveTextContent('Antecedência do aviso10 dias')
+    const equipe = await screen.findByRole('table', { name: 'Equipe da loja' })
+    expect(equipe).toHaveTextContent('Carlos Lima')
+    expect(equipe).toHaveTextContent('Funcionário · você')
+  })
+
+  it('nenhum controle de edição: sem campos, contadores, select de papel, Remover nem Adicionar', async () => {
+    await abrir('/loja/1/config', { email: JULIANA })
+    await screen.findByRole('table', { name: 'Equipe da loja' })
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: /Margem antes da validade/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Remover/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Adicionar à equipe' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Ver projeção' })).not.toBeInTheDocument() // a G2 é só do responsável
+    expect(screen.queryByRole('region', { name: 'Alterações não salvas' })).not.toBeInTheDocument()
   })
 })

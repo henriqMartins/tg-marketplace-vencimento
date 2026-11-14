@@ -20,11 +20,11 @@ describe('L1 · Início da loja', () => {
     expect(screen.getByRole('link', { name: /Avisos de validade/ })).toHaveTextContent('4 para conferir')
   })
 
-  it('funcionária: sem Configurações e sem a faixa do painel', async () => {
+  it('funcionária: Configurações (só para consultar) e sem a faixa do painel', async () => {
     await abrir('/loja/1', { email: JULIANA })
     await screen.findByRole('heading', { name: 'Mercadinho Vila Nova' })
     expect(screen.getByText('Funcionário')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Configurações da loja' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Configurações da loja' })).toHaveAttribute('href', '/loja/1/config')
     expect(screen.queryByRole('link', { name: /Painel e projeção/ })).toBeNull()
   })
 

@@ -36,11 +36,10 @@ export function L1Inicio() {
         <div className={styles.linhaCabecalho}>
           <span className={styles.data}>{dataDeHoje()}</span>
           <span className={styles.acoesCabecalho}>
-            {responsavel && (
-              <Link to={`${base}/config`} className={styles.botaoClaro} aria-label="Configurações da loja" title="Configurações da loja">
-                <IconeConfig />
-              </Link>
-            )}
+            {/* A funcionária também consulta as configurações (só o responsável edita). */}
+            <Link to={`${base}/config`} className={styles.botaoClaro} aria-label="Configurações da loja" title="Configurações da loja">
+              <IconeConfig />
+            </Link>
             <Link to="/escolher" className={styles.botaoClaro} aria-label="Trocar perfil" title="Trocar perfil">
               <IconeTrocar />
             </Link>

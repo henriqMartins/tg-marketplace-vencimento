@@ -105,11 +105,12 @@ export const rotas: RouteObject[] = [
                   { path: 'ofertas/:ofertaId', element: <L10Oferta /> },
                   { path: 'ofertas/:ofertaId/ajuste', element: <L11Ajuste /> },
                   { path: 'retirada', element: <L12Retirada /> },
+                  // L14 e G6: qualquer vínculo vê; só o responsável edita (decidido 14/11/2026).
+                  { path: 'config', element: <ConfiguracoesLoja />, handle: LARGA },
                   {
-                    // Só o responsável (L14 e G1–G6).
+                    // Só o responsável (G1–G6).
                     element: <ExigeVinculo papel="responsavel" />,
                     children: [
-                      { path: 'config', element: <ConfiguracoesLoja />, handle: LARGA }, // L14 e G6
                       { path: 'painel', element: <G1Painel />, handle: LARGA },
                       { path: 'projecao', element: <G2Projecao />, handle: LARGA },
                       { path: 'reservas', element: <G3Historico />, handle: LARGA },
