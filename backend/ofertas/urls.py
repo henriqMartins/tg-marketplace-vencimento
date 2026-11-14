@@ -48,4 +48,7 @@ urlpatterns = [
     # Grupo F do contrato (gestor): só o responsável
     path("lojas/<int:loja_id>/indicadores", f.Indicadores.as_view(), name="indicadores"),
     path("lojas/<int:loja_id>/historico", f.Historico.as_view(), name="historico"),
+
+    # Grupo G do contrato (projeção): só o responsável; lê o resumo da simulação
+    path("lojas/<int:loja_id>/projecao", f.Projecao.as_view(), name="projecao"),
 ]
