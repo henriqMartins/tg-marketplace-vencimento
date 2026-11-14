@@ -89,6 +89,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 13/11/2026 | Todas as rotas da especificação têm a tela de verdade: a tela "em construção" saiu |
 | 13/11/2026 | G5 na mesma rota da L4 (`/loja/:id/lotes`), como a G4 e a L9. Situação na URL (`?situacao=`), pedida à API; grupos encerrados ficam de fora, como na L4. "+ Cadastrar lote" abre a L3 num modal, e "+ Novo produto" troca o conteúdo do modal pela L2, que devolve o produto criado |
 | 13/11/2026 | Calendário de fitas da G5: a contagem por cor soma a lista de grupos que a API devolveu; o destaque do bimestre atual sai do mês de hoje (`bimestreDoMes`). É conta de calendário, não a cor de um produto: a cor de cada grupo e lote continua vindo só da API |
+| 14/11/2026 | Mock do grupo F alinhado ao contrato da main (F ✅): cada número usa a data do próprio evento — criadas, parciais e recusas pela criação; encerradas, taxas e semanas pelo encerramento (a expirada na hora em que venceu); perda pelo fim. Isso responde às duas perguntas abertas da F7a (semana do gráfico e totais da G3). Período padrão de 30 dias, `400 periodo_invalido` e `400 estado_invalido` |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

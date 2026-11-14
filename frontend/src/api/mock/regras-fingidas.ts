@@ -115,9 +115,15 @@ export function calcularIndicadores(banco: BancoMock, lojaId: number, de: Data, 
     const dia = dataBrasilia(d)
     return dia >= de && dia <= ate
   }
+  // Cada número usa a data do PRÓPRIO evento (contrato, grupo F, decidido 13/11/2026):
+  // criadas, parciais e recusas pela criação; encerradas, taxas e semanas pelo encerramento
+  // (a expirada conta na hora em que venceu); perda pelo fim da oferta.
   const daLoja = new Set(banco.ofertas.filter((o) => o.lojaId === lojaId).map((o) => o.id))
   const criadas = banco.reservas.filter((r) => daLoja.has(r.ofertaId) && noPeriodo(r.criada_em))
-  const encerradas = criadas.filter((r) => r.estado !== 'reservada')
+  const encerradaEm = (r: ReservaMock) => (r.estado === 'expirada' ? r.expira_em : r.encerrada_em!)
+  const encerradas = banco.reservas.filter(
+    (r) => daLoja.has(r.ofertaId) && r.estado !== 'reservada' && noPeriodo(encerradaEm(r)),
+  )
   const contar = (lista: ReservaMock[], estado: EstadoReserva) => lista.filter((r) => r.estado === estado).length
   const retiradas = contar(encerradas, 'retirada')
   const expiradas = contar(encerradas, 'expirada')
@@ -128,7 +134,7 @@ export function calcularIndicadores(banco: BancoMock, lojaId: number, de: Data, 
   for (let inicio = segundaDaSemana(de); inicio <= ate; inicio = somarDias(inicio, 7)) {
     const fimSemana = somarDias(inicio, 6)
     const daSemana = encerradas.filter((r) => {
-      const dia = dataBrasilia(r.criada_em)
+      const dia = dataBrasilia(encerradaEm(r))
       return dia >= inicio && dia <= fimSemana
     })
     semanas.push({

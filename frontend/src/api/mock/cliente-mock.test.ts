@@ -702,3 +702,37 @@ describe('mock · lote, fita e aviso (grupo D)', () => {
     expect((await erroDe(api.lotes.listarAvisos(1))).status).toBe(403)
   })
 })
+
+describe('mock · gestor alinhado ao contrato da main (grupo F ✅)', () => {
+  beforeEach(() => entrarComo('carlos@vilanova.com.br'))
+
+  it('cada número usa a data do próprio evento: criada num dia, retirada no outro', async () => {
+    agora = new Date('2026-10-22T23:00:00-03:00') // reserva às 23:00 (janela de 4 h)
+    await entrarComo('ana@email.com')
+    const { reserva } = (await api.consumidor.reservar(1, 1)) as { reserva: { codigo: string } }
+    await entrarComo('carlos@vilanova.com.br')
+    agora = new Date('2026-10-23T00:30:00-03:00') // retirada já no dia seguinte
+    await api.operacao.retirar(1, reserva.codigo)
+
+    const dia22 = await api.gestor.indicadores(1, '2026-10-22', '2026-10-22')
+    const dia23 = await api.gestor.indicadores(1, '2026-10-23', '2026-10-23')
+    // "Criada" no dia 22, "retirada" no dia 23.
+    expect(dia23.reservas_criadas).toBe(0)
+    expect(dia23.encerradas.retiradas).toBeGreaterThanOrEqual(1)
+    expect(dia22.reservas_criadas).toBeGreaterThanOrEqual(1)
+    const semana = dia23.semanas.find((s) => s.inicio === '2026-10-19')!
+    expect(semana.retiradas).toBe(dia23.encerradas.retiradas)
+  })
+
+  it('período: padrão de 30 dias; 400 periodo_invalido (formato, de > até, mais de 1 ano)', async () => {
+    const h = await api.gestor.historico(1)
+    const comPeriodo = await api.gestor.historico(1, { de: '2026-09-23', ate: '2026-10-22' })
+    expect(h.total_reservas).toBe(comPeriodo.total_reservas)
+
+    const codigo = async (de: string, ate: string) => (await erroDe(api.gestor.indicadores(1, de, ate))).codigo
+    expect(await codigo('2026-10-31', '2026-10-01')).toBe('periodo_invalido')
+    expect(await codigo('2025-01-01', '2026-10-22')).toBe('periodo_invalido')
+    expect(await codigo('01/10/2026', '2026-10-22')).toBe('periodo_invalido')
+    expect((await erroDe(api.gestor.historico(1, { estado: 'vencida' as never }))).codigo).toBe('estado_invalido')
+  })
+})

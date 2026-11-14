@@ -33,7 +33,7 @@ import type {
   Sessao,
   VinculoLoja,
 } from '../tipos'
-import { dataBrasilia, isoBrasilia } from './datas'
+import { dataBrasilia, isoBrasilia, somarDias } from './datas'
 import {
   calcularExpiraEm,
   calcularIndicadores,
@@ -536,19 +536,39 @@ export function criarClienteMock({
     if (papel !== 'responsavel') throw erro(403, 'http_403', mensagemPadrao(403))
   }
 
+  /**
+   * Período do gestor como no backend (api_gestor.py): dias de Brasília, os dois incluídos;
+   * sem eles, os últimos 30 dias; de ≤ até e no máximo 1 ano, senão 400 periodo_invalido.
+   */
+  function periodo(de?: string, ate?: string) {
+    const valida = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d))
+    const fim = ate ?? dataBrasilia(agora())
+    const inicio = de ?? (valida(fim) ? somarDias(fim, -29) : fim)
+    const dias = (Date.parse(fim) - Date.parse(inicio)) / 86_400_000
+    if (!valida(inicio) || !valida(fim) || inicio > fim || dias > 365) {
+      throw erro(400, 'periodo_invalido', 'Período inválido: use datas AAAA-MM-DD, de ≤ até, no máximo 1 ano.')
+    }
+    return { de: inicio, ate: fim }
+  }
+
   const gestor: ApiGestor = {
     indicadores: (lojaId, de, ate) =>
       responder(() => {
         responsavelDe(lojaId)
-        return calcularIndicadores(banco, lojaId, de, ate)
+        const p = periodo(de, ate)
+        return calcularIndicadores(banco, lojaId, p.de, p.ate)
       }),
 
     historico: (lojaId, filtros = {}) =>
       responder(() => {
         responsavelDe(lojaId)
+        if (filtros.estado && !['reservada', 'retirada', 'expirada', 'cancelada', 'recusa'].includes(filtros.estado)) {
+          throw erro(400, 'estado_invalido', 'Estado: reservada, retirada, expirada, cancelada ou recusa.')
+        }
+        const { de, ate } = periodo(filtros.de, filtros.ate)
         const noPeriodo = (d: Date) => {
           const dia = dataBrasilia(d)
-          return (!filtros.de || dia >= filtros.de) && (!filtros.ate || dia <= filtros.ate)
+          return dia >= de && dia <= ate
         }
         const daLoja = (ofertaId: number) => banco.ofertas.find((o) => o.id === ofertaId)?.lojaId === lojaId
         const produtoDe = (ofertaId: number) => banco.ofertas.find((o) => o.id === ofertaId)!.produto.nome
