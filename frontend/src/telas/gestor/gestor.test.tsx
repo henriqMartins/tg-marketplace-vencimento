@@ -379,3 +379,18 @@ describe('G5 · Lotes e fitas (desktop)', () => {
     expect(screen.queryByRole('region', { name: 'Calendário de fitas' })).not.toBeInTheDocument()
   })
 })
+
+describe('G2 · combinação sem rodadas (contrato G ✅)', () => {
+  it('rodadas 0 e números null: avisa e não mostra cartões nem gráfico', async () => {
+    const pecas = criarPecas()
+    vi.spyOn(pecas.mock.projecao, 'projecao').mockResolvedValue({
+      rodadas: 0,
+      filtro: { lote: '5-14', procura: '2.3-3.0', chegada: 4 },
+      janelas: [0.5, 1, 2, 4, 8, 12, 24].map((janela_horas) => ({ janela_horas, perda_pct: null, bloqueados_pct: null, retirada_pct: null })),
+    })
+    await abrir('/loja/1/projecao', { email: CARLOS, largura: DESKTOP, pecas })
+    expect(await screen.findByText(/Nenhuma rodada simulada com essa combinação/)).toBeInTheDocument()
+    expect(screen.getByText(/Baseado em 0 rodadas simuladas/)).toBeInTheDocument()
+    expect(screen.queryByText('Perda projetada')).not.toBeInTheDocument()
+  })
+})

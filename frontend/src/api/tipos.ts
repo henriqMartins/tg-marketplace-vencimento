@@ -451,10 +451,11 @@ export interface Projecao {
   /** Quantas rodadas simuladas entram na conta. */
   rodadas: number
   filtro: { lote: FaixaLote | null; procura: FaixaProcura | null; chegada: Chegada }
+  /** As 7 janelas vêm sempre; sem nenhuma rodada no filtro (rodadas: 0), os números vêm null. */
   janelas: {
     janela_horas: number
-    perda_pct: number
-    bloqueados_pct: number
-    retirada_pct: number
+    perda_pct: number | null
+    bloqueados_pct: number | null
+    retirada_pct: number | null
   }[]
 }

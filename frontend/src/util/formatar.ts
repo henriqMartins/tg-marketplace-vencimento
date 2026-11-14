@@ -73,8 +73,9 @@ export function comEm(horario: string): string {
   return horario.startsWith('hoje') || horario.startsWith('amanhã') ? horario : `em ${horario}`
 }
 
-/** Percentual que a API já manda em % (ex.: 31.3) → "31,3%". Só formata. */
-export function formatarPercentual(pct: number): string {
+/** Percentual que a API já manda em % (ex.: 31.3) → "31,3%"; null (sem base) → "—". Só formata. */
+export function formatarPercentual(pct: number | null): string {
+  if (pct === null) return '—'
   return `${pct.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
 }
 

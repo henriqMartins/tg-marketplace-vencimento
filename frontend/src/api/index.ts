@@ -5,6 +5,7 @@
  */
 import { GRUPOS, PARTE_DO_GRUPO, type ClienteApi, type GrupoContrato } from './cliente'
 import { lerConfigApi, type ConfigApi } from './config'
+import { criarProjecaoHttp } from './http/projecao'
 import { criarRequisitar, type Requisitar } from './http/requisitar'
 import { criarClienteMock } from './mock/cliente-mock'
 import { CHAVE_MOCK, type Guarda } from './mock/persistencia'
@@ -19,7 +20,9 @@ type FabricaHttp<G extends GrupoContrato> = (requisitar: Requisitar) => ClienteA
  * Implementações reais, por grupo. Cada uma entra quando o grupo vira ✅ no
  * docs/api/contrato.md (o Henrique avisa; `git merge main`; testar com o backend local).
  */
-const FABRICAS_HTTP: { [G in GrupoContrato]?: FabricaHttp<G> } = {}
+const FABRICAS_HTTP: { [G in GrupoContrato]?: FabricaHttp<G> } = {
+  G: criarProjecaoHttp,
+}
 
 export interface OpcoesCliente {
   config: ConfigApi

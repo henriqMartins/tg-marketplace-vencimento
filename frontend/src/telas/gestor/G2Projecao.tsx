@@ -6,7 +6,7 @@ import { useApi } from '../../app/contextos'
 import { useLojaAtual } from '../../app/loja'
 import { Botao } from '../../componentes/Botao'
 import { Esqueleto } from '../../componentes/Esqueleto'
-import { MensagemErro } from '../../componentes/Mensagem'
+import { Mensagem, MensagemErro } from '../../componentes/Mensagem'
 import { classes } from '../../util/classes'
 import { formatarJanela, formatarPercentual } from '../../util/formatar'
 import styles from './Gestor.module.css'
@@ -20,7 +20,7 @@ const CHEGADAS: Chegada[] = [1, 2, 4]
 const JANELA_INICIAL = 4
 
 /** Sempre uma casa ("13,0"), para os números se alinharem no gráfico e na tabela. */
-const umaCasa = (n: number) => n.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+const umaCasa = (n: number | null) => n === null ? '—' : n.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
 const textoLote = (f: FaixaLote | null) => (f ? `${f.replace('-', '–')} un.` : 'Todos')
 const textoProcura = (f: FaixaProcura | null) =>
@@ -214,6 +214,15 @@ function Resultado(props: { projecao: Projecao; janela: number; aoEscolher: (j: 
   const { projecao, janela, aoEscolher, atualizando } = props
   const escolhida = projecao.janelas.find((j) => j.janela_horas === janela) ?? projecao.janelas[0]
 
+  // Combinação de faixas sem nenhuma rodada simulada: a API devolve rodadas 0 e números null.
+  if (projecao.rodadas === 0) {
+    return (
+      <Mensagem tipo="info">
+        Nenhuma rodada simulada com essa combinação de lote e procura. Escolha outra faixa para comparar as janelas.
+      </Mensagem>
+    )
+  }
+
   return (
     <div className={classes(styles.tela, atualizando && styles.atualizando)}>
       <div role="group" aria-label="Janela de reserva" className={classes(styles.segmentado, styles.seletorJanela)}>
@@ -297,7 +306,9 @@ function GraficoJanelas(props: { janelas: LinhaJanela[]; escolhida: LinhaJanela;
               ).map(([valor, classe], k) => (
                 <span key={k} className={styles.colunaBarra}>
                   <span className={styles.valorBarra}>{umaCasa(valor)}</span>
-                  <span className={classes(styles.barra, classe)} style={{ height: `${Math.max(1, valor) * 1.8}px` }} />
+                  {valor !== null && (
+                    <span className={classes(styles.barra, classe)} style={{ height: `${Math.max(1, valor) * 1.8}px` }} />
+                  )}
                 </span>
               ))}
             </span>

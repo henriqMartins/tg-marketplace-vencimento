@@ -99,6 +99,9 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 14/11/2026 | C9 "Instalar na tela inicial": botão com o pedido do navegador (`beforeinstallprompt`, guardado em `app/instalacao.ts` ao abrir o app); "App instalado neste aparelho" quando já instalado; no iPhone, a instrução Compartilhar → Adicionar à Tela de Início (decisão 3a) |
 | 14/11/2026 | Ícone **provisório** (etiqueta branca sobre o verde, `public/icone.svg` → PNGs gerados com o Chrome), como o nome. Trocar = substituir os arquivos de `public/` |
 | 14/11/2026 | `npm audit`: 6 avisos (2 baixos, 4 moderados) em dependências do `workbox-build`, que só roda no build para gerar o service worker; nada disso vai para o aparelho |
+| 14/11/2026 | Merge do `origin/main` com todos os grupos ✅ e os 4 pedidos **aceitos** (conflito no `pedidos-do-front.md` resolvido com a versão da main, que tem as decisões e o pedido 4) |
+| 14/11/2026 | Grupo G na API real (`http/projecao.ts`), testado com `fetch` falso (URL, token, filtros, 403). Ainda não conferido contra o servidor: o backend não estava no ar e esta máquina não tem Python |
+| 14/11/2026 | Contrato G: combinação sem rodadas → `rodadas: 0` e números `null`. Tipo `Projecao` aceita `null`; a G2 avisa "Nenhuma rodada simulada com essa combinação" e `formatarPercentual(null)` = "—" |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
@@ -140,7 +143,11 @@ espelham `docs/api/contrato.md` com os mesmos nomes de campo.
 - **Quem atende cada grupo:** variável `VITE_API` (ver [`.env.example`](.env.example)):
   `mock` (padrão), `http` ou letras, ex.: `A,B` = só A e B na API real.
   Grupo marcado como `http` sem implementação real → erro na hora de abrir o app
-  (nunca cai no mock em silêncio).
+  (nunca cai no mock em silêncio). Implementação real pronta: **G** (`src/api/http/projecao.ts`).
+- **Login manda na mistura:** o token vem do grupo A. Com A no mock, o backend real responde
+  `401` a qualquer rota que exige login (e a sessão é limpa). Ou seja, `VITE_API=G` sozinho
+  não serve para a G2: ela também usa A (`eu`), C (resumo no layout da loja) e E (janela
+  padrão). Na prática, ligar a API real = `VITE_API=http` com todos os grupos implementados.
 - **Erros:** os métodos rejeitam com `ErroApi` (`status`, `codigo`, `message` = frase para a
   pessoa, `corpo`). `status 0` = sem resposta (servidor acordando / sem rede).
   Exceção: `consumidor.reservar` devolve a recusa (409) como resultado `{status: 'recusada', …}`.

@@ -21,9 +21,10 @@ export function calcularProjecao(lote: FaixaLote | null, procura: FaixaProcura |
     const [rodadas, perda, comCompra, bloqueados, retirada] = t
     return {
       janela_horas,
-      perda_pct: rodadas ? umaCasa((perda / rodadas) * 100) : 0,
-      bloqueados_pct: comCompra ? umaCasa((bloqueados / comCompra) * 100) : 0,
-      retirada_pct: comCompra ? umaCasa((retirada / comCompra) * 100) : 0,
+      // Sem rodadas no filtro: null, como no backend (a tela mostra "—").
+      perda_pct: rodadas ? umaCasa((perda / rodadas) * 100) : null,
+      bloqueados_pct: comCompra ? umaCasa((bloqueados / comCompra) * 100) : null,
+      retirada_pct: comCompra ? umaCasa((retirada / comCompra) * 100) : null,
       rodadas,
     }
   })
