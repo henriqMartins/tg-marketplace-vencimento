@@ -332,7 +332,7 @@ function Equipe({ lojaId }: { lojaId: number }) {
                       {!desktop && (
                         <>
                           <span className={styles.ajuda}>{v.usuario.email}</span>
-                          <SeloPapel vinculo={v} />
+                          <PapelNaEquipe vinculo={v} lojaId={lojaId} />
                         </>
                       )}
                     </span>
@@ -341,7 +341,7 @@ function Equipe({ lojaId }: { lojaId: number }) {
                 {desktop && <td>{v.usuario.email}</td>}
                 {desktop && (
                   <td>
-                    <SeloPapel vinculo={v} />
+                    <PapelNaEquipe vinculo={v} lojaId={lojaId} />
                   </td>
                 )}
                 <td className={styles.colunaAcao}>
@@ -455,13 +455,46 @@ function AdicionarPessoa({ lojaId }: { lojaId: number }) {
   )
 }
 
-/** PEDIDO-API 4: trocar o papel de alguém (o select da G6) não tem rota no contrato; por ora, só o selo. */
-function SeloPapel({ vinculo: v }: { vinculo: VinculoLoja }) {
+/**
+ * Papel na equipe: selo para você; `select` para os outros (PEDIDO-API 4, aceito em 13/11/2026:
+ * PATCH …/vinculos/{id}). Os limites (último responsável, o próprio acesso) vêm da API.
+ */
+function PapelNaEquipe({ vinculo: v, lojaId }: { vinculo: VinculoLoja; lojaId: number }) {
+  const api = useApi()
+  const consultas = useQueryClient()
+  const mostrarToast = useToast()
+  const alterar = useMutation({
+    mutationFn: (papel: Papel) => api.configuracao.alterarPapel(lojaId, v.id, papel),
+    onSuccess: (novo) => {
+      void consultas.invalidateQueries({ queryKey: ['vinculos', lojaId] })
+      mostrarToast(`${novo.usuario.nome} agora é ${rotuloPapel(novo.papel)}.`)
+    },
+  })
+
+  if (v.eu) {
+    return (
+      <Selo variante={v.papel === 'responsavel' ? 'primary' : 'neutral'}>
+        {rotuloPapel(v.papel)} · você
+      </Selo>
+    )
+  }
   return (
-    <Selo variante={v.papel === 'responsavel' ? 'primary' : 'neutral'}>
-      {rotuloPapel(v.papel)}
-      {v.eu && ' · você'}
-    </Selo>
+    <span className={styles.papel}>
+      <select
+        aria-label={`Papel de ${v.usuario.nome}`}
+        className={styles.selectPapel}
+        value={v.papel}
+        disabled={alterar.isPending}
+        onChange={(e) => alterar.mutate(e.target.value as Papel)}
+      >
+        {PAPEIS.map((p) => (
+          <option key={p.valor} value={p.valor}>
+            {p.rotulo}
+          </option>
+        ))}
+      </select>
+      {alterar.isError && <MensagemErro erro={alterar.error} />}
+    </span>
   )
 }
 

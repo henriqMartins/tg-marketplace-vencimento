@@ -681,6 +681,31 @@ export function criarClienteMock({
         return vinculosDa(lojaId, eu).find((v) => v.id === novo.id)!
       }),
 
+    // PEDIDO-API 4 (aceito): promove ou rebaixa. Mesma ordem e frases do backend (servico_equipe.py).
+    alterarPapel: (lojaId, vinculoId, papel) =>
+      responder(() => {
+        responsavelDe(lojaId)
+        const eu = usuarioLogado()
+        if (papel !== 'responsavel' && papel !== 'funcionario') {
+          throw erro(400, 'papel_invalido', 'Papel: responsavel ou funcionario.')
+        }
+        const dono = banco.usuarios.find((u) => u.vinculos.some((v) => v.id === vinculoId && v.loja.id === lojaId))
+        if (!dono) throw erro(404, 'nao_encontrado', 'Essa pessoa não faz parte da equipe desta loja.')
+        if (dono.id === eu.id) {
+          throw erro(409, 'proprio_vinculo', 'Você não pode mudar o próprio acesso; peça a outro responsável.')
+        }
+        const vinculo = dono.vinculos.find((v) => v.id === vinculoId)!
+        if (papel !== vinculo.papel) {
+          // Rebaixar um responsável só se sobrar outro (reforço: nunca zerar).
+          const responsaveis = vinculosDa(lojaId, eu).filter((v) => v.papel === 'responsavel').length
+          if (vinculo.papel === 'responsavel' && responsaveis <= 1) {
+            throw erro(409, 'ultimo_responsavel', 'A loja precisa de pelo menos um responsável.')
+          }
+          vinculo.papel = papel
+        }
+        return vinculosDa(lojaId, eu).find((v) => v.id === vinculoId)!
+      }),
+
     removerVinculo: (lojaId, vinculoId) =>
       responder(() => {
         responsavelDe(lojaId)

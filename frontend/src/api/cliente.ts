@@ -45,6 +45,7 @@ import type {
   Sessao,
   VinculoLoja,
   Data,
+  Papel,
 } from './tipos'
 
 /** A · Acesso — A1–A5, C9. */
@@ -110,6 +111,8 @@ export interface ApiConfiguracao {
   listarVinculos(lojaId: number): Promise<VinculoLoja[]>
   /** 404 conta_nao_existe, 409 ja_vinculado */
   criarVinculo(lojaId: number, entrada: EntradaVinculo): Promise<VinculoLoja>
+  /** PEDIDO-API 4 (aceito): PATCH …/vinculos/{id} {papel} · 400 papel_invalido, 404, 409 proprio_vinculo | ultimo_responsavel */
+  alterarPapel(lojaId: number, vinculoId: number, papel: Papel): Promise<VinculoLoja>
   /** 409 ultimo_responsavel | proprio_vinculo */
   removerVinculo(lojaId: number, vinculoId: number): Promise<void>
 }

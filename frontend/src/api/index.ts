@@ -5,6 +5,12 @@
  */
 import { GRUPOS, PARTE_DO_GRUPO, type ClienteApi, type GrupoContrato } from './cliente'
 import { lerConfigApi, type ConfigApi } from './config'
+import { criarAcessoHttp } from './http/acesso'
+import { criarConfiguracaoHttp } from './http/configuracao'
+import { criarConsumidorHttp } from './http/consumidor'
+import { criarGestorHttp } from './http/gestor'
+import { criarLotesHttp } from './http/lotes'
+import { criarOperacaoHttp } from './http/operacao'
 import { criarProjecaoHttp } from './http/projecao'
 import { criarRequisitar, type Requisitar } from './http/requisitar'
 import { criarClienteMock } from './mock/cliente-mock'
@@ -21,6 +27,12 @@ type FabricaHttp<G extends GrupoContrato> = (requisitar: Requisitar) => ClienteA
  * docs/api/contrato.md (o Henrique avisa; `git merge main`; testar com o backend local).
  */
 const FABRICAS_HTTP: { [G in GrupoContrato]?: FabricaHttp<G> } = {
+  A: criarAcessoHttp,
+  B: criarConsumidorHttp,
+  C: criarOperacaoHttp,
+  D: criarLotesHttp,
+  E: criarConfiguracaoHttp,
+  F: criarGestorHttp,
   G: criarProjecaoHttp,
 }
 

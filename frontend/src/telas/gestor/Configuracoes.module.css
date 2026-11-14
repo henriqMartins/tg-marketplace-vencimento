@@ -256,3 +256,19 @@
   font-size: 12px;
   opacity: 0.8;
 }
+
+/* Papel na equipe (G6): select para os outros, com o erro da API logo abaixo. */
+.papel {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.selectPapel {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  font: inherit;
+}

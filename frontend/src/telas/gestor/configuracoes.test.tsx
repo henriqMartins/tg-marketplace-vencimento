@@ -184,3 +184,21 @@ describe('L14 / G6 · endereço → coordenada (mapa falso, sem internet)', () =
     expect(geocodificar).not.toHaveBeenCalled()
   })
 })
+
+describe('G6 · papel na equipe (PEDIDO-API 4, aceito)', () => {
+  it('select para os outros, selo para você; trocar chama a API e avisa', async () => {
+    const usuario = userEvent.setup()
+    const pecas = criarPecas()
+    const alterar = vi.spyOn(pecas.mock.configuracao, 'alterarPapel')
+    await abrir('/loja/1/config', { email: CARLOS, largura: DESKTOP, pecas })
+    const papelJuliana = await screen.findByRole('combobox', { name: 'Papel de Juliana Prado' })
+    expect(papelJuliana).toHaveValue('funcionario')
+    expect(screen.queryByRole('combobox', { name: 'Papel de Carlos Lima' })).not.toBeInTheDocument()
+    expect(screen.getByText('Responsável · você')).toBeInTheDocument()
+
+    await usuario.selectOptions(papelJuliana, 'responsavel')
+    expect(alterar).toHaveBeenCalledWith(1, 102, 'responsavel')
+    expect(await screen.findByText('Juliana Prado agora é Responsável.')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Papel de Juliana Prado' })).toHaveValue('responsavel'))
+  })
+})

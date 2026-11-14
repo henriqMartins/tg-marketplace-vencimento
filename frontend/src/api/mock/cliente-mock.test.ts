@@ -736,3 +736,26 @@ describe('mock · gestor alinhado ao contrato da main (grupo F ✅)', () => {
     expect((await erroDe(api.gestor.historico(1, { estado: 'vencida' as never }))).codigo).toBe('estado_invalido')
   })
 })
+
+describe('mock · trocar o papel na equipe (PEDIDO-API 4, aceito)', () => {
+  beforeEach(() => entrarComo('carlos@vilanova.com.br'))
+
+  it('promove e rebaixa; mesmo papel = 200 sem mudar; erros na ordem do backend', async () => {
+    const juliana = (await api.configuracao.listarVinculos(1)).find((v) => v.usuario.nome === 'Juliana Prado')!
+    expect((await api.configuracao.alterarPapel(1, juliana.id, 'responsavel')).papel).toBe('responsavel')
+    expect((await api.configuracao.alterarPapel(1, juliana.id, 'responsavel')).papel).toBe('responsavel')
+    expect((await api.configuracao.alterarPapel(1, juliana.id, 'funcionario')).papel).toBe('funcionario')
+
+    const codigo = async (vinculo: number, papel: string) =>
+      (await erroDe(api.configuracao.alterarPapel(1, vinculo, papel as never))).codigo
+    expect(await codigo(juliana.id, 'gerente')).toBe('papel_invalido')
+    expect(await codigo(99999, 'funcionario')).toBe('nao_encontrado')
+    const eu = (await api.configuracao.listarVinculos(1)).find((v) => v.eu)!
+    expect(await codigo(eu.id, 'funcionario')).toBe('proprio_vinculo')
+  })
+
+  it('funcionária não troca papel (403)', async () => {
+    await entrarComo('juliana.prado@email.com')
+    expect((await erroDe(api.configuracao.alterarPapel(1, 101, 'funcionario'))).status).toBe(403)
+  })
+})

@@ -15,7 +15,11 @@ describe('criarCliente', () => {
     expect(api).not.toHaveProperty('reiniciar')
   })
 
-  it('grupo marcado como http sem implementação → erro claro (nada de cair no mock em silêncio)', () => {
-    expect(() => criarCliente({ ...base, config: lerConfigApi('B') })).toThrow('grupo B ainda não tem implementação http')
+  it('todos os grupos (A–G) têm implementação http: VITE_API=http monta o cliente inteiro', () => {
+    const api = criarCliente({ ...base, config: lerConfigApi('http') })
+    const mock = criarCliente({ ...base, config: lerConfigApi('mock') })
+    for (const parte of ['acesso', 'consumidor', 'operacao', 'lotes', 'configuracao', 'gestor', 'projecao'] as const) {
+      expect(api[parte]).not.toBe(mock[parte])
+    }
   })
 })
