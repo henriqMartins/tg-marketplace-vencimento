@@ -105,12 +105,13 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 14/11/2026 | Clientes http de todos os grupos (A–G), um arquivo por grupo em `src/api/http/`, com as rotas do `backend/*/urls.py`. A recusa da reserva (409 `{status: "recusada"}`) volta como resultado, como no mock; os outros 409 continuam erro. `com_lotes` vai como `1`. Testados com `fetch` falso (método, rota e corpo); falta conferir contra o servidor |
 | 14/11/2026 | PEDIDO-API 4 aceito: G6 com `select` de papel para os outros (selo para você), `PATCH …/vinculos/{id}`; o mock segue a ordem e as frases do backend (papel inválido, não encontrado, o próprio acesso, último responsável; mesmo papel = 200 sem mudar) |
 | 14/11/2026 | **Conferido contra o servidor** (`VITE_API=http`, backend local com `popular_demo`, front na porta 5173 por causa do CORS): G2 sem filtro = Tabela 5 (5.000 rodadas) e com lote 5–14, procura 2,3–3,0, chegada 4 h = 218 rodadas; 13 telas abertas com Carlos (G1, G2, G3, G4, G5, G6), Juliana (L1, L5, L4, L9, L12) e Ana (C2, C8, C9), sem erro no console nem resposta 4xx/5xx. Contas de demonstração: carlos@, juliana@ e ana@example.com, senha demo1234 |
+| 14/11/2026 | **Deploy na Vercel** preparado: `vercel.json` (rewrite das rotas do app, agendamento diário da varredura, `maxDuration` 120 s), função `api/varrer.ts` (confere `CRON_SECRET`, chama o backend com `CRON_TOKEN`, até 90 s, uma nova tentativa se o Render estiver acordando), `engines` Node 22.12+ e `.env.example` com a parte de produção. Ver "Deploy na Vercel" |
 | 14/11/2026 | **Roteiro de testes em tela** (`docs/roteiro-de-testes-em-tela.md`) executado contra a API real, automatizado no Chrome (Playwright, scripts fora do repositório): **50 de 50 itens executados passaram** (A 5, B 10, C 8, D 11, E 6, F 5, G 4, X-1). Fora: A-1 (desligar o servidor no meio), E-6 (último responsável só é alcançável por concorrência; provado no teste automático do backend) e X-2 (esperar 1 h). Adaptações: D-2 com o feijão (o grupo aberto de leite já virou oferta), D-9 com um lote novo de iogurte (os avisos da semente nunca tiveram oferta). A loja de demonstração foi restaurada (margem, antecedência, endereço, coordenada, equipe); as reservas, ajustes, lotes e a oferta do presunto criados ficam no banco até o próximo `flush` + `popular_demo` |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
 
-Requer Node 24+ (testado com Node 24.11 / npm 11.6). Dentro de `frontend/`:
+Requer Node 22.12+ (`engines` no `package.json`; o Vitest 5 e o Vite 8 pedem isso). Testado com Node 24.11 / npm 11.6. Dentro de `frontend/`:
 
 | Comando | O que faz |
 |---|---|
@@ -121,6 +122,59 @@ Requer Node 24+ (testado com Node 24.11 / npm 11.6). Dentro de `frontend/`:
 | `npm run build` | confere os tipos (`tsc -b`) e gera `dist/` |
 | `npm run preview` | serve o `dist/` gerado |
 | `npm run lint` | lint com oxlint (vem no modelo do Vite) |
+
+## Deploy na Vercel
+
+O front é um site estático (o `dist/` do Vite) mais **uma função** (`api/varrer.ts`). A API
+fica no Render (`https://SEU-SERVICO.onrender.com`), que dorme depois de ~15 min parado e leva
+~1 min para acordar: a faixa "Conectando ao servidor…" do app cobre essa espera.
+
+**Projeto na Vercel** (importar o repositório):
+
+| Campo | Valor |
+|---|---|
+| Root Directory | `frontend` |
+| Framework Preset | Vite |
+| Build Command | `npm run build` (padrão do preset) |
+| Output Directory | `dist` (padrão do preset) |
+| Node.js | 22.x ou 24.x (o `engines` pede 22.12+) |
+
+**Variáveis** (Settings → Environment Variables; nenhuma vai para o git — modelo em
+[`.env.example`](.env.example)):
+
+| Variável | Onde vale | Valor |
+|---|---|---|
+| `VITE_API` | código do navegador (build) | `http` |
+| `VITE_API_URL` | código do navegador (build) | endereço do Render, sem barra no fim |
+| `BACKEND_URL` | só a função `/api/varrer` | o mesmo endereço do Render |
+| `CRON_TOKEN` | só a função | o mesmo `CRON_TOKEN` do backend |
+| `CRON_SECRET` | só a função | segredo longo e aleatório |
+
+- **Mudou uma `VITE_*`? Faça Redeploy.** Elas entram no JavaScript na hora do build; mudar no
+  painel não afeta o site que já está no ar. `BACKEND_URL`, `CRON_TOKEN` e `CRON_SECRET`
+  são lidas a cada execução da função.
+- **CORS:** o domínio da Vercel (ex.: `https://SEU-APP.vercel.app`) precisa estar no
+  `CORS_ALLOWED_ORIGINS` do backend, senão o navegador bloqueia todas as chamadas à API.
+
+**O que o `vercel.json` faz:**
+- **Rotas do app:** tudo que não começa com `/api/` e não é arquivo do `dist/` vira
+  `/index.html` (o React Router decide a tela). Sem isso, recarregar `/loja/1/painel` dá 404.
+- **Varredura diária:** o agendamento chama `/api/varrer` às 7h UTC (4h de Brasília), 1×/dia
+  (limite do plano Hobby). A Vercel manda `Authorization: Bearer <CRON_SECRET>`; a função
+  confere, faz `POST {BACKEND_URL}/tarefas/varrer` com `Bearer <CRON_TOKEN>` e espera até 90 s
+  (`maxDuration` 120 s). Se o Render responder 502/503/504 ou a conexão cair enquanto acorda,
+  tenta mais uma vez no mesmo prazo. Devolve `{status, tentativas, resumo}`; o log fica em
+  Logs → Functions (ou Settings → Cron Jobs → "Run" para disparar à mão).
+- A função roda no **servidor** da Vercel (Node): lê `process.env`, nunca `import.meta.env`,
+  e não entra no bundle do app (conferido: nada dela no `dist/`). Testes em `testes-vercel/`
+  (fora de `api/`, onde todo arquivo vira função).
+
+**Service worker e API:** o `sw.js` só guarda os arquivos do app e tem uma única rota, a de
+navegação, com `/api/`, `/health` e `/tarefas/` de fora (`FORA_DO_APP` em
+`src/app/pwa.ts`). As chamadas ao Render são de outro domínio e passam direto, sem cache.
+
+**Gravar o vídeo no ambiente live:** `flush` + `popular_demo` no backend no dia (as datas
+são relativas a hoje); abrir o site uma vez antes de gravar para acordar o Render.
 
 ## Estilo
 
