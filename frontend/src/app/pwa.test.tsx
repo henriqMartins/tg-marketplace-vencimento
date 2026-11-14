@@ -24,6 +24,7 @@ describe('PWA · manifesto', () => {
   it('o service worker nunca responde a API com o app', () => {
     const fora = (caminho: string) => FORA_DO_APP.some((r) => r.test(caminho))
     expect(fora('/api/ofertas')).toBe(true)
+    expect(fora('/api/varrer')).toBe(true) // a função da Vercel (agendamento diário)
     expect(fora('/health')).toBe(true)
     expect(fora('/vitrine')).toBe(false)
     expect(fora('/loja/1/avisos')).toBe(false)

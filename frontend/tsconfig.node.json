@@ -19,5 +19,6 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  // api/ = funções da Vercel (rodam no Node, fora do app); testes-vercel/ = os testes delas.
+  "include": ["vite.config.ts", "api/**/*.ts", "testes-vercel/**/*.ts"]
 }

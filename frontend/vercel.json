@@ -1,5 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
+  "functions": {
+    "api/varrer.ts": { "maxDuration": 120 }
+  },
+  "crons": [{ "path": "/api/varrer", "schedule": "0 7 * * *" }]
 }
