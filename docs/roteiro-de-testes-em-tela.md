@@ -9,10 +9,11 @@ Eles **não substituem** os testes automáticos (`manage.py test`): concorrênci
 da varredura e a conta da Tabela 5 só são provadas de verdade lá. Aqui se confere que a tela
 mostra o que o backend decidiu.
 
-> **Situação em 14/11/2026:** todas as telas existem no front (F0–F9), mas **só contra o mock**
-> (`FABRICAS_HTTP` vazio em `frontend/src/api/index.ts`). Até cada grupo ganhar sua
-> implementação http, estes testes rodam no mock, onde várias regras são **fingidas**
-> (`mock/regras-fingidas.ts`). Os itens marcados **🔌** só valem com a API real.
+> **Situação em 14/11/2026:** todas as telas existem no front (F0–F9) e **todos os grupos (A–G)
+> têm implementação http** (`frontend/src/api/http/`). Com `VITE_API=http` o front fala com a
+> API real; sem ela, usa o mock, onde várias regras são **fingidas** (`mock/regras-fingidas.ts`).
+> Os itens marcados **🔌** só valem com a API real. O roteiro inteiro já rodou contra a API real
+> (ver o registro abaixo).
 
 ---
 
@@ -116,13 +117,13 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 | E-4 | G6 | Adicionar `bruno@example.com` como funcionário; promover; rebaixar | Lista atualiza; Bruno passa a ver/deixar de ver o painel | Papel por vínculo |
 | E-5 | G6 | Carlos tenta remover/rebaixar a si mesmo | `409 proprio_vinculo` | — |
 | E-6 | G6 | Remover o último responsável | `409 ultimo_responsavel` | Loja nunca fica sem responsável |
-| E-7 | L14 | Como `juliana`, tentar salvar | Lê, mas não salva (`403`) | Ler = vínculo; mudar = responsável |
+| E-7 | L14 | Como `juliana`, abrir as configurações | Vê dados, regras e equipe **só para leitura** (sem campos nem botões); salvar pela API → `403` | Ler = vínculo; mudar = responsável (decidido 14/11/2026) |
 
 ## 6 · Gestor (grupos F e G) — como `carlos`
 
 | # | Tela | Passos | Esperado | Regra que prova |
 |---|---|---|---|---|
-| F-1 | G1 | Abrir o painel (últimos 30 dias) | Reservas criadas, taxa de retirada (~72%), expiração, bloqueados = recusas + parciais (com a divisão), perda, série semanal 🔌 | Indicadores de negócio lidos do PostgreSQL |
+| F-1 | G1 | Abrir o painel (últimos 30 dias) | Reservas criadas, taxa de retirada (≈ 2/3; varia com o dia, porque as datas da demonstração são relativas a hoje), expiração, bloqueados = recusas + parciais (com a divisão), perda, série semanal 🔌 | Indicadores de negócio lidos do PostgreSQL |
 | F-2 | G1 | Período sem reservas encerradas | Taxas aparecem como "—" (não 0%) | Taxa `null` sem encerradas |
 | F-3 | G1 | Período de mais de 1 ano | Mensagem de período inválido | Máx. 1 ano |
 | F-4 | G3 | Histórico filtrado por `recusa`; buscar pelo final de um código | Lista coerente com o G1 | — |
@@ -149,7 +150,7 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 
 | Data | Quem | Grupos com API real | Falhou | Observação |
 |---|---|---|---|---|
-| | | | | |
+| 14/11/2026 | front (automatizado no Chrome) | A–G (`VITE_API=http`) | nenhum | 50/50 executados. Fora: A-1 (desligar o servidor), E-6 (só por concorrência; provado no teste automático) e X-2 (esperar 1 h). D-2 feito com o feijão (o grupo aberto de leite já tinha virado oferta) e D-9 com um lote novo de iogurte (os avisos da semente nunca tiveram oferta). A loja foi restaurada; reservas, ajustes e lotes criados ficam até o próximo `flush` + `popular_demo` |
 
 ---
 
@@ -157,12 +158,12 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 
 ### Para a v1 (antes de gravar o vídeo) — em ordem
 
-1. **Integração do front com a API real** (maior risco). Hoje nenhum grupo tem implementação
-   http no front. Sugestão de ordem, do mais simples ao mais delicado: **A** (acesso) → **B**
-   (vitrine e reserva) → **C** (balcão) → **F** e **G** (só leitura) → **E** → **D** (o mais
-   comprido). A cada grupo: `VITE_API` com a letra + rodar a seção deste roteiro.
-2. **Rodar este roteiro inteiro** com `VITE_API=http` e anotar no registro acima. Divergência
-   entre tela e contrato → pedido em `pedidos-do-front.md` (se for do backend) ou correção no front.
+1. ~~**Integração do front com a API real**~~ — feito em 14/11/2026: todos os grupos (A–G) em
+   `frontend/src/api/http/`. Atenção: o login vem do grupo A, então misturar grupos (ex.:
+   `VITE_API=G`) não serve para telas com login; use `VITE_API=http`.
+2. ~~**Rodar este roteiro inteiro**~~ com `VITE_API=http` — feito em 14/11/2026 (registro acima).
+   Divergência entre tela e contrato → pedido em `pedidos-do-front.md` (se for do backend) ou
+   correção no front.
 3. **Ensaio do vídeo**: `flush` + `popular_demo` no dia da gravação (as datas são relativas a
    hoje), roteiro curto cobrindo C2→C4→C6→L12→L13, a fita (D-1 a D-5), G1 e G2.
 
