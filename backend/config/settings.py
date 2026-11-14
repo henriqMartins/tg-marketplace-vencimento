@@ -40,8 +40,23 @@ SECRET_KEY = _obrigatoria("DJANGO_SECRET_KEY")
 # Desligado se a variável faltar: esquecer de configurar nunca liga o modo debug.
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 
-ALLOWED_HOSTS = [h.strip() for h in
-                 os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h.strip()]
+def hosts_permitidos(ambiente) -> list:
+    """
+    Endereços que o Django aceita atender: a lista de DJANGO_ALLOWED_HOSTS e, no
+    Render, o endereço que ele mesmo preenche (RENDER_EXTERNAL_HOSTNAME = xxx.onrender.com).
+    """
+    hosts = [h.strip() for h in ambiente.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    render = ambiente.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+    if render and render not in hosts:
+        hosts.append(render)
+    return hosts
+
+
+ALLOWED_HOSTS = hosts_permitidos(os.environ)
+
+# O Render recebe o HTTPS e repassa ao Django em HTTP, avisando no cabeçalho
+# X-Forwarded-Proto. Com isto, o Django sabe que o pedido original era seguro.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Token do endpoint de varredura (/tarefas/varrer). Vazio = endpoint recusa sempre.
 CRON_TOKEN = os.environ.get("CRON_TOKEN", "")
@@ -152,7 +167,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {"default": dj_database_url.parse(_obrigatoria("DATABASE_URL"))}
+# Conexão reaproveitada por 60 s (não abre uma nova a cada pedido) e conferida antes
+# de usar: o Neon "dorme" e derruba conexões paradas.
+DATABASES = {"default": dj_database_url.parse(_obrigatoria("DATABASE_URL"),
+                                              conn_max_age=60, conn_health_checks=True)}
 
 # Regra 5: PostgreSQL sempre, inclusive em teste. No SQLite o select_for_update()
 # não trava nada e o teste de concorrência passaria sem provar coisa alguma.
