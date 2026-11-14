@@ -27,7 +27,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F8d · L5 avisos, L6 conferência, L8 adiar, L7 publicar | ✅ |
 | F8e · G5 lotes e fitas no computador | ✅ |
 | F8f · Endereço → coordenada (Nominatim) na L14/G6 | ✅ |
-| F9 · PWA | — |
+| F9 · PWA (manifesto, service worker, instalação) | ✅ |
 
 ## Decisões do frontend
 
@@ -93,6 +93,12 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 14/11/2026 | Endereço → coordenada pelo **Nominatim** (OpenStreetMap), no navegador (`localizacao/endereco.ts`, injetado como o CEP; nos testes, um mapa falso). Conferido em 14/11: 200, CORS liberado (`*`), `lat`/`lon`/`display_name`. Uma busca só ao salvar e só se o endereço mudou (política de uso: sem autocompletar), restrita ao Brasil |
 | 14/11/2026 | Achou → a barra mostra **onde** achou e pede confirmação ("Salvar com esta localização" / "Corrigir endereço"): o endereço da loja não tem campo de cidade, e uma rua com o mesmo nome em outra cidade daria distâncias erradas sem ninguém ver. Não achou → "Salvar sem localização" (latitude e longitude `null`) ou "Corrigir endereço" (decisão 2a da F8). Crédito "© colaboradores do OpenStreetMap" junto do resultado (licença ODbL) |
 | 14/11/2026 | `mensagemDeErro` mostra também as frases de `ErroCep` e `ErroEndereco` (escritas para a pessoa); qualquer outro erro continua com a frase genérica |
+| 14/11/2026 | PWA com `vite-plugin-pwa` 2.0.0 (versão exata; aceita Vite 8). Manifesto em `src/app/pwa.ts` (nome de `marca.ts`, pt-BR, standalone, cores primary/bg, ícones 192, 512 e maskable). O build gera `manifest.webmanifest` e `sw.js`; conferido no Chrome: service worker ativo e o app abre sem internet depois da primeira visita |
+| 14/11/2026 | O service worker guarda **só os arquivos do app**; a API, o CEP e o mapa vão sempre à rede (nada de estoque ou código velho no aparelho). Sem service worker no `npm run dev` e nos testes |
+| 14/11/2026 | Versão nova: toast "Nova versão disponível · Atualizar" (decisão 2a da F9), sem recarregar no meio de uma reserva ou conferência |
+| 14/11/2026 | C9 "Instalar na tela inicial": botão com o pedido do navegador (`beforeinstallprompt`, guardado em `app/instalacao.ts` ao abrir o app); "App instalado neste aparelho" quando já instalado; no iPhone, a instrução Compartilhar → Adicionar à Tela de Início (decisão 3a) |
+| 14/11/2026 | Ícone **provisório** (etiqueta branca sobre o verde, `public/icone.svg` → PNGs gerados com o Chrome), como o nome. Trocar = substituir os arquivos de `public/` |
+| 14/11/2026 | `npm audit`: 6 avisos (2 baixos, 4 moderados) em dependências do `workbox-build`, que só roda no build para gerar o service worker; nada disso vai para o aparelho |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

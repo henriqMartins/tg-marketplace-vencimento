@@ -211,3 +211,13 @@ export function IconeMais({ tamanho }: PropsIcone) {
     </Icone>
   )
 }
+
+export function IconeInstalar({ tamanho }: PropsIcone) {
+  return (
+    <Icone tamanho={tamanho}>
+      <path d="M12 4v11" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 20h14" />
+    </Icone>
+  )
+}

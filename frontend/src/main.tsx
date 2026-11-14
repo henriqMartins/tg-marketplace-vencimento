@@ -6,6 +6,12 @@ import '@fontsource-variable/plus-jakarta-sans'
 import './estilos/tokens.css'
 import './estilos/base.css'
 import App from './App.tsx'
+import { ouvirInstalacao } from './app/instalacao'
+import { registrarServico } from './app/servico'
+
+// PWA (F9): o pedido de instalação chega uma vez, logo no início; o service worker só existe no build.
+ouvirInstalacao()
+void registrarServico()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

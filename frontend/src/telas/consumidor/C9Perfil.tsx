@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router'
 import { useSessao } from '../../app/contextos'
 import { inicioDaLoja } from '../../app/destino'
 import { esquecerEscolha, lerEscolha } from '../../app/escolha'
+import { instalar, useInstalacao } from '../../app/instalacao'
 import { useEhDesktop } from '../../app/tela'
+import { classes } from '../../util/classes'
 import { Botao } from '../../componentes/Botao'
-import { IconePino } from '../../componentes/icones'
+import { IconeInstalar, IconePino } from '../../componentes/icones'
 import { Interruptor } from '../../componentes/Interruptor'
 import { Selo } from '../../componentes/Selo'
 import { useLocal } from '../../localizacao/contexto'
@@ -17,7 +19,7 @@ function iniciais(nome: string): string {
   return ((partes[0]?.[0] ?? '') + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase()
 }
 
-/** C9 · Perfil e preferências. "Instalar na tela inicial" entra na F9 (PWA). */
+/** C9 · Perfil e preferências (com o "Instalar na tela inicial" da PWA). */
 export function C9Perfil() {
   const { eu, sair } = useSessao()
   const { local } = useLocal()
@@ -71,6 +73,7 @@ export function C9Perfil() {
         <Interruptor ligado={false} aoMudar={() => {}} desabilitado detalhe="Em breve: aviso quando uma loja publicar uma oferta">
           Avisos de oferta nova
         </Interruptor>
+        <InstalarApp />
       </section>
 
       {eu.vinculos.length > 0 && (
@@ -106,6 +109,37 @@ export function C9Perfil() {
       <Botao variante="perigo" carregando={saindo} textoCarregando="Saindo…" onClick={sairDaConta}>
         Sair da conta
       </Botao>
+    </div>
+  )
+}
+
+/**
+ * "Instalar na tela inicial": no Android/Chrome, abre o pedido do navegador; já instalado,
+ * só informa; no iPhone (sem o pedido), ensina o caminho pelo Compartilhar (decisão 3a da F9).
+ */
+function InstalarApp() {
+  const situacao = useInstalacao()
+  const conteudo = (detalhe: string) => (
+    <>
+      <IconeInstalar tamanho={20} />
+      <span className={styles.textosPerfil}>
+        <span className={styles.rotulo}>Instalar na tela inicial</span>
+        <span className={styles.texto}>{detalhe}</span>
+      </span>
+    </>
+  )
+  if (situacao === 'pode_instalar') {
+    return (
+      <button type="button" className={classes(styles.linhaLink, styles.linhaBotao)} onClick={() => void instalar()}>
+        {conteudo('Abre como um app, sem a barra do navegador')}
+      </button>
+    )
+  }
+  return (
+    <div className={classes(styles.linhaLink, styles.linhaInformativa)}>
+      {situacao === 'instalado'
+        ? conteudo('App instalado neste aparelho')
+        : conteudo('No iPhone: toque em Compartilhar e depois em "Adicionar à Tela de Início"')}
     </div>
   )
 }

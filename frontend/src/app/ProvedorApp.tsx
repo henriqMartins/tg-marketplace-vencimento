@@ -6,6 +6,7 @@ import type { BuscarCep } from '../localizacao/cep'
 import type { GeocodificarEndereco } from '../localizacao/endereco'
 import type { ObterPosicao } from '../localizacao/posicao'
 import { ProvedorLocal } from '../localizacao/ProvedorLocal'
+import { AvisoVersaoNova } from './AvisoVersaoNova'
 import { criarClienteConsultas } from './consultas'
 import { ContextoApi } from './contextos'
 import { criarArmazemSessao, type ArmazemSessao } from './sessao/armazem'
@@ -33,7 +34,10 @@ export function ProvedorApp({ children, ...pecas }: ProvedorAppProps) {
       <ContextoApi.Provider value={cliente}>
         <ProvedorSessao armazem={armazem}>
           <ProvedorLocal buscarCep={pecas.buscarCep} obterPosicao={pecas.obterPosicao} geocodificarEndereco={pecas.geocodificarEndereco}>
-            <ProvedorToast>{children}</ProvedorToast>
+            <ProvedorToast>
+              <AvisoVersaoNova />
+              {children}
+            </ProvedorToast>
           </ProvedorLocal>
         </ProvedorSessao>
       </ContextoApi.Provider>

@@ -457,3 +457,15 @@
   flex-wrap: wrap;
   font-size: 14px;
 }
+
+/* "Instalar na tela inicial" (C9): mesma cara da linha de Localização, mas é um botão. */
+.linhaBotao {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.linhaInformativa {
+  cursor: default;
+}

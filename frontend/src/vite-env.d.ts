@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
 
 interface ImportMetaEnv {
   /** "mock" (padrão), "http" ou letras de grupo do contrato, ex.: "A,B". */
