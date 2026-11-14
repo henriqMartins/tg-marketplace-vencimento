@@ -14,11 +14,11 @@ Trabalho de Graduação — Fatec Rio Preto, 2026 — Henrique Martins e Yan Hen
 | Parte | Situação |
 |---|---|
 | Domínio (regras da reserva) | ✅ pronto — 53 testes |
-| Backend (API) | ✅ todos os grupos do contrato (A a G) — 285 testes + 1 pulado |
+| Backend (API) | ✅ todos os grupos do contrato (A a G) — 292 testes + 1 pulado |
 | Simulação (Monte Carlo) | ✅ pronta, resultados no artigo — 16 testes |
 | Frontend (PWA) | 🔄 todas as telas prontas contra um **mock** do contrato (branch `frontend`); integração com a API real em andamento |
 | Vídeo do sistema | ⏳ para a apresentação final (17/11 a 02/12/2026) |
-| Deploy | ⏳ só se sobrar tempo (o vídeo pode ser gravado com o sistema local) |
+| Deploy | 🔄 backend pronto para o Render (imagem Docker testada); frontend em preparação para a Vercel |
 
 | Data | Marco |
 |---|---|
@@ -36,10 +36,11 @@ Trabalho de Graduação — Fatec Rio Preto, 2026 — Henrique Martins e Yan Hen
 5. [Estrutura do repositório](#5-estrutura-do-repositório)
 6. [Stack e hospedagem](#6-stack-e-hospedagem)
 7. [Como rodar](#7-como-rodar)
-8. [Testes](#8-testes)
-9. [API](#9-api)
-10. [Escopo](#10-escopo)
-11. [Linha do tempo](#11-linha-do-tempo)
+8. [Deploy](#8-deploy)
+9. [Testes](#9-testes)
+10. [API](#10-api)
+11. [Escopo](#11-escopo)
+12. [Linha do tempo](#12-linha-do-tempo)
 
 ---
 
@@ -175,6 +176,7 @@ previsão; os parâmetros entram como faixas, com procedência em
 │   └── tests/                  regras, reconstituição, códigos de erro, prazo
 ├── backend/                  API Django + DRF
 │   ├── config/                 configuração (só por ambiente), /health, formato dos erros
+│   ├── Dockerfile              imagem de produção (Render), multi-stage, usuário sem privilégio
 │   ├── contas/                 usuário (login por e-mail), token, porteiros por papel
 │   └── ofertas/
 │       ├── models.py             Loja, Vínculo, Produto, Lote, Grupo, Oferta, Reserva, Ajuste, Recusa
@@ -195,6 +197,7 @@ previsão; os parâmetros entram como faixas, com procedência em
 │   ├── roteiro-de-testes-em-tela.md  testes manuais por tela
 │   └── colinha-python.md
 ├── docker-compose.yml        só desenvolvimento local (PostgreSQL)
+├── .dockerignore             o que entra na imagem: só backend/ e dominio/, sem testes
 └── .env.example              variáveis necessárias, sem valores reais
 ```
 
@@ -212,7 +215,7 @@ O **frontend** (React + TypeScript + Vite, PWA) fica na branch
 | Simulação | Python + NumPy + Matplotlib |
 | Ambiente local | Docker Engine no WSL 2 (só o PostgreSQL); Django roda no Windows |
 
-Hospedagem planejada (plano gratuito, se houver tempo): **Vercel** (frontend + agendamento
+Hospedagem (plano gratuito; ver [Deploy](#8-deploy)): **Vercel** (frontend + agendamento
 diário da varredura), **Render** (API em imagem Docker; dorme após ~15 min, o front mostra
 "carregando" enquanto acorda) e **Neon** (PostgreSQL, endereço direto com `sslmode=require`).
 
@@ -277,13 +280,53 @@ python simulacao.py --n 5000     # mais repetições
 python limiar_referencia.py      # limiar "sem plataforma"
 ```
 
-## 8. Testes
+## 8. Deploy
+
+Três serviços no plano gratuito: **Neon** (PostgreSQL), **Render** (API, imagem de
+[backend/Dockerfile](backend/Dockerfile)) e **Vercel** (frontend + agendamento diário da
+varredura). Os **valores** das variáveis ficam só nos painéis; nunca no código nem no git.
+
+| Provedor | Variáveis | Observações |
+|---|---|---|
+| Neon | — | Usar o endereço **direto** (sem `-pooler`), com `?sslmode=require`, na região EUA Leste. |
+| Render | `DATABASE_URL`, `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CRON_TOKEN` | Web Service a partir do Dockerfile: *Dockerfile Path* `backend/Dockerfile`, *Docker Build Context* `.` (raiz). *Health Check Path* `/health`. `DJANGO_DEBUG=false`. O Render preenche sozinho `PORT` e `RENDER_EXTERNAL_HOSTNAME` (já aceito no `ALLOWED_HOSTS`). `CORS_ALLOWED_ORIGINS` = domínio da Vercel, sem barra no fim. |
+| Vercel | `VITE_API`, `VITE_API_URL`, `BACKEND_URL`, `CRON_TOKEN`, `CRON_SECRET` | Ver o README da branch `frontend`. `CRON_TOKEN` igual ao do Render. Mudou uma `VITE_*`? Redeploy. |
+
+**O que a imagem faz ao ligar:** `migrate --noinput` e depois `gunicorn` (2 workers, porta
+`$PORT`). O plano gratuito do Render não tem pré-deploy nem shell: as migrações rodam a cada
+início (sem migração nova, não fazem nada). A API dorme após ~15 min sem uso e leva ~1 min
+para acordar.
+
+**Testar a imagem antes de publicar** (Docker do WSL, contra o banco local):
+
+```powershell
+wsl docker build -f backend/Dockerfile -t tg-backend .
+wsl docker run --rm --network host --env-file .env -e PORT=8001 -e DJANGO_DEBUG=false tg-backend
+# outro terminal:  curl.exe http://localhost:8001/health  →  {"status": "ok", "banco": "ok"}
+```
+
+**Dia da gravação do vídeo** (dados de demonstração no Neon, a partir do PC). As datas da
+demonstração são relativas ao momento em que o comando roda: faça perto da gravação.
+
+```powershell
+cd backend
+$env:DATABASE_URL = "<endereço direto do Neon>"   # vale só nesta janela; o .env não sobrescreve
+..\.venv\Scripts\python manage.py flush --noinput   # APAGA tudo do Neon (só dados de demonstração)
+..\.venv\Scripts\python manage.py popular_demo
+Remove-Item Env:DATABASE_URL                       # volta a usar o banco local do .env
+```
+
+Depois, abrir o app da Vercel e esperar a API acordar (a primeira chamada pode levar ~1 min).
+Com `DJANGO_DEBUG=false`, o Swagger não existe em produção e o `/admin` abre sem estilo
+(não servimos arquivos estáticos): nenhum dos dois entra no vídeo.
+
+## 9. Testes
 
 | Suíte | Comando (de dentro da pasta) | Testes | Precisa de banco |
 |---|---|---|---|
 | Domínio | `python -m unittest discover -s tests -v` em `dominio/` | 53 | não |
 | Simulação | `python -m unittest -v` em `simulacao/` | 16 | não |
-| Backend | `python manage.py test` em `backend/` | 285 + 1 pulado | sim (cria e apaga `test_tg`) |
+| Backend | `python manage.py test` em `backend/` | 292 + 1 pulado | sim (cria e apaga `test_tg`) |
 
 Regra da casa: **nenhum teste existente pode quebrar.**
 
@@ -305,7 +348,7 @@ Regra da casa: **nenhum teste existente pode quebrar.**
 **Testes em tela** (à mão, para a integração e o ensaio do vídeo):
 [docs/roteiro-de-testes-em-tela.md](docs/roteiro-de-testes-em-tela.md).
 
-## 9. API
+## 10. API
 
 O formato completo de cada rota (entradas, saídas, erros) está no
 **[contrato da API](docs/api/contrato.md)**. Erros sempre como
@@ -357,21 +400,21 @@ curl.exe -X POST http://localhost:8000/tarefas/varrer -H "Authorization: Bearer 
 Simulação refeita? Regenere o resumo da projeção: `python manage.py resumir_projecao`.
 </details>
 
-## 10. Escopo
+## 11. Escopo
 
 **Fora de escopo:** Redis, cache, filas, Celery, worker separado; observabilidade
 (Prometheus, Grafana) como entrega; CI/CD; PostGIS, mapa, rotas; integração com PDV,
 importação de planilha, pagamento online, entrega, WhatsApp.
 
 **Depois da v1:** notificação de oferta nova (Web Push), "esqueci minha senha" (exige envio de
-e-mail), Dockerfile de produção e deploy.
+e-mail).
 
 **Limitações declaradas:** perda de unidade já reservada; o token de login não expira sozinho
 ("sair" o apaga).
 
 ---
 
-## 11. Linha do tempo
+## 12. Linha do tempo
 
 Um item só entra como ✅ depois de existir **e** ter sido verificado (a coluna
 "Verificação" diz como).
@@ -404,6 +447,7 @@ Um item só entra como ✅ depois de existir **e** ter sido verificado (a coluna
 | 13/11/2026 | Backend: os 4 pedidos do frontend aceitos — `retirar_ate` na vitrine e no detalhe (o prazo se reservar agora, calculado pela nova função do domínio `prazo_de_retirada`, a mesma que grava o `expira_em`), `validade` na prévia da retirada, **trocar o papel** de alguém da equipe (`PATCH` do vínculo, com a trava da loja) e o `aguardando_retirada` documentado como reservas | Domínio: 3 testes novos (o prazo mostrado = o `expira_em` gravado; nunca passa do fim) · 53 ok. Backend: 12 testes dos pedidos + **2 responsáveis se rebaixando ao mesmo tempo → sobra 1** (5 rodadas) · backend: 267 ok + 1 pulado · simulação: 16 ok |
 | 14/11/2026 | Backend (etapa 13): projeção (grupo G, tela G2) — comando `resumir_projecao` (só lê o CSV da simulação, biblioteca padrão) gera um resumo versionado de 525 células com **somas e contagens**; a rota filtra por faixa de lote, faixa de procura e chegada, soma e divide uma vez; não roda simulação no servidor | 12 testes (**sem filtro = Tabela 5**, número por número; faixas somam 5000 rodadas; chegada 1 h e 4 h diferem; soma-e-divide ≠ média de médias; resumo versionado = regenerado do CSV; filtro = média lida direto do CSV) · controle negativo: um número alterado no resumo → os 2 testes de consistência falham · backend: 279 ok + 1 pulado |
 | 14/11/2026 | Backend: **Swagger** para testar as rotas no navegador (`/api/docs`, drf-spectacular + sidecar, sem CDN), **só com DEBUG ligado**; descrições de todas as rotas num arquivo só (`config/documentacao.py`), com grupo do contrato, filtros, corpo de exemplo e respostas possíveis | 6 testes (toda rota DRF documentada no grupo certo; rotas públicas sem cadeado e as outras com; documento válido **sem nenhum aviso**; sem DEBUG → 404) · controle negativo: uma rota sem anotação → 2 testes falham · conferido ao vivo (login → Authorize → projeção 200) · backend: 285 ok + 1 pulado |
+| 14/11/2026 | Backend pronto para o deploy (Neon + Render): `backend/Dockerfile` multi-stage (Python 3.13.7, domínio instalado como pacote, código do root com o `app` só lendo), `.dockerignore` por **lista de permitidos**, versões fixas no `requirements.txt`; settings com `RENDER_EXTERNAL_HOSTNAME`, HTTPS atrás do proxy e conexão reaproveitada (`CONN_MAX_AGE=60` + checagem); seção Deploy no README | 7 testes (host do Render aceito; HTTPS pelo `X-Forwarded-Proto`; conexão reaproveitada) · imagem testada no Docker do WSL contra o banco local: `migrate` + gunicorn ao ligar, `/health` 200, varredura com token → resumo (2× igual), sem token 401, token errado 403, host estranho 400, Swagger 404; dentro da imagem: usuário `app`, `projecao_resumo.json` presente, 0 testes, 0 `.env`/`.md`, código sem escrita · 313 MB · backend: 292 ok + 1 pulado |
 
 ### Próximos passos
 
@@ -413,5 +457,5 @@ Um item só entra como ✅ depois de existir **e** ter sido verificado (a coluna
 | ⏳ | Rodar o [roteiro de testes em tela](docs/roteiro-de-testes-em-tela.md) com a API real |
 | ⏳ | Ensaio e gravação do vídeo do sistema |
 | ⏳ | **17/11 a 02/12/2026** — apresentação final, com o vídeo |
-| ⏳ | Dockerfile de produção + deploy (Render, Neon, Vercel) — se sobrar tempo |
+| ⏳ | Criar os serviços (Neon, Render, Vercel), configurar as variáveis e conferir o CORS |
 | ⏳ | Notificação de oferta nova (Web Push) |
