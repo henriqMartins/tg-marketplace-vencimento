@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { BuscarCep } from './cep'
+import type { GeocodificarEndereco } from './endereco'
 import type { ObterPosicao } from './posicao'
 
 /** Onde a pessoa quer ver ofertas. Só na memória: NADA é gravado (nem aqui, nem no backend). */
@@ -19,6 +20,8 @@ export interface EstadoLocal {
   verSemLocal(): void
   buscarCep: BuscarCep
   obterPosicao: ObterPosicao
+  /** Endereço da loja → coordenada (L14/G6). */
+  geocodificarEndereco: GeocodificarEndereco
 }
 
 export const ContextoLocal = createContext<EstadoLocal | null>(null)

@@ -26,7 +26,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F8c · L4 lotes, L3 cadastro do lote, L2 novo produto | ✅ |
 | F8d · L5 avisos, L6 conferência, L8 adiar, L7 publicar | ✅ |
 | F8e · G5 lotes e fitas no computador | ✅ |
-| F8f · Endereço → coordenada (Nominatim) na L14/G6 | — |
+| F8f · Endereço → coordenada (Nominatim) na L14/G6 | ✅ |
 | F9 · PWA | — |
 
 ## Decisões do frontend
@@ -90,6 +90,9 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 13/11/2026 | G5 na mesma rota da L4 (`/loja/:id/lotes`), como a G4 e a L9. Situação na URL (`?situacao=`), pedida à API; grupos encerrados ficam de fora, como na L4. "+ Cadastrar lote" abre a L3 num modal, e "+ Novo produto" troca o conteúdo do modal pela L2, que devolve o produto criado |
 | 13/11/2026 | Calendário de fitas da G5: a contagem por cor soma a lista de grupos que a API devolveu; o destaque do bimestre atual sai do mês de hoje (`bimestreDoMes`). É conta de calendário, não a cor de um produto: a cor de cada grupo e lote continua vindo só da API |
 | 14/11/2026 | Mock do grupo F alinhado ao contrato da main (F ✅): cada número usa a data do próprio evento — criadas, parciais e recusas pela criação; encerradas, taxas e semanas pelo encerramento (a expirada na hora em que venceu); perda pelo fim. Isso responde às duas perguntas abertas da F7a (semana do gráfico e totais da G3). Período padrão de 30 dias, `400 periodo_invalido` e `400 estado_invalido` |
+| 14/11/2026 | Endereço → coordenada pelo **Nominatim** (OpenStreetMap), no navegador (`localizacao/endereco.ts`, injetado como o CEP; nos testes, um mapa falso). Conferido em 14/11: 200, CORS liberado (`*`), `lat`/`lon`/`display_name`. Uma busca só ao salvar e só se o endereço mudou (política de uso: sem autocompletar), restrita ao Brasil |
+| 14/11/2026 | Achou → a barra mostra **onde** achou e pede confirmação ("Salvar com esta localização" / "Corrigir endereço"): o endereço da loja não tem campo de cidade, e uma rua com o mesmo nome em outra cidade daria distâncias erradas sem ninguém ver. Não achou → "Salvar sem localização" (latitude e longitude `null`) ou "Corrigir endereço" (decisão 2a da F8). Crédito "© colaboradores do OpenStreetMap" junto do resultado (licença ODbL) |
+| 14/11/2026 | `mensagemDeErro` mostra também as frases de `ErroCep` e `ErroEndereco` (escritas para a pessoa); qualquer outro erro continua com a frase genérica |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

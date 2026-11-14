@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react'
 import { criarClienteDoAmbiente, type ClienteApi } from '../api'
 import { ProvedorToast } from '../componentes/toast/ProvedorToast'
 import type { BuscarCep } from '../localizacao/cep'
+import type { GeocodificarEndereco } from '../localizacao/endereco'
 import type { ObterPosicao } from '../localizacao/posicao'
 import { ProvedorLocal } from '../localizacao/ProvedorLocal'
 import { criarClienteConsultas } from './consultas'
@@ -18,6 +19,7 @@ export interface ProvedorAppProps {
   consultas?: QueryClient
   buscarCep?: BuscarCep
   obterPosicao?: ObterPosicao
+  geocodificarEndereco?: GeocodificarEndereco
 }
 
 /** Tudo que as telas precisam por perto: API, consultas, sessão, local escolhido e toast. */
@@ -30,7 +32,7 @@ export function ProvedorApp({ children, ...pecas }: ProvedorAppProps) {
     <QueryClientProvider client={consultas}>
       <ContextoApi.Provider value={cliente}>
         <ProvedorSessao armazem={armazem}>
-          <ProvedorLocal buscarCep={pecas.buscarCep} obterPosicao={pecas.obterPosicao}>
+          <ProvedorLocal buscarCep={pecas.buscarCep} obterPosicao={pecas.obterPosicao} geocodificarEndereco={pecas.geocodificarEndereco}>
             <ProvedorToast>{children}</ProvedorToast>
           </ProvedorLocal>
         </ProvedorSessao>

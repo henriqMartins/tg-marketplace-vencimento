@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { abrir, CARLOS } from '../../test/abrir'
-import { criarPecas } from '../../test/pecas'
+import { criarPecas, geocodificarFalso } from '../../test/pecas'
 
 const DESKTOP = 1280
 const barra = () => screen.queryByRole('region', { name: 'Alterações não salvas' })
@@ -119,5 +119,68 @@ describe('G2 · janela inicial', () => {
         'true',
       ),
     )
+  })
+})
+
+describe('L14 / G6 · endereço → coordenada (mapa falso, sem internet)', () => {
+  async function trocarEndereco(usuario: ReturnType<typeof userEvent.setup>, endereco: string) {
+    const campo = await screen.findByLabelText('Endereço')
+    await usuario.clear(campo)
+    await usuario.type(campo, endereco)
+    await usuario.click(within(barra()!).getByRole('button', { name: 'Salvar alterações' }))
+  }
+
+  it('achou: mostra onde achou e só salva depois de confirmar, com a coordenada junto', async () => {
+    const usuario = userEvent.setup()
+    const geocodificar = vi.fn(geocodificarFalso)
+    const pecas = criarPecas({ geocodificarEndereco: geocodificar })
+    const atualizar = vi.spyOn(pecas.mock.configuracao, 'atualizarLoja')
+    await abrir('/loja/1/config', { email: CARLOS, largura: DESKTOP, pecas })
+    await trocarEndereco(usuario, 'Rua Bahia, 50, Centro')
+
+    expect(geocodificar).toHaveBeenCalledTimes(1) // uma busca por clique, nada de autocompletar
+    expect(await within(barra()!).findByText(/São José do Rio Preto - SP\. É aqui\?/)).toBeInTheDocument()
+    expect(atualizar).not.toHaveBeenCalled()
+
+    await usuario.click(within(barra()!).getByRole('button', { name: 'Salvar com esta localização' }))
+    expect(atualizar).toHaveBeenCalledWith(1, { endereco: 'Rua Bahia, 50, Centro', latitude: -20.8051, longitude: -49.3812 })
+    await waitFor(() => expect(barra()).not.toBeInTheDocument())
+    expect(screen.getByText(/Localização encontrada · usada para calcular a distância/)).toBeInTheDocument()
+  })
+
+  it('não achou: "Salvar sem localização" apaga a coordenada (latitude e longitude null)', async () => {
+    const usuario = userEvent.setup()
+    const pecas = criarPecas()
+    const atualizar = vi.spyOn(pecas.mock.configuracao, 'atualizarLoja')
+    await abrir('/loja/1/config', { email: CARLOS, largura: DESKTOP, pecas })
+    await trocarEndereco(usuario, 'Rua Inexistente, 1')
+
+    expect(await within(barra()!).findByText('Não encontramos esse endereço no mapa.')).toBeInTheDocument()
+    await usuario.click(within(barra()!).getByRole('button', { name: 'Salvar sem localização' }))
+    expect(atualizar).toHaveBeenCalledWith(1, { endereco: 'Rua Inexistente, 1', latitude: null, longitude: null })
+    expect(await screen.findByText(/Sem localização: a loja aparece no fim da lista/)).toBeInTheDocument()
+  })
+
+  it('"Corrigir endereço" volta ao campo; sem internet, a frase aparece e dá para tentar de novo', async () => {
+    const usuario = userEvent.setup()
+    await abrir('/loja/1/config', { email: CARLOS, largura: DESKTOP })
+    await trocarEndereco(usuario, 'Rua Inexistente, 1')
+    await usuario.click(await within(barra()!).findByRole('button', { name: 'Corrigir endereço' }))
+    expect(screen.getByLabelText('Endereço')).toHaveFocus()
+    expect(within(barra()!).getByRole('button', { name: 'Salvar alterações' })).toBeInTheDocument()
+
+    await trocarEndereco(usuario, 'Rua sem rede, 1')
+    expect(await within(barra()!).findByRole('alert')).toHaveTextContent('Não foi possível buscar o endereço no mapa agora.')
+    expect(within(barra()!).getByRole('button', { name: 'Salvar alterações' })).toBeEnabled()
+  })
+
+  it('sem mudar o endereço, o mapa não é consultado', async () => {
+    const usuario = userEvent.setup()
+    const geocodificar = vi.fn(geocodificarFalso)
+    await abrir('/loja/1/config', { email: CARLOS, largura: DESKTOP, pecas: criarPecas({ geocodificarEndereco: geocodificar }) })
+    await usuario.type(await screen.findByLabelText('Nome'), ' 2')
+    await usuario.click(within(barra()!).getByRole('button', { name: 'Salvar alterações' }))
+    await waitFor(() => expect(barra()).not.toBeInTheDocument())
+    expect(geocodificar).not.toHaveBeenCalled()
   })
 })

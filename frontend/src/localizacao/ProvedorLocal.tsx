@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { buscarCep as buscarCepReal, type BuscarCep } from './cep'
+import { geocodificarEndereco as geocodificarReal, type GeocodificarEndereco } from './endereco'
 import { ContextoLocal, type EstadoLocal, type Local } from './contexto'
 import { obterPosicao as obterPosicaoReal, type ObterPosicao } from './posicao'
 
@@ -8,10 +9,11 @@ export interface ProvedorLocalProps {
   /** Nos testes: serviços falsos (sem internet nem GPS). */
   buscarCep?: BuscarCep
   obterPosicao?: ObterPosicao
+  geocodificarEndereco?: GeocodificarEndereco
 }
 
 /** Guarda o local escolhido na memória da aba. Recarregou a página → sem local. */
-export function ProvedorLocal({ children, buscarCep, obterPosicao }: ProvedorLocalProps) {
+export function ProvedorLocal({ children, buscarCep, obterPosicao, geocodificarEndereco }: ProvedorLocalProps) {
   const [local, setLocal] = useState<Local | null>(null)
   const [decidiu, setDecidiu] = useState(false)
 
@@ -29,8 +31,9 @@ export function ProvedorLocal({ children, buscarCep, obterPosicao }: ProvedorLoc
       },
       buscarCep: buscarCep ?? ((cep) => buscarCepReal(cep)),
       obterPosicao: obterPosicao ?? obterPosicaoReal,
+      geocodificarEndereco: geocodificarEndereco ?? ((endereco) => geocodificarReal(endereco)),
     }),
-    [local, decidiu, buscarCep, obterPosicao],
+    [local, decidiu, buscarCep, obterPosicao, geocodificarEndereco],
   )
 
   return <ContextoLocal.Provider value={estado}>{children}</ContextoLocal.Provider>

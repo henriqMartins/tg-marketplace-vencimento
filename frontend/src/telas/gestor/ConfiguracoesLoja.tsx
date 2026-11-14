@@ -13,6 +13,8 @@ import { FolhaInferior } from '../../componentes/FolhaInferior'
 import { MensagemErro } from '../../componentes/Mensagem'
 import { Selo } from '../../componentes/Selo'
 import { useToast } from '../../componentes/toast/contexto'
+import { useLocal } from '../../localizacao/contexto'
+import type { LocalDoEndereco } from '../../localizacao/endereco'
 import { classes } from '../../util/classes'
 import { codigoDoErro } from '../../util/erros'
 import styles from './Configuracoes.module.css'
@@ -23,6 +25,10 @@ const PAPEIS: { valor: Papel; rotulo: string }[] = [
   { valor: 'responsavel', rotulo: 'Responsável' },
 ]
 const rotuloPapel = (p: Papel) => PAPEIS.find((x) => x.valor === p)!.rotulo
+
+const ID_ENDERECO = 'config-endereco'
+
+type Confirmacao = { tipo: 'encontrado'; local: LocalDoEndereco } | { tipo: 'nao_encontrado' }
 
 type Editaveis = Pick<LojaConfig, 'nome' | 'endereco' | 'janela_padrao_horas' | 'margem_fim_dias' | 'antecedencia_aviso_dias'>
 const CAMPOS: (keyof Editaveis)[] = ['nome', 'endereco', 'janela_padrao_horas', 'margem_fim_dias', 'antecedencia_aviso_dias']
@@ -46,17 +52,27 @@ export function ConfiguracoesLoja() {
   const mostrarToast = useToast()
   const { lojaId } = useLojaAtual()
   const loja = useQuery({ queryKey: ['loja-config', lojaId], queryFn: () => api.configuracao.obterLoja(lojaId) })
+  const { geocodificarEndereco } = useLocal()
   // null = sem edição; o formulário mostra o que a API devolveu.
   const [rascunho, setRascunho] = useState<Editaveis | null>(null)
+  // Endereço novo: antes de salvar, a pessoa confirma onde o mapa achou (ou salva sem localização).
+  const [confirmacao, setConfirmacao] = useState<Confirmacao | null>(null)
 
   const salvar = useMutation({
-    mutationFn: (campos: Partial<Editaveis>) => api.configuracao.atualizarLoja(lojaId, campos),
+    mutationFn: (campos: Partial<Omit<LojaConfig, 'id'>>) => api.configuracao.atualizarLoja(lojaId, campos),
     onSuccess: (nova, campos) => {
       consultas.setQueryData(['loja-config', lojaId], nova)
       setRascunho(null)
+      setConfirmacao(null)
       if ('nome' in campos) recarregarEu() // o nome aparece no menu e no cabeçalho
       mostrarToast('Configurações salvas.')
     },
+  })
+
+  // Uma busca por clique em "Salvar" (política de uso do Nominatim: nada de autocompletar).
+  const buscarNoMapa = useMutation({
+    mutationFn: (endereco: string) => geocodificarEndereco(endereco),
+    onSuccess: (local) => setConfirmacao(local ? { tipo: 'encontrado', local } : { tipo: 'nao_encontrado' }),
   })
 
   if (loja.isPending) return <EsqueletoLista quantidade={3} rotulo="Carregando configurações…" />
@@ -68,12 +84,26 @@ export function ConfiguracoesLoja() {
   const mudou = Object.keys(mudancas).length > 0
   const editar = (parte: Partial<Editaveis>) => {
     salvar.reset()
+    buscarNoMapa.reset()
+    setConfirmacao(null)
     setRascunho({ ...form, ...parte })
+  }
+  const descartar = () => {
+    buscarNoMapa.reset()
+    setConfirmacao(null)
+    setRascunho(null)
+  }
+  const corrigirEndereco = () => {
+    setConfirmacao(null)
+    document.getElementById(ID_ENDERECO)?.focus()
   }
 
   function enviar(e: FormEvent) {
     e.preventDefault()
-    if (mudou) salvar.mutate(mudancas)
+    if (!mudou) return
+    // Endereço mudou: primeiro o mapa; a coordenada vai junto no PATCH (latitude e longitude juntas).
+    if ('endereco' in mudancas) buscarNoMapa.mutate(form.endereco.trim())
+    else salvar.mutate(mudancas)
   }
 
   return (
@@ -90,7 +120,9 @@ export function ConfiguracoesLoja() {
           </h2>
           <Campo rotulo="Nome" value={form.nome} maxLength={120} onChange={(e) => editar({ nome: e.target.value })} />
           <Campo
+            id={ID_ENDERECO}
             rotulo="Endereço"
+            dica="Rua, número, bairro e cidade"
             value={form.endereco}
             maxLength={255}
             onChange={(e) => editar({ endereco: e.target.value })}
@@ -161,23 +193,66 @@ export function ConfiguracoesLoja() {
       {/* Só aparece quando há mudança; o erro da API (ex.: antecedência ≤ margem) fica aqui. */}
       {mudou && (
         <div className={styles.barraSalvar} role="region" aria-label="Alterações não salvas">
-          <div className={styles.textoBarra}>
-            <strong>Alterações não salvas</strong>
+          <div className={styles.textoBarra} aria-live="polite">
+            {confirmacao?.tipo === 'encontrado' ? (
+              <span>
+                <strong>Localização encontrada:</strong> {confirmacao.local.descricao}. É aqui?
+              </span>
+            ) : confirmacao?.tipo === 'nao_encontrado' ? (
+              <span>
+                <strong>Não encontramos esse endereço no mapa.</strong> Sem localização, a loja aparece no fim da lista
+                ordenada por distância.
+              </span>
+            ) : (
+              <strong>Alterações não salvas</strong>
+            )}
+            {/* Licença ODbL do OpenStreetMap: o crédito aparece junto do resultado. */}
+            {confirmacao && <small className={styles.credito}>Mapa: © colaboradores do OpenStreetMap</small>}
+            {buscarNoMapa.isError && <MensagemErro erro={buscarNoMapa.error} />}
             {salvar.isError && <MensagemErro erro={salvar.error} />}
           </div>
           <div className={styles.acoesBarra}>
-            <Botao variante="secundario" larguraTotal={false} onClick={() => setRascunho(null)} disabled={salvar.isPending}>
-              Descartar
-            </Botao>
-            <Botao
-              type="submit"
-              form="form-config"
-              larguraTotal={false}
-              carregando={salvar.isPending}
-              textoCarregando="Salvando…"
-            >
-              Salvar alterações
-            </Botao>
+            {confirmacao ? (
+              <>
+                <Botao variante="secundario" larguraTotal={false} onClick={corrigirEndereco} disabled={salvar.isPending}>
+                  Corrigir endereço
+                </Botao>
+                <Botao
+                  larguraTotal={false}
+                  carregando={salvar.isPending}
+                  textoCarregando="Salvando…"
+                  onClick={() =>
+                    salvar.mutate(
+                      confirmacao.tipo === 'encontrado'
+                        ? { ...mudancas, latitude: confirmacao.local.latitude, longitude: confirmacao.local.longitude }
+                        : { ...mudancas, latitude: null, longitude: null },
+                    )
+                  }
+                >
+                  {confirmacao.tipo === 'encontrado' ? 'Salvar com esta localização' : 'Salvar sem localização'}
+                </Botao>
+              </>
+            ) : (
+              <>
+                <Botao
+                  variante="secundario"
+                  larguraTotal={false}
+                  onClick={descartar}
+                  disabled={salvar.isPending || buscarNoMapa.isPending}
+                >
+                  Descartar
+                </Botao>
+                <Botao
+                  type="submit"
+                  form="form-config"
+                  larguraTotal={false}
+                  carregando={salvar.isPending || buscarNoMapa.isPending}
+                  textoCarregando={buscarNoMapa.isPending ? 'Buscando no mapa…' : 'Salvando…'}
+                >
+                  Salvar alterações
+                </Botao>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -186,11 +261,10 @@ export function ConfiguracoesLoja() {
 }
 
 function Localizacao({ salvo, enderecoMudou }: { salvo: LojaConfig; enderecoMudou: boolean }) {
-  // A busca da coordenada pelo endereço (Nominatim) entra na F8; até lá, só informa.
   if (enderecoMudou) {
     return (
       <p className={styles.ajuda}>
-        A localização do endereço novo ainda não é buscada: a distância continua calculada pelo endereço anterior.
+        Ao salvar, buscamos o endereço novo no mapa (OpenStreetMap) para calcular a distância até os clientes.
       </p>
     )
   }

@@ -250,3 +250,9 @@
     bottom: calc(64px + 12px + env(safe-area-inset-bottom));
   }
 }
+
+/* Crédito do OpenStreetMap (licença ODbL) na barra, junto do resultado da busca. */
+.credito {
+  font-size: 12px;
+  opacity: 0.8;
+}
