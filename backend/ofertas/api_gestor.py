@@ -1,5 +1,6 @@
 """
 Grupo F do contrato (Gestor): indicadores do painel (G1) e histórico (G3).
+Grupo G (Projeção, G2): no fim do arquivo.
 Só o RESPONSÁVEL da loja (o funcionário opera; quem acompanha o negócio é o dono).
 
 Antes de contar, a rota faz a varredura da loja (regra 6): expira as reservas
@@ -15,7 +16,7 @@ from rest_framework.views import APIView
 from config.erros import erro
 from contas.permissoes import EhResponsavel
 
-from . import apresentacao, indicadores, servico
+from . import apresentacao, indicadores, projecao, servico
 from .api_lotes import _data
 
 PERIODO_PADRAO = timedelta(days=29)        # sem período: últimos 30 dias, hoje incluído
@@ -74,3 +75,29 @@ class Historico(RotaDoGestor):
                  + [(r.criada_em, apresentacao.item_recusa(r)) for r in recusas])
         itens.sort(key=lambda par: par[0], reverse=True)              # mais recente primeiro
         return Response({**totais, "itens": [item for _, item in itens]})
+
+
+class Projecao(APIView):
+    """
+    GET /api/lojas/{lojaId}/projecao?lote=&procura=&chegada=   (grupo G, tela G2)
+    Só lê o resumo da simulação: não depende do banco nem do período, não varre nada.
+    Sem filtro e chegada 2 h = Tabela 5 do artigo. Nenhuma resposta recomenda janela.
+    """
+    permission_classes = [EhResponsavel]
+
+    def get(self, request, loja_id):
+        p = request.query_params
+        lote = p.get("lote") or None
+        procura = p.get("procura") or None
+        chegada = p.get("chegada") or str(projecao.CHEGADA_PADRAO)
+        if (lote not in (None, *projecao.ROTULOS_LOTE)
+                or procura not in (None, *projecao.ROTULOS_PROCURA)
+                or chegada not in {str(c) for c in projecao.CHEGADAS}):
+            return erro(400, "Filtro inválido: lote " + ", ".join(projecao.ROTULOS_LOTE)
+                        + "; procura " + ", ".join(projecao.ROTULOS_PROCURA)
+                        + "; chegada 1, 2 ou 4.", "parametro_invalido")
+        chegada = int(chegada)
+        janelas, rodadas = projecao.calcular(lote, procura, chegada)
+        return Response({"rodadas": rodadas,
+                         "filtro": {"lote": lote, "procura": procura, "chegada": chegada},
+                         "janelas": janelas})

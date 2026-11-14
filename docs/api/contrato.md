@@ -12,11 +12,11 @@ Status de cada grupo:
 |---|---|---|---|
 | A · Acesso | A1–A5, C9 | ✅ | 6 |
 | B · Consumidor | C2–C8 | ✅ | 8 |
-| C · Operação da loja | L1, L9–L13 | 📝 | 9 |
-| D · Lote, fita e aviso | L2–L8, L4/G5 | 📝 | 10 |
-| E · Configuração da loja | L14/G6 | 📝 | 10 |
-| F · Gestor | G1, G3, G4 | 📝 | 11 |
-| G · Projeção | G2 | 📝 | 13 |
+| C · Operação da loja | L1, L9–L13 | ✅ | 9 |
+| D · Lote, fita e aviso | L2–L8, L4/G5 | ✅ | 10 |
+| E · Configuração da loja | L14/G6 | ✅ | 10 |
+| F · Gestor | G1, G3, G4 | ✅ | 11 |
+| G · Projeção | G2 | ✅ | 13 |
 | H · Push | C1, C9 | fora até 09/11 | — |
 
 ---
@@ -123,9 +123,14 @@ eles a lista não é ordenada por distância), `categoria`, `faixa_desconto`, `q
   "validade": "2026-10-28",
   "fim": "2026-10-27T23:59:00-03:00",
   "janela_horas": 4,
+  "retirar_ate": "2026-10-22T20:00:00-03:00",  // se reservar AGORA: mín(agora + janela, fim)
   "fita": { "cor": "branco", "bimestre": "set–out", "ano": 2026 }
 }]
 ```
+`retirar_ate` (pedido 1, aceito em 13/11/2026): calculado pelo **domínio** no momento da
+leitura (`dominio.prazo_de_retirada`, a mesma função que grava o `expira_em` da reserva).
+Vem na vitrine e no detalhe; `null` na oferta encerrada. Arredondado ao segundo. O valor
+oficial continua sendo o `expira_em` da reserva criada.
 
 ### `GET /api/ofertas/{id}` (pública)
 `200 OfertaVitrine` · `404 nao_encontrada`. Oferta encerrada vem com `livre: 0` e
@@ -226,7 +231,8 @@ id da reserva.
 ```jsonc
 // RetiradaPrevia
 { "reserva": ReservaLoja, "codigo": "482917", "total": "6.28",
-  "produto": "Iogurte natural 170 g", "fita": Fita }
+  "produto": "Iogurte natural 170 g", "fita": Fita,
+  "validade": "2026-10-28" }      // pedido 3: a amostra da fita sempre com a data exata
 // RetiradaFeita
 { "reserva": ReservaLoja, "total": "6.28", "retirada_por": "Carlos Lima",
   "oferta": { "id": 1, "estoque": Estoque } }
@@ -348,6 +354,9 @@ Pronto em 13/11/2026. Detalhes que valem para o mock:
   o `409 fim_ja_passou` protege.
 - Erros do POST de vínculo: `400 email_invalido`, `400 papel_invalido`. O e-mail é comparado
   sem diferenciar maiúsculas. A pessoa precisa **já ter conta**.
+- PATCH de vínculo (pedido 4, aceito em 13/11/2026): promove ou rebaixa. Mesmo papel = `200`
+  sem mudar nada. Trava a loja como o DELETE: dois responsáveis se rebaixando ao mesmo
+  tempo não zeram a equipe.
 - DELETE: `404 nao_encontrado` (vínculo de outra loja ou inexistente). Remover alguém **não
   apaga a conta**: a pessoa volta a ser só consumidora. A lista vem com responsáveis primeiro.
 
@@ -357,6 +366,7 @@ Pronto em 13/11/2026. Detalhes que valem para o mock:
 | `PATCH /api/lojas/{lojaId}` | campos de `LojaConfig` | `200 LojaConfig` | `400` por campo |
 | `GET /api/lojas/{lojaId}/vinculos` | — | `200 [Vinculo]` | — |
 | `POST /api/lojas/{lojaId}/vinculos` | `{email, papel}` | `201 Vinculo` | `404 conta_nao_existe`, `409 ja_vinculado` |
+| `PATCH /api/lojas/{lojaId}/vinculos/{id}` | `{papel}` | `200 Vinculo` | `400 papel_invalido`, `404 nao_encontrado`, `409 proprio_vinculo`, `409 ultimo_responsavel` |
 | `DELETE /api/lojas/{lojaId}/vinculos/{id}` | — | `204` | `409 ultimo_responsavel`, `409 proprio_vinculo` |
 
 ```jsonc
@@ -416,7 +426,7 @@ As tabelas "Ofertas ativas" e "Reservas em andamento" da G1 usam o grupo C.
       "quantidade": 0, "pedido": 1, "cliente": "Bruno M.", "estado": "recusa", "encerrada_em": null } ] }
 ```
 
-## G · Projeção 📝
+## G · Projeção ✅
 Só **responsável**. Não roda simulação: lê um **resumo pré-calculado** dos resultados de
 `simulacao/resultados_n5000/` (ver "De onde vêm os números", abaixo).
 
@@ -424,6 +434,7 @@ Só **responsável**. Não roda simulação: lê um **resumo pré-calculado** do
 - `lote`: faixa de tamanho do lote — `5-14`, `15-24`, `25-34`, `35-44`, `45-60` ou vazio (todas);
 - `procura`: faixa de procura ÷ lote — `0.3-0.8`, `0.8-1.3`, `1.3-1.8`, `1.8-2.3`, `2.3-3.0` ou vazio;
 - `chegada`: mediana do tempo até o cliente chegar — `1`, `2` (padrão) ou `4` horas.
+- Parâmetro vazio = sem filtro. Valor fora da lista → `400 parametro_invalido`.
 
 ```jsonc
 { "rodadas": 5000,                  // quantas rodadas simuladas entram na conta
@@ -439,17 +450,23 @@ Só **responsável**. Não roda simulação: lê um **resumo pré-calculado** do
 ```
 **Sem filtro e com chegada 2 h, a resposta é exatamente a Tabela 5 do artigo** (o exemplo
 acima). Com filtro, a tela mostra sempre "baseado em N rodadas". Nenhum texto recomenda janela.
+Combinação de filtros sem nenhuma rodada: `rodadas: 0` e os números `null` (as 7 janelas vêm
+sempre). As faixas incluem o limite de baixo e não o de cima (procura 0.8 cai em `0.8-1.3`);
+a última inclui o topo (lote 60, procura 3.0).
 
 #### De onde vêm os números (backend, etapa 13)
 1. `simulacao/resultados_n5000/rodadas_tempo_chegada.csv` (19 MB, fora do git,
    regenerável pela semente) tem as 3 medianas × 5000 rodadas × 7 janelas; a mediana
    2 h é idêntica ao `rodadas.csv` base (conferido em 05/11/2026: 35.000 de 35.000 linhas).
-2. Um script que **só lê** esse CSV gera um resumo pequeno e versionado: para cada
+2. O comando `manage.py resumir_projecao` **só lê** esse CSV e gera um resumo pequeno e
+   versionado (`backend/ofertas/dados/projecao_resumo.json`, 525 células): para cada
    chegada × faixa de lote × faixa de procura × janela, guarda **somas e contagens**
    (não médias), com contagem própria para bloqueados e retirada (rodadas sem reserva
    não têm essas taxas).
 3. A rota soma as células da seleção e divide: dá a média exata das rodadas filtradas.
-   Teste obrigatório: sem filtro = Tabela 5.
+   Teste obrigatório: sem filtro = Tabela 5 (`ofertas/test_projecao.py`). Outro teste
+   regenera o resumo a partir do CSV e compara com o versionado (pulado se o CSV não
+   estiver na máquina).
 
 ## H · Push — fora até 09/11
 Padrão Web Push (VAPID). Rotas previstas: `POST /api/push/inscricao`, `DELETE /api/push/inscricao`.

@@ -42,26 +42,48 @@ def vincular(loja_id: int, email: str, papel: str) -> Vinculo:
 
 
 # 📖 ESTUDAR: a mesma receita da reserva (trava → confere → grava), aplicada à equipe.
-# Sem a trava, dois responsáveis removendo um ao outro AO MESMO TEMPO leriam
-# "somos 2" e os dois removeriam: a loja ficaria sem responsável. Com a trava, o
-# segundo espera o primeiro terminar e, ao conferir de novo, descobre que já
-# não é responsável (test_concorrencia.TestEquipeSimultanea prova isso).
+# Sem a trava, dois responsáveis removendo (ou rebaixando) um ao outro AO MESMO
+# TEMPO leriam "somos 2" e os dois conseguiriam: a loja ficaria sem responsável.
+# Com a trava, o segundo espera o primeiro terminar e, ao conferir de novo,
+# descobre que já não é responsável (test_concorrencia prova os dois casos).
+def _travar_e_achar(loja_id: int, vinculo_id: int, quem, acao: str) -> Vinculo:
+    """Trava a loja, confere quem pede (de novo) e devolve o vínculo-alvo."""
+    Loja.objects.select_for_update().get(pk=loja_id)            # uma mudança de equipe por vez
+
+    # O porteiro conferiu ANTES da trava; dentro dela, confere de novo.
+    if papel_na_loja(quem, loja_id) != Papel.RESPONSAVEL:
+        raise ErroEquipe("Só o responsável da loja pode fazer isso.", "sem_permissao")
+    vinculo = Vinculo.objects.filter(pk=vinculo_id, loja_id=loja_id).first()
+    if vinculo is None:
+        raise ErroEquipe("Essa pessoa não faz parte da equipe desta loja.", "nao_encontrado")
+    if vinculo.usuario_id == quem.id:
+        raise ErroEquipe(f"Você não pode {acao} o próprio acesso; peça a outro responsável.",
+                         "proprio_vinculo")
+    return vinculo
+
+
+def _exigir_outro_responsavel(loja_id: int, vinculo: Vinculo) -> None:
+    """Tirar um responsável só se sobrar outro (reforço: nunca zerar)."""
+    if vinculo.papel == Papel.RESPONSAVEL:
+        responsaveis = Vinculo.objects.filter(loja_id=loja_id, papel=Papel.RESPONSAVEL).count()
+        if responsaveis <= 1:
+            raise ErroEquipe("A loja precisa de pelo menos um responsável.", "ultimo_responsavel")
+
+
 def remover(loja_id: int, vinculo_id: int, quem) -> None:
     with transaction.atomic():
-        Loja.objects.select_for_update().get(pk=loja_id)        # uma mudança de equipe por vez
-
-        # O porteiro conferiu ANTES da trava; dentro dela, confere de novo.
-        if papel_na_loja(quem, loja_id) != Papel.RESPONSAVEL:
-            raise ErroEquipe("Só o responsável da loja pode fazer isso.", "sem_permissao")
-        vinculo = Vinculo.objects.filter(pk=vinculo_id, loja_id=loja_id).first()
-        if vinculo is None:
-            raise ErroEquipe("Essa pessoa não faz parte da equipe desta loja.", "nao_encontrado")
-        if vinculo.usuario_id == quem.id:
-            raise ErroEquipe("Você não pode remover o próprio acesso; peça a outro responsável.",
-                             "proprio_vinculo")
-        if vinculo.papel == Papel.RESPONSAVEL:
-            responsaveis = Vinculo.objects.filter(loja_id=loja_id, papel=Papel.RESPONSAVEL).count()
-            if responsaveis <= 1:                               # reforço: nunca zerar
-                raise ErroEquipe("A loja precisa de pelo menos um responsável.",
-                                 "ultimo_responsavel")
+        vinculo = _travar_e_achar(loja_id, vinculo_id, quem, "remover")
+        _exigir_outro_responsavel(loja_id, vinculo)
         vinculo.delete()
+
+
+def trocar_papel(loja_id: int, vinculo_id: int, papel: str, quem) -> Vinculo:
+    """Promove ou rebaixa alguém da equipe (pedido 4 do front, aceito em 13/11/2026)."""
+    with transaction.atomic():
+        vinculo = _travar_e_achar(loja_id, vinculo_id, quem, "mudar")
+        if papel != vinculo.papel:
+            if papel != Papel.RESPONSAVEL:                      # rebaixando um responsável
+                _exigir_outro_responsavel(loja_id, vinculo)
+            vinculo.papel = papel
+            vinculo.save(update_fields=["papel"])
+        return vinculo

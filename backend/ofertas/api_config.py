@@ -173,7 +173,18 @@ class Equipe(RotaDaConfiguracao):
 
 
 class MembroDaEquipe(RotaDaConfiguracao):
-    """DELETE /api/lojas/{lojaId}/vinculos/{id}"""
+    """PATCH {papel} e DELETE /api/lojas/{lojaId}/vinculos/{id}"""
+
+    def patch(self, request, loja_id, vinculo_id):
+        papel = request.data.get("papel") if isinstance(request.data, dict) else None
+        if papel not in Papel.values:
+            return erro(400, "Papel: responsavel ou funcionario.", "papel_invalido")
+        try:
+            vinculo = servico_equipe.trocar_papel(loja_id, vinculo_id, papel, request.user)
+        except servico_equipe.ErroEquipe as e:
+            return erro(ERROS_DA_EQUIPE[e.codigo], str(e), e.codigo)
+        vinculo = Vinculo.objects.select_related("usuario").get(pk=vinculo.pk)
+        return Response(apresentacao.vinculo(vinculo, request.user))
 
     def delete(self, request, loja_id, vinculo_id):
         try:

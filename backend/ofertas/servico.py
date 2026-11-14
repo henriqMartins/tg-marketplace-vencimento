@@ -148,6 +148,15 @@ def _travar(oferta_id: int) -> Oferta:
     return Oferta.objects.select_for_update().get(pk=oferta_id)
 
 
+def retirar_ate(oferta: Oferta, agora: datetime) -> datetime:
+    """
+    Até quando a pessoa retira se reservar AGORA (pedido 1 do front). A conta é
+    do domínio — a mesma que grava o expira_em da reserva (regra 1).
+    """
+    janela = oferta.janela.total_seconds() / 3600
+    return data(dominio.prazo_de_retirada(horas(agora), janela, horas(oferta.fim)))
+
+
 # ---------------------------------------------------------------- ações
 
 def reservar(oferta_id: int, consumidor, pedido: int,

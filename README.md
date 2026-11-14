@@ -368,6 +368,16 @@ Cada número usa a data do próprio evento: **criadas** pela criação, **encerr
 taxas) pelo encerramento, **perda** pelo fim da oferta. Compradores bloqueados = recusas +
 parciais, a mesma conta do `simulacao.py`. Sem reserva encerrada no período, a taxa vem `null`.
 
+**Projeção** (grupo G, tela G2): só o responsável. **Não roda simulação**: lê o resumo
+versionado `backend/ofertas/dados/projecao_resumo.json` (somas e contagens por chegada ×
+faixa de lote × faixa de procura × janela). Sem filtro e chegada 2 h = Tabela 5 do artigo.
+
+```powershell
+curl.exe "http://localhost:8000/api/lojas/1/projecao?lote=15-24&chegada=4" -H "Authorization: Token <chave>"
+# simulação refeita? regenerar o resumo (lê simulacao/resultados_n5000/rodadas_tempo_chegada.csv):
+..\.venv\Scripts\python manage.py resumir_projecao
+```
+
 **Configuração da loja e equipe** (grupo E do contrato, tela L14): ler é da equipe toda;
 mudar é só do responsável (o funcionário recebe `403`).
 
@@ -463,12 +473,13 @@ Legenda: ✅ concluído · 🔄 em andamento · ⏳ a fazer
 | 13/11/2026 | Backend (etapa 10b): configuração da loja e equipe (grupo E) — ler/alterar as regras da loja (janela padrão, margem, antecedência, coordenadas), listar, adicionar e remover pessoas da equipe; **permissão por método** (ler = vínculo, mudar = responsável) | 33 testes da API (funcionário lê mas não altera → 403; erro em um campo não grava nenhum; antecedência ≤ margem → 400; mudança não mexe em aviso já agendado; e-mail sem conta → 404; já vinculado → 409; próprio vínculo → 409) + **2 responsáveis removendo um ao outro ao mesmo tempo → sobra 1** (5 rodadas; sem a trava, as 5 falham) · backend: 231 ok + 1 pulado |
 | 13/11/2026 | Backend: dados de demonstração para o vídeo (`manage.py popular_demo`) — 2 lojas, equipe, consumidores e o cenário completo (reservas em todos os estados, parcial, recusa, avisos, colisão de fita), **criados pelos serviços reais** | 4 testes (rodar 2 vezes não duplica; conservação fecha em todas as ofertas; cenário do vídeo presente) · rodado no banco local e conferido pela API (login, resumo do dia, vitrine, avisos) · backend: 235 ok + 1 pulado |
 | 13/11/2026 | Backend (etapa 11): painel do gestor (grupo F) — indicadores por período (reservas criadas, encerradas por estado, taxas de retirada e de expiração, compradores bloqueados = recusas + parciais, perda, série semanal) e histórico de reservas e recusas com filtros; **cada número pela data do próprio evento**; varredura antes de contar. `popular_demo` ganhou 4 semanas de passado | 18 testes (cenário de números conhecidos: 6/9 retiradas, 2 recusa+parcial, perda 15; abrir o painel varre e abrir de novo dá o mesmo número; criada às 22:00 e vencida às 02:00 conta em dias diferentes; taxa `null` sem encerradas; funcionário → 403) + painel da demonstração conferido contra a conta feita à mão (65 encerradas, perda 21) · backend: 254 ok + 1 pulado |
+| 13/11/2026 | Backend: os 4 pedidos do frontend aceitos — `retirar_ate` na vitrine e no detalhe (o prazo se reservar agora, calculado pela nova função do domínio `prazo_de_retirada`, a mesma que grava o `expira_em`), `validade` na prévia da retirada, **trocar o papel** de alguém da equipe (`PATCH` do vínculo, com a trava da loja) e o `aguardando_retirada` documentado como reservas | Domínio: 3 testes novos (o prazo mostrado = o `expira_em` gravado; nunca passa do fim) · 53 ok. Backend: 12 testes dos pedidos + **2 responsáveis se rebaixando ao mesmo tempo → sobra 1** (5 rodadas) · backend: 267 ok + 1 pulado · simulação: 16 ok |
+| 14/11/2026 | Backend (etapa 13): projeção (grupo G, tela G2) — comando `resumir_projecao` (só lê o CSV da simulação, biblioteca padrão) gera um resumo versionado de 525 células com **somas e contagens**; a rota filtra por faixa de lote, faixa de procura e chegada, soma e divide uma vez; não roda simulação no servidor | 12 testes (**sem filtro = Tabela 5**, número por número; faixas somam 5000 rodadas; chegada 1 h e 4 h diferem; soma-e-divide ≠ média de médias; resumo versionado = regenerado do CSV; filtro = média lida direto do CSV) · controle negativo: um número alterado no resumo → os 2 testes de consistência falham · backend: 279 ok + 1 pulado |
 
 ### Próximos passos
 
 | Status | Entrega |
 |---|---|
-| ⏳ | Backend (etapa 13): projeção a partir do resumo de `resultados_n5000` |
 | ⏳ | Frontend (worktree `frontend`, etapas F0–F9 do `docs/frontend/BRIEFING-agente.md`), integrado por grupo do contrato |
 | ⏳ | **09/11/2026** — versão para a banca (artigo com os protótipos das telas) |
 | ⏳ | Notificação de oferta nova (Web Push) — depois de 09/11 |
