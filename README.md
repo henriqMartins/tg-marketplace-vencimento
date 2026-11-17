@@ -305,18 +305,29 @@ wsl docker run --rm --network host --env-file .env -e PORT=8001 -e DJANGO_DEBUG=
 # outro terminal:  curl.exe http://localhost:8001/health  →  {"status": "ok", "banco": "ok"}
 ```
 
-**Dia da gravação do vídeo** (dados de demonstração no Neon, a partir do PC). As datas da
-demonstração são relativas ao momento em que o comando roda: faça perto da gravação.
+**Dia da gravação do vídeo** (dados de demonstração no Neon, a partir do PC). Guarde o endereço
+**direto** do Neon no seu `.env` local como `NEON_DATABASE_URL=postgresql://...` (o Django não lê
+esse nome; o `.env` nunca vai para o git).
 
 ```powershell
 cd backend
-$env:DATABASE_URL = "<endereço direto do Neon>"   # vale só nesta janela; o .env não sobrescreve
-..\.venv\Scripts\python manage.py flush --noinput   # APAGA tudo do Neon (só dados de demonstração)
+# aponta SÓ esta janela para o Neon (o .env não sobrescreve uma variável já definida)
+$env:DATABASE_URL = (Get-Content ..\.env | Select-String '^NEON_DATABASE_URL=').Line.Split('=',2)[1]
+..\.venv\Scripts\python manage.py migrate --noinput   # garante as tabelas (sem migração nova, não faz nada)
+..\.venv\Scripts\python manage.py flush --noinput     # APAGA tudo do Neon (só dados de demonstração)
 ..\.venv\Scripts\python manage.py popular_demo
-Remove-Item Env:DATABASE_URL                       # volta a usar o banco local do .env
+Remove-Item Env:DATABASE_URL                         # volta a usar o banco local do .env
 ```
 
-Depois, abrir o app da Vercel e esperar a API acordar (a primeira chamada pode levar ~1 min).
+Logo depois:
+- **Grave em até ~1 hora.** As datas da demonstração são relativas ao momento do `popular_demo`.
+  A reserva **parcial** da Ana (requeijão) vence em ~1 h; o código da Ana no iogurte (cena da
+  retirada no balcão), em ~3 h. Ofertas, avisos e a colisão de fita valem o dia todo. Grave
+  primeiro as cenas da reserva parcial e da retirada.
+- **Saia e entre de novo no app.** O `flush` apaga os logins: um navegador que estava logado
+  antes fica com um token que não vale mais (as telas dão erro ou voltam ao login).
+- Abra o app da Vercel e espere a API acordar (a primeira chamada pode levar ~1 min); não deixe
+  o app parado mais de ~15 min entre as cenas.
 Com `DJANGO_DEBUG=false`, o Swagger não existe em produção e o `/admin` abre sem estilo
 (não servimos arquivos estáticos): nenhum dos dois entra no vídeo.
 
