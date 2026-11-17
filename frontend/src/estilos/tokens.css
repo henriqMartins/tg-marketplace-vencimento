@@ -1,0 +1,113 @@
+/*
+ * Tokens visuais do app — fonte única de cor, tipografia e medida.
+ * Origem: docs/frontend/especificacao-telas.md, seção "0 · Base".
+ * Componentes usam sempre var(--token), nunca o valor direto.
+ */
+:root {
+  /* ---------- Cores (paleta oficial: original verde) ---------- */
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --ink: #1b1f1c;
+  --muted: #5b635d;
+  --muted-2: #4a4f4b;
+  --line: #e3e1da;
+  --line-strong: #c9c6bc;
+
+  --primary: #1e6a48;
+  --primary-dark: #14503a;
+  --primary-soft: #e3f0e8;
+  --primary-claro: #cfe6da; /* texto secundário sobre primary (A1); 4,8:1 */
+
+  --discount: #c2410c; /* selo de desconto, texto branco */
+
+  --placeholder: #edebe4; /* imagem de produto (sem foto no escopo) */
+  --placeholder-icon: #8a8678;
+  --neutral: #ecebe5; /* esqueleto, fundo de quadros de estado */
+
+  --warn-bg: #fef3c7; /* parcial, colisão, compromisso */
+  --warn-text: #6b3f00;
+
+  --danger-bg: #fde8e7; /* erro, cancelar */
+  --danger-text: #8a1c13;
+  --danger-strong: #a3261b;
+  --danger-border: #e7b4ae;
+
+  --urgent: #b42318; /* prazo curto, contador de avisos */
+
+  --success-bg: #e4f1e4; /* retirada, oferta ativa */
+  --success-text: #1f5b2a;
+
+  --pending-bg: #fbefd0; /* reservada, servidor acordando */
+  --pending-text: #6b4a00;
+
+  --chart-expirada: #e8913a;
+
+  /* Gestor (G1–G3) */
+  --alerta: #b4530c; /* taxa de expiração; reserva com menos de 1 h */
+  --bloqueio-bg: #fbe9de; /* recusa e compradores bloqueados */
+  --bloqueio-text: #8a3108;
+
+  /* Barra de estoque (L9, L10): sempre acompanhada do resumo em texto. */
+  --estoque-retirado: var(--primary-dark);
+  --estoque-reservado: #e9b23a;
+  --estoque-livre: #9cc9a0;
+  --estoque-perda: var(--danger-strong); /* perda e ajuste */
+
+  --veu: rgba(27, 31, 28, 0.45); /* fundo atrás da folha inferior */
+  --desabilitado-bg: #d8d5cc; /* botão desabilitado (artboard Componentes) */
+
+  /* ---------- Fitas (uma cor por bimestre de vencimento) ----------
+   * A amostra aparece SEMPRE com o nome da cor e a data exata. */
+  --fita-vermelho: #d7263d; /* jan–fev */
+  --fita-amarelo: #f4c430; /* mar–abr */
+  --fita-verde: #2e9e4f; /* mai–jun */
+  --fita-azul: #1f5fbf; /* jul–ago */
+  --fita-branco: #ffffff; /* set–out */
+  --fita-branco-borda: #9a968a;
+  --fita-preto: #1b1b1b; /* nov–dez */
+
+  /* ---------- Tipografia ---------- */
+  --fonte: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+
+  --texto-titulo-lista: 800 24px / 1.2 var(--fonte);
+  --texto-titulo-tela: 700 20px / 1.25 var(--fonte);
+  --texto-titulo-card: 700 16px / 1.3 var(--fonte);
+  --texto-corpo: 400 15px / 1.45 var(--fonte);
+  --texto-rotulo: 600 14px / 1.3 var(--fonte);
+  --texto-legenda: 400 13px / 1.4 var(--fonte);
+  --texto-sobrelinha: 700 12px / 1.3 var(--fonte); /* + maiúsculas e espaçamento */
+  --sobrelinha-espacamento: 0.06em;
+  --texto-selo: 700 12px / 1 var(--fonte);
+  --contador-min: 44px; /* números de contador: 44 a 64 / 800 */
+  --contador-max: 64px;
+
+  /* ---------- Medidas ---------- */
+  --margem-lateral: 16px;
+  --toque-minimo: 44px;
+
+  --raio-campo: 12px; /* campo e botão: 12–14 */
+  --raio-botao: 14px;
+  --raio-card: 16px;
+  --raio-destaque: 20px;
+  --raio-folha: 24px; /* só os cantos de cima */
+  --raio-pilula: 999px;
+
+  --altura-botao-primario: 56px;
+  --altura-botao-secundario: 52px;
+  --altura-botao-perigo: 52px;
+  --borda-botao-secundario: 1.5px;
+
+  --contador-consumidor: 60px;
+  --contador-cadastro: 72px;
+  --contador-conferencia: 96px;
+  --contador-limite-opacidade: 0.4;
+
+  --chip-altura: 38px; /* 36–40 */
+  --puxador-largura: 40px;
+  --puxador-altura: 4px;
+
+  /* Layout */
+  --largura-celular: 390px;
+  --largura-gestor-max: 1240px;
+  --ponto-desktop: 1024px; /* referência; media queries não leem variáveis */
+}

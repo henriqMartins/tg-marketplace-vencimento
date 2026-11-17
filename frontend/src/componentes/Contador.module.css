@@ -1,0 +1,71 @@
+.contador {
+  --tam: var(--contador-consumidor);
+  --fonte-valor: var(--contador-min);
+  --fonte-botao: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-card);
+}
+
+.cadastro {
+  --tam: var(--contador-cadastro);
+  --fonte-valor: 48px;
+  --fonte-botao: 34px;
+}
+
+.conferencia {
+  --tam: var(--contador-conferencia);
+  --fonte-valor: var(--contador-max);
+  --fonte-botao: 44px;
+}
+
+.botao {
+  width: var(--tam);
+  height: var(--tam);
+  flex: none;
+  border: none;
+  border-radius: var(--raio-botao);
+  font-size: var(--fonte-botao);
+  font-weight: 800;
+  line-height: 1;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+.menos {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.mais {
+  background: var(--primary);
+  color: #fff;
+}
+
+.botao:disabled {
+  opacity: var(--contador-limite-opacidade);
+  cursor: not-allowed;
+}
+
+.valor {
+  min-width: 2ch;
+  text-align: center;
+  font-size: var(--fonte-valor);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ajuste {
+  --tam: 80px;
+  --fonte-valor: 52px;
+  --fonte-botao: 38px;
+}

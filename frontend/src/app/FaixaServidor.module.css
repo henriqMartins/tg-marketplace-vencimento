@@ -1,0 +1,54 @@
+.faixa {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px var(--margem-lateral);
+  font: var(--texto-rotulo);
+  font-weight: 700;
+}
+
+.acordando {
+  background: var(--pending-bg);
+  color: var(--pending-text);
+}
+
+.erro {
+  justify-content: space-between;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.offline {
+  background: var(--neutral);
+  color: var(--muted-2);
+}
+
+.botao {
+  height: var(--toque-minimo);
+  padding: 0 14px;
+}
+
+.giro {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid #e9b23a;
+  border-top-color: var(--pending-text);
+  animation: girar 0.9s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giro {
+    animation-duration: 2.5s;
+  }
+}

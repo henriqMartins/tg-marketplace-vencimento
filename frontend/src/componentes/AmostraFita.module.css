@@ -1,0 +1,106 @@
+.amostra {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cor {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+}
+
+.linha .cor {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+}
+
+/* Tabela da G4: cabe embaixo do nome do produto. */
+.compacta {
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.compacta .cor {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.texto {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+.texto strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.vermelho {
+  background: var(--fita-vermelho);
+  border-color: var(--fita-vermelho);
+}
+
+.amarelo {
+  background: var(--fita-amarelo);
+  border-color: var(--fita-amarelo);
+}
+
+.verde {
+  background: var(--fita-verde);
+  border-color: var(--fita-verde);
+}
+
+.azul {
+  background: var(--fita-azul);
+  border-color: var(--fita-azul);
+}
+
+/* Branco precisa de borda para aparecer no fundo claro. */
+.branco {
+  background: var(--fita-branco);
+  border-color: var(--fita-branco-borda);
+}
+
+.preto {
+  background: var(--fita-preto);
+  border-color: var(--fita-preto);
+}
+
+/* Card da fita da L3 (resultado do cadastro do lote). */
+.destaque {
+  gap: 14px;
+}
+
+.destaque .cor {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+}
+
+.textoDestaque {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nomeDestaque {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.bolinha {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  /* Sem cor de borda aqui: o branco usa a borda da classe de cor para aparecer no fundo claro. */
+  border-width: 1.5px;
+  border-style: solid;
+  border-radius: 999px;
+}

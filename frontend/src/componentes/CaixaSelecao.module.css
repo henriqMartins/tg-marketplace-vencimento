@@ -1,0 +1,18 @@
+.caixa {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: var(--toque-minimo);
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.marca {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--primary);
+}

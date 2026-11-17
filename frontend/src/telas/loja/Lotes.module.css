@@ -1,0 +1,385 @@
+/* L2, L3, L4 (lote e fita) — e os mesmos formulários no modal da G5. */
+
+.tela {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titulo {
+  font: var(--texto-titulo-lista);
+}
+
+.ajuda {
+  color: var(--muted);
+  font: var(--texto-legenda);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rotulo {
+  font: var(--texto-rotulo);
+}
+
+.sobrelinha {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+}
+
+.cartao legend {
+  float: left; /* o legend entra no fluxo do cartão, sem cortar a borda */
+  width: 100%;
+  padding: 0;
+}
+
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 15px;
+}
+
+.opcao input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary);
+}
+
+.link {
+  min-height: 44px;
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  font: 700 15px / 1 var(--fonte);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- Busca de produto (L3) ---------- */
+
+.produtoEscolhido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--primary);
+  border-radius: var(--raio-campo);
+  background: var(--primary-soft);
+}
+
+.busca {
+  height: 52px;
+  padding: 0 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  font: inherit;
+  font-size: 16px; /* 16 px: o iPhone não dá zoom no foco */
+}
+
+.resultados {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 4px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  list-style: none;
+}
+
+.itemBusca,
+.novoProduto {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.itemBusca:hover,
+.novoProduto:hover {
+  background: var(--bg);
+}
+
+.novoProduto {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.resultados > .ajuda {
+  padding: 10px;
+}
+
+/* ---------- Resultado do lote ---------- */
+
+.instrucao {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- L4 ---------- */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0 0 72px; /* espaço para o botão flutuante não cobrir o último cartão */
+  list-style: none;
+}
+
+.cartaoGrupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+}
+
+a.cartaoGrupo:hover {
+  border-color: var(--line-strong);
+}
+
+.linhaTopo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nomeProduto {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.situacao {
+  font-size: 14px;
+}
+
+.botaoFlutuante {
+  position: fixed;
+  right: var(--margem-lateral);
+  bottom: calc(64px + 16px + env(safe-area-inset-bottom)); /* acima da navegação inferior */
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 22px;
+  border-radius: var(--raio-pilula);
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.2);
+}
+
+/* ---------- L5–L8 (avisos até a publicação) ---------- */
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tituloTela {
+  font: var(--texto-titulo-tela);
+}
+
+.prazo {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.prazoUrgente {
+  color: var(--urgent);
+}
+
+.prazoAdiado {
+  color: var(--warn-text);
+}
+
+.gradeOpcoes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.gradeJanelas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ladrilho {
+  min-height: 48px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  color: var(--ink);
+  font: 700 15px / 1 var(--fonte);
+  cursor: pointer;
+}
+
+.ladrilho:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ladrilhoAtivo {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.semBorda {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.duasColunas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.precoOferta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: var(--raio-campo);
+  background: var(--primary-soft);
+}
+
+.valorOferta {
+  color: var(--primary-dark);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.seloDesconto {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: var(--raio-pilula);
+  background: var(--discount);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.destaqueNumero {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.cartaoFim {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.caixaAviso {
+  padding: 4px 12px;
+  border-radius: var(--raio-campo);
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.centro {
+  text-align: center;
+}
+
+.circulo {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--raio-pilula);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.resumoOferta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0;
+  text-align: left;
+}
+
+.resumoOferta dt {
+  color: var(--muted);
+  font: var(--texto-legenda);
+}
+
+.resumoOferta dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+}

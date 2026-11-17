@@ -1,0 +1,34 @@
+.codigo {
+  display: flex;
+  justify-content: center;
+}
+
+.grupos {
+  display: flex;
+  gap: 14px;
+}
+
+.grupo {
+  display: flex;
+  gap: 6px;
+}
+
+.caixa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 62px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  font-size: 34px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.invalido .caixa {
+  background: var(--placeholder);
+  color: var(--muted);
+  text-decoration: line-through;
+}

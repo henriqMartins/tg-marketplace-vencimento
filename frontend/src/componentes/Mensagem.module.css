@@ -1,0 +1,26 @@
+.mensagem {
+  padding: 12px;
+  border-radius: var(--raio-campo);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.info {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.sucesso {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.atencao {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.erro {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}

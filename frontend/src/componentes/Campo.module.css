@@ -1,0 +1,71 @@
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.linhaRotulo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rotulo {
+  font: var(--texto-rotulo);
+}
+
+.caixa {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 6px 0 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+}
+
+/* Foco: borda primary de 2 px + halo suave (artboard "Em foco"). */
+.caixa:focus-within {
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.comErro,
+.comErro:focus-within {
+  border: 2px solid var(--danger-strong);
+}
+
+.entrada {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px; /* 16 px evita o zoom automático do iPhone ao focar */
+}
+
+.olho {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--toque-minimo);
+  height: var(--toque-minimo);
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.dica {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+.erro {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger-strong);
+}

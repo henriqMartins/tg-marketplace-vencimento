@@ -1,0 +1,471 @@
+/* Estilos comuns das telas do consumidor (C1–C9). */
+
+.texto {
+  color: var(--muted);
+}
+
+.tituloLista {
+  font: var(--texto-titulo-lista);
+}
+
+.tituloTela {
+  font: var(--texto-titulo-tela);
+}
+
+.pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linkBotao {
+  align-self: center;
+  min-height: var(--toque-minimo);
+  padding: 0 8px;
+  border: none;
+  background: none;
+  color: var(--primary);
+  font: var(--texto-rotulo);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.nota {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+/* ---------- C1 ---------- */
+
+.paginaC1 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 56px 20px 32px;
+}
+
+.circulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.divisor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font: var(--texto-legenda);
+}
+
+.divisor::before,
+.divisor::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--line);
+}
+
+.formCep {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.campoCep {
+  flex: 1;
+}
+
+.botaoBuscar {
+  margin-top: 26px; /* alinha com a caixa do campo (abaixo do rótulo) */
+}
+
+/* ---------- C2 ---------- */
+
+.vitrine {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cabecalhoVitrine {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.botaoLocal {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  min-height: var(--toque-minimo);
+  color: var(--ink);
+  font: var(--texto-rotulo);
+  text-decoration: none;
+}
+
+.botaoLocal svg {
+  color: var(--primary);
+}
+
+.busca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.busca:focus-within {
+  border: 2px solid var(--primary);
+}
+
+.busca input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+/* Linha rolável de chips, sem barra visível. */
+.chips {
+  display: flex;
+  gap: 8px;
+  margin: 0 calc(-1 * var(--margem-lateral));
+  padding: 4px var(--margem-lateral);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.contagem {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rotulo {
+  font: var(--texto-rotulo);
+}
+
+.sobrelinha {
+  font: var(--texto-sobrelinha);
+  letter-spacing: var(--sobrelinha-espacamento);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- C4 ---------- */
+
+.c4 {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.imagemGrande {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 165px;
+  border-radius: var(--raio-destaque);
+  background: var(--placeholder);
+  color: var(--placeholder-icon);
+}
+
+.voltarRedondo {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.seloImagem {
+  position: absolute;
+  top: 16px;
+  right: 14px;
+}
+
+.tituloProduto {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.loja {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.linhaQuantidade {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.cartaoJanela {
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ---------- C5 / C7 ---------- */
+
+.resultado {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding-top: 24px;
+  text-align: center;
+}
+
+.circuloResultado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.circuloSucesso {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.circuloAtencao {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.circuloErro {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.cartaoDetalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+  text-align: left;
+}
+
+/* ---------- C6 ---------- */
+
+.reserva {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cartaoCodigo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-destaque);
+  background: var(--surface);
+  text-align: center;
+}
+
+.cartaoCodigo > button {
+  align-self: stretch;
+}
+
+.contagemRegressiva {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.contagemRegressiva.urgente {
+  color: var(--urgent);
+}
+
+.instrucao {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.economia {
+  font-weight: 800;
+  color: var(--success-text);
+}
+
+/* ---------- C8 ---------- */
+
+.cartaoReserva {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.cartaoReserva:hover {
+  border-color: var(--line-strong);
+}
+
+.linhaTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nomeProduto {
+  font: var(--texto-titulo-card);
+}
+
+.separador {
+  border-top: 1px solid var(--line);
+  margin: 4px 0;
+}
+
+.codigoCartao {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tempoCartao {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.tempoCartao.urgente {
+  color: var(--urgent);
+}
+
+/* ---------- C9 ---------- */
+
+.cabecalhoPerfil {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.textosPerfil {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.secaoPerfil {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.linhaLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.linhaLink > svg {
+  color: var(--primary);
+}
+
+.linkForte {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--toque-minimo);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.linhaComoAbre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+/* "Instalar na tela inicial" (C9): mesma cara da linha de Localização, mas é um botão. */
+.linhaBotao {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.linhaInformativa {
+  cursor: default;
+}

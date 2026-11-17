@@ -1,0 +1,28 @@
+.vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 20px;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--raio-card);
+  text-align: center;
+}
+
+.icone {
+  color: var(--placeholder-icon);
+  margin-bottom: 4px;
+}
+
+.frase {
+  font: var(--texto-titulo-card);
+}
+
+.detalhe {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+.acao {
+  margin-top: 10px;
+}

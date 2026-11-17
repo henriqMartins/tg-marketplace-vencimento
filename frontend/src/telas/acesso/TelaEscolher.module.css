@@ -1,0 +1,105 @@
+.tela {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 56px 20px 32px;
+}
+
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ola {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.titulo {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.texto {
+  color: var(--muted);
+}
+
+.sobrelinha {
+  margin-top: 4px;
+  font: var(--texto-sobrelinha);
+  letter-spacing: var(--sobrelinha-espacamento);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cartao {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 88px;
+  padding: 18px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.cartao:hover {
+  border-color: var(--line-strong);
+}
+
+.icone,
+.iconeForte {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+.icone {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.iconeForte {
+  background: var(--primary);
+  color: #fff;
+}
+
+.corpoCartao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.tituloCartao {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.detalhe {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.rodape {
+  margin-top: auto;
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Ícone PROVISÓRIO (F9): etiqueta de oferta branca sobre o verde primary. -->
+  <rect width="512" height="512" rx="112" fill="#1E6A48"/>
+  <g transform="translate(256 256) rotate(-35) translate(-256 -256)">
+    <path d="M118 256 L206 168 H384 V344 H206 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="36" stroke-linejoin="round"/>
+    <circle cx="198" cy="256" r="24" fill="#1E6A48"/>
+    <rect x="252" y="236" width="104" height="40" rx="20" fill="#E8913A"/>
+  </g>
+</svg>

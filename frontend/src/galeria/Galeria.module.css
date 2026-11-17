@@ -1,0 +1,36 @@
+.galeria {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 24px var(--margem-lateral);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.titulo {
+  font: var(--texto-sobrelinha);
+  letter-spacing: var(--sobrelinha-espacamento);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.legenda {
+  font: var(--texto-legenda);
+  color: var(--muted);
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tituloPagina {
+  font: var(--texto-titulo-lista);
+}
