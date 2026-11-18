@@ -107,3 +107,14 @@
   max-width: var(--largura-gestor-max);
   padding: 32px;
 }
+
+/* ---------- Plataforma no celular: topo com o nome da área e "Trocar perfil" ---------- */
+
+.topoCelular {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 8px var(--margem-lateral) 0;
+}

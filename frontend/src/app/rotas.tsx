@@ -2,13 +2,14 @@
  * Mapa de rotas (especificação, "Mapa de rotas sugerido"). Todas as telas da
  * especificação estão aqui desde a F8.
  */
-import type { RouteObject } from 'react-router'
+import { Navigate, type RouteObject } from 'react-router'
 import { Galeria } from '../galeria/Galeria'
 import { LayoutConsumidor } from './layouts/LayoutConsumidor'
 import type { HandleRota } from './layouts/LayoutGestor'
 import { LayoutLoja } from './layouts/LayoutLoja'
+import { LayoutPlataforma } from './layouts/LayoutPlataforma'
 import { LayoutRaiz } from './layouts/LayoutRaiz'
-import { ExigeLogin, ExigeVinculo, SoVisitante } from './protecao'
+import { ExigeLogin, ExigePlataforma, ExigeVinculo, SoVisitante } from './protecao'
 import { A1Abertura } from './telas/A1Abertura'
 import { NaoEncontrada } from './telas/NaoEncontrada'
 import { TelaCriarConta } from '../telas/acesso/TelaCriarConta'
@@ -16,6 +17,8 @@ import { TelaEntrar } from '../telas/acesso/TelaEntrar'
 import { TelaEscolher } from '../telas/acesso/TelaEscolher'
 import { A6Parceiro } from '../telas/parceria/A6Parceiro'
 import { A7Convite } from '../telas/parceria/A7Convite'
+import { P1Interessados } from '../telas/plataforma/P1Interessados'
+import { P2Lojas } from '../telas/plataforma/P2Lojas'
 import { C1Local } from '../telas/consumidor/C1Local'
 import { C2Vitrine } from '../telas/consumidor/C2Vitrine'
 import { C4Oferta } from '../telas/consumidor/C4Oferta'
@@ -126,6 +129,27 @@ export const rotas: RouteObject[] = [
                       { path: 'reservas', element: <G3Historico />, handle: LARGA },
                     ],
                   },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+
+      // ---------- Plataforma (equipe; docs/parceria.md, P1–P3) ----------
+      {
+        path: 'plataforma',
+        element: <ExigeLogin />,
+        children: [
+          {
+            element: <ExigePlataforma />,
+            children: [
+              {
+                element: <LayoutPlataforma />,
+                children: [
+                  { index: true, element: <Navigate to="interessados" replace /> },
+                  { path: 'interessados', element: <P1Interessados /> },
+                  { path: 'lojas', element: <P2Lojas /> },
                 ],
               },
             ],

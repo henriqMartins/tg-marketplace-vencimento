@@ -1,0 +1,181 @@
+/* P1–P3: área da equipe da plataforma. Computador primeiro; no celular, tudo empilhado. */
+
+.tela {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.titulo {
+  font: var(--texto-titulo-lista);
+}
+
+.subtitulo,
+.nota {
+  color: var(--muted);
+  font: var(--texto-legenda);
+}
+
+.subtitulo {
+  margin-top: 4px;
+}
+
+.rotulo {
+  font: var(--texto-rotulo);
+}
+
+/* ---------- Tabela (computador) ---------- */
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabela th {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: 12px 6px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.principal {
+  display: block;
+  font-weight: 700;
+}
+
+.secundario {
+  display: block;
+  color: var(--muted);
+  font: var(--texto-legenda);
+  overflow-wrap: anywhere;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Lista empilhada (celular) ---------- */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.linhaTopo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ---------- Convite (P3 e P2) ---------- */
+
+.convite {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.linhaCopiar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.textoSelecionavel {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--raio-campo);
+  background: var(--bg);
+  font-size: 15px;
+  resize: vertical;
+}
+
+.linhaCopiar .textoSelecionavel {
+  flex-basis: 260px;
+}
+
+/* ---------- P3: formulário de 560 px ---------- */
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 560px;
+}
+
+.passos {
+  font: var(--texto-sobrelinha);
+  letter-spacing: var(--sobrelinha-espacamento);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.receita {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 0;
+}
+
+.receita dt {
+  color: var(--muted);
+}
+
+.receita dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.localizacao {
+  color: var(--success-text);
+  font-weight: 700;
+}
+
+.sucesso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--success-text);
+}

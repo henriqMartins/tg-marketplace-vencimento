@@ -50,6 +50,15 @@ export function ExigeVinculo({ papel }: { papel?: Papel }) {
   return <Outlet />
 }
 
+/** Área da plataforma (P1–P3): só a equipe (`eu.plataforma`). O backend responde 403 aos outros. */
+export function ExigePlataforma() {
+  const { eu } = useSessao()
+  if (!eu?.plataforma) {
+    return <SemAcesso frase="Área da equipe da plataforma" detalhe="Só a equipe da plataforma abre esta área." />
+  }
+  return <Outlet />
+}
+
 /**
  * Telas de visitante (entrar, criar conta). Quem já está logado vai direto para o destino —
  * inclusive logo depois de entrar: as telas só chamam entrar()/criarConta() e este guarda leva.
