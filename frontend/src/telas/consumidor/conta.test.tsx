@@ -94,6 +94,17 @@ describe('C9 · Perfil', () => {
     expect(secao).toHaveTextContent('Ao abrir o app: Perguntar sempre')
   })
 
+  it('consumidora também troca a escolha lembrada (a A4 vale para todos)', async () => {
+    const usuario = userEvent.setup()
+    lembrarEscolha(7, { tipo: 'comprar' })
+    const { caminhoAtual } = await abrir('/perfil', { email: ANA })
+    const preferencias = await screen.findByRole('region', { name: 'Preferências' })
+    expect(preferencias).toHaveTextContent('Ao abrir o app: Comprar com desconto')
+    await usuario.click(within(preferencias).getByRole('button', { name: 'Escolher de novo' }))
+    await waitFor(() => expect(caminhoAtual()).toBe('/escolher'))
+    expect(lerEscolha(7)).toBeNull()
+  })
+
   it('"Escolher de novo" desfaz a escolha lembrada (A4) e abre a A4', async () => {
     const usuario = userEvent.setup()
     lembrarEscolha(1, { tipo: 'loja', lojaId: 1 }) // Carlos tinha marcado "lembrar"

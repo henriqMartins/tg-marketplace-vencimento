@@ -7,7 +7,7 @@ import type { EscolhaLembrada } from './escolha'
 export interface OpcoesDestino {
   /** De onde veio (?voltar=…), se foi barrada numa tela protegida. */
   voltar?: string | null
-  /** Tela ≥ 1024 px (A5 e layout do gestor). */
+  /** Tela ≥ 1024 px (o responsável abre a loja no painel). */
   desktop: boolean
   escolhaLembrada?: EscolhaLembrada | null
 }
@@ -26,6 +26,10 @@ export function inicioDaLoja(lojaId: number, papel: Papel, desktop: boolean): st
   return desktop && papel === 'responsavel' ? `/loja/${lojaId}/painel` : `/loja/${lojaId}`
 }
 
+/**
+ * Depois de entrar, sempre a A4 (decidido 18/11/2026, docs/parceria.md): inclusive sem vínculo
+ * e no computador. Só pula com ?voltar= ou com a escolha lembrada neste aparelho.
+ */
 export function destinoAposEntrar(eu: Eu, { voltar, desktop, escolhaLembrada }: OpcoesDestino): string {
   // 1. Voltar para onde estava.
   const seguro = caminhoInternoSeguro(voltar)
@@ -33,20 +37,12 @@ export function destinoAposEntrar(eu: Eu, { voltar, desktop, escolhaLembrada }: 
 
   // 2. Escolha lembrada neste aparelho (se ainda vale).
   if (escolhaLembrada?.tipo === 'comprar') return '/vitrine'
+  if (escolhaLembrada?.tipo === 'plataforma' && eu.plataforma) return '/plataforma'
   if (escolhaLembrada?.tipo === 'loja') {
     const vinculo = eu.vinculos.find((v) => v.loja.id === escolhaLembrada.lojaId)
     if (vinculo) return inicioDaLoja(vinculo.loja.id, vinculo.papel, desktop)
   }
 
-  // 3. Sem vínculo: consumidor.
-  if (eu.vinculos.length === 0) return '/vitrine'
-
-  // 4. Computador com um vínculo só: direto para a loja (A5).
-  if (desktop && eu.vinculos.length === 1) {
-    const [unico] = eu.vinculos
-    return inicioDaLoja(unico.loja.id, unico.papel, desktop)
-  }
-
-  // 5. Celular, ou vários vínculos: escolher (A4).
+  // 3. Escolher como entrar (A4).
   return '/escolher'
 }

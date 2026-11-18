@@ -32,7 +32,13 @@ export function C9Perfil() {
   const escolha = lerEscolha(eu.id)
   const lojaLembrada = escolha?.tipo === 'loja' ? eu.vinculos.find((v) => v.loja.id === escolha.lojaId) : undefined
   const comoAbre =
-    escolha?.tipo === 'comprar' ? 'Comprar com desconto' : lojaLembrada ? lojaLembrada.loja.nome : 'Perguntar sempre'
+    escolha?.tipo === 'comprar'
+      ? 'Comprar com desconto'
+      : escolha?.tipo === 'plataforma' && eu.plataforma
+        ? 'Equipe da plataforma'
+        : lojaLembrada
+          ? lojaLembrada.loja.nome
+          : 'Perguntar sempre'
 
   function escolherDeNovo() {
     esquecerEscolha(eu!.id)
@@ -44,6 +50,19 @@ export function C9Perfil() {
     await sair()
     navegar('/entrar', { replace: true })
   }
+
+  // A A4 vale para todos (18/11/2026): quem não tem loja também troca a escolha aqui.
+  const linhaComoAbre = (
+    <div className={styles.linhaComoAbre}>
+      <span>
+        <span className={styles.texto}>Ao abrir o app: </span>
+        <strong>{comoAbre}</strong>
+      </span>
+      <button type="button" className={styles.linkBotao} onClick={escolherDeNovo}>
+        Escolher de novo
+      </button>
+    </div>
+  )
 
   return (
     <div className={styles.reserva}>
@@ -74,6 +93,7 @@ export function C9Perfil() {
           Avisos de oferta nova
         </Interruptor>
         <InstalarApp />
+        {eu.vinculos.length === 0 && linhaComoAbre}
       </section>
 
       {eu.vinculos.length > 0 && (
@@ -94,15 +114,7 @@ export function C9Perfil() {
               </li>
             ))}
           </ul>
-          <div className={styles.linhaComoAbre}>
-            <span>
-              <span className={styles.texto}>Ao abrir o app: </span>
-              <strong>{comoAbre}</strong>
-            </span>
-            <button type="button" className={styles.linkBotao} onClick={escolherDeNovo}>
-              Escolher de novo
-            </button>
-          </div>
+          {linhaComoAbre}
         </section>
       )}
 
