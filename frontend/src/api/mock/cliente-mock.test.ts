@@ -154,6 +154,8 @@ describe('mock · acesso e permissões', () => {
       id: 1,
       nome: 'Carlos Lima',
       email: 'carlos@vilanova.com.br',
+      plataforma: false,
+      interesse: null,
       vinculos: [{ loja: { id: 1, nome: 'Mercadinho Vila Nova' }, papel: 'responsavel' }],
     })
   })

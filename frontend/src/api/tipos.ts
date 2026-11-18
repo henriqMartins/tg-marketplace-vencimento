@@ -79,6 +79,13 @@ export interface Eu {
   nome: string
   email: string
   vinculos: VinculoEu[]
+  /**
+   * Grupo I (parceria). Opcionais SÓ enquanto o backend não tem o grupo I: ausente = a API
+   * ainda não conhece a parceria, e a A4 esconde os cartões novos. Com o grupo I ✅, sempre vêm.
+   */
+  plataforma?: boolean
+  /** Último interesse em parceria da pessoa (ou null). PEDIDO-API 5: trazer o Interesse inteiro. */
+  interesse?: InteresseEu | null
 }
 
 export interface Sessao {
@@ -458,4 +465,106 @@ export interface Projecao {
     bloqueados_pct: number | null
     retirada_pct: number | null
   }[]
+}
+
+// ---------- I · Parceria (docs/parceria.md, seção 3) ----------
+
+/** Em aberto = novo ou em_conversa (um por pessoa). */
+export type EstadoInteresse = 'novo' | 'em_conversa' | 'virou_loja' | 'descartado'
+
+/** O que o `Eu` traz do interesse. */
+export interface InteresseEu {
+  id: number
+  estado: EstadoInteresse
+  criado_em: DataHora
+}
+
+export interface Interesse extends InteresseEu {
+  nome_mercado: string
+  cidade: string
+  telefone: string
+  mensagem: string
+  pessoa: { nome: string; email: string }
+  motivo_descarte: string | null
+  loja_id: number | null
+}
+
+export interface EntradaInteresse {
+  nome_mercado: string
+  cidade: string
+  telefone: string
+  mensagem?: string
+}
+
+export interface EntradaEstadoInteresse {
+  estado: 'em_conversa' | 'descartado'
+  motivo?: string
+}
+
+/** Consulta à Receita (BrasilAPI), normalizada pelo backend. */
+export interface ConsultaCnpj {
+  cnpj: string
+  razao_social: string
+  nome_fantasia: string
+  situacao: string
+  ativa: boolean
+  cnae_principal: { codigo: string; descricao: string }
+  /** CNAE no varejo de alimentos (47.1 e 47.2). Só informativo. */
+  alimentar: boolean
+  endereco: { logradouro: string; numero: string; bairro: string; municipio: string; uf: string; cep: string }
+}
+
+export type EstadoConvite = 'pendente' | 'vencido' | 'aceito'
+
+export interface LojaPlataforma {
+  id: number
+  nome: string
+  cnpj: string | null
+  /** false quando a consulta à Receita falhou no cadastro. */
+  cnpj_verificado: boolean
+  endereco: string
+  telefone: string
+  criada_em: DataHora
+  responsavel: { nome: string; email: string } | null
+  convite: {
+    email: string
+    expira_em: DataHora
+    estado: EstadoConvite
+    /** PEDIDO-API 6: o código do convite pendente, para copiar o link de novo na P2. */
+    codigo?: string
+  } | null
+}
+
+export interface EntradaLojaPlataforma {
+  cnpj: string
+  nome: string
+  endereco: string
+  latitude: number | null
+  longitude: number | null
+  telefone: string
+  email_responsavel: string
+  interesse_id?: number
+}
+
+export interface Convite {
+  codigo: string
+  email: string
+  expira_em: DataHora
+}
+
+export interface LojaCadastrada {
+  loja: LojaPlataforma
+  convite: Convite
+}
+
+/** GET /api/convites/{codigo}: o que a A7 mostra antes do aceite. */
+export interface ConviteAberto {
+  loja: { nome: string; endereco: string }
+  email: string
+  expira_em: DataHora
+}
+
+/** PEDIDO-API 7: formato do vínculo devolvido no aceite (o mesmo do `Eu`). */
+export interface ConviteAceito {
+  vinculo: VinculoEu
 }

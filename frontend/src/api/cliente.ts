@@ -1,6 +1,6 @@
 /*
  * Interface do cliente da API — a "tomada" que as telas usam.
- * Dividida pelos grupos do contrato (A…G) para ligar o backend real aos poucos.
+ * Dividida pelos grupos do contrato (A…G, I) para ligar o backend real aos poucos.
  * Duas implementações: mock (src/api/mock) e http (src/api/http).
  *
  * Erros: os métodos rejeitam com ErroApi (src/api/erros.ts).
@@ -8,6 +8,17 @@
  */
 import type {
   AvisoDetalhe,
+  ConsultaCnpj,
+  Convite,
+  ConviteAberto,
+  ConviteAceito,
+  EntradaEstadoInteresse,
+  EntradaInteresse,
+  EntradaLojaPlataforma,
+  EstadoInteresse,
+  Interesse,
+  LojaCadastrada,
+  LojaPlataforma,
   EntradaAjuste,
   EntradaConta,
   EntradaLogin,
@@ -128,6 +139,31 @@ export interface ApiProjecao {
   projecao(lojaId: number, filtros?: FiltrosProjecao): Promise<Projecao>
 }
 
+/**
+ * I · Parceria — A6, A7, P1–P3 (docs/parceria.md, seção 3). "Equipe" = `eu.plataforma`;
+ * fora dela, as rotas /api/plataforma/... dão 403.
+ */
+export interface ApiParceria {
+  /** POST /api/interesses · 400 campo_obrigatorio, 409 interesse_em_aberto */
+  registrarInteresse(entrada: EntradaInteresse): Promise<Interesse>
+  /** GET /api/plataforma/interesses?estado= */
+  listarInteresses(estado?: EstadoInteresse): Promise<Interesse[]>
+  /** PATCH /api/plataforma/interesses/{id} · 400 estado_invalido */
+  atualizarInteresse(id: number, entrada: EntradaEstadoInteresse): Promise<Interesse>
+  /** GET /api/plataforma/cnpj/{cnpj} · 400 cnpj_invalido, 404 cnpj_nao_encontrado, 503 consulta_indisponivel */
+  consultarCnpj(cnpj: string): Promise<ConsultaCnpj>
+  /** POST /api/plataforma/lojas · 400 cnpj_invalido | cnpj_inativo | email_invalido, 409 cnpj_ja_cadastrado */
+  cadastrarLoja(entrada: EntradaLojaPlataforma): Promise<LojaCadastrada>
+  /** GET /api/plataforma/lojas */
+  listarLojas(): Promise<LojaPlataforma[]>
+  /** POST /api/plataforma/lojas/{id}/convite · 409 loja_ja_ativa. O anterior deixa de valer. */
+  novoConvite(lojaId: number): Promise<Convite>
+  /** GET /api/convites/{codigo} · 404, 409 convite_usado, 410 convite_vencido */
+  obterConvite(codigo: string): Promise<ConviteAberto>
+  /** POST /api/convites/{codigo}/aceitar · 403 email_diferente, 404, 409 convite_usado | ja_vinculado, 410 convite_vencido */
+  aceitarConvite(codigo: string): Promise<ConviteAceito>
+}
+
 /** Fora dos grupos: GET /health (convenções do contrato) — "o servidor está acordado?". */
 export interface ApiServidor {
   saude(): Promise<void>
@@ -142,12 +178,19 @@ export interface ClienteApi {
   configuracao: ApiConfiguracao
   gestor: ApiGestor
   projecao: ApiProjecao
+  parceria: ApiParceria
 }
 
-/** Letras dos grupos, como na tabela de status do contrato. H (push) fica fora até depois de 09/11. */
-export type GrupoContrato = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'
+/** Letras dos grupos, como na tabela de status do contrato. H (push) fica fora. */
+export type GrupoContrato = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'I'
 
-export const GRUPOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+export const GRUPOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I']
+
+/**
+ * Grupos ✅ no contrato: os que VITE_API=http liga. Grupo novo só entra aqui quando o
+ * backend publica (o Henrique avisa) — senão o deploy (VITE_API=http) quebraria.
+ */
+export const GRUPOS_PRONTOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
 /** Qual parte do ClienteApi atende cada grupo do contrato. */
 export const PARTE_DO_GRUPO = {
@@ -158,4 +201,5 @@ export const PARTE_DO_GRUPO = {
   E: 'configuracao',
   F: 'gestor',
   G: 'projecao',
+  I: 'parceria',
 } as const satisfies Record<GrupoContrato, keyof ClienteApi>

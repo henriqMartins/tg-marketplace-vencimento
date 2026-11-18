@@ -75,3 +75,41 @@ código com `// PEDIDO-API n`.
 - Enquanto não houver: a G6 mostra o papel só como selo para todos (`// PEDIDO-API 4`); o mock não
   simula a rota.
 - Decisão (preenchida no main): Aceito em 13/11/2026, como proposto. Mesmo papel responde `200` sem mudar nada. A troca trava a loja, como a remoção.
+
+### 5 · `Eu.interesse` com o interesse inteiro (aberto)
+- Tela: A6 (Quero ser parceiro, modo leitura) e A4 (cartão "Tenho um mercado")
+- Grupo do contrato: I (rascunho em `docs/parceria.md`, seção 3)
+- O que falta: a A6 em modo leitura "mostra os dados enviados e o estado", mas `Eu.interesse`
+  só traz `{id, estado, criado_em}` e não há rota para o dono ler o próprio interesse
+  (`GET /api/plataforma/interesses` é só da equipe).
+- Por que a tela precisa: quem pediu a parceria e volta outro dia quer conferir o que mandou
+  (nome do mercado, cidade, telefone).
+- Proposta de formato: `Eu.interesse` passa a ser o objeto `Interesse` inteiro (ou `null`).
+  É um superconjunto do que já está combinado, então nada quebra.
+- Enquanto não houver: a A6 mostra os dados só logo depois de enviar (vêm na resposta do
+  `POST /api/interesses`); voltando depois, mostra o estado e a data (`// PEDIDO-API 5`).
+- Decisão (preenchida no main):
+
+### 6 · `codigo` do convite pendente em `LojaPlataforma` (aberto)
+- Tela: P2 (Plataforma · Lojas), ação "Copiar link do convite"
+- Grupo do contrato: I
+- O que falta: `LojaPlataforma.convite` traz `email`, `expira_em` e `estado`, mas não o `codigo`.
+  Sem ele, a P2 não consegue montar o link `${origem}/convite/${codigo}` para copiar de novo.
+- Por que a tela precisa: a equipe às vezes perde a mensagem do WhatsApp e precisa reenviar o
+  mesmo link; gerar outro só para copiar invalidaria o anterior sem necessidade.
+- Proposta de formato: `"convite": {"email", "expira_em", "estado", "codigo"}`, com `codigo`
+  só quando `estado = "pendente"` (usado ou vencido não precisa). A rota já é só da equipe.
+- Enquanto não houver: o mock simula (`// PEDIDO-API 6`); sem o campo, a P2 mostra só
+  "Gerar novo convite".
+- Decisão (preenchida no main):
+
+### 7 · Formato do `vinculo` no aceite do convite (aberto)
+- Tela: A7 (Convite para ativar a loja)
+- Grupo do contrato: I
+- O que falta: `POST /api/convites/{codigo}/aceitar` devolve `201 {vinculo}`, sem dizer o formato.
+- Por que a tela precisa: depois do aceite a A7 leva para a L14 da loja (`/loja/{id}/config`)
+  e precisa do `id` da loja.
+- Proposta de formato: o mesmo `VinculoEu` do `Eu`:
+  `{"vinculo": {"loja": {"id": 4, "nome": "Mercearia São Jorge"}, "papel": "responsavel"}}`.
+- Enquanto não houver: o mock devolve nesse formato (`// PEDIDO-API 7`).
+- Decisão (preenchida no main):

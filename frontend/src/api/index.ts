@@ -1,6 +1,6 @@
 /*
  * Ponto de entrada do cliente da API. Monta o ClienteApi grupo a grupo:
- * cada grupo do contrato (A…G) vem do mock ou da API real, conforme VITE_API.
+ * cada grupo do contrato (A…G, I) vem do mock ou da API real, conforme VITE_API.
  * É o ÚNICO arquivo fora de src/api/mock que pode importar o mock.
  */
 import { GRUPOS, PARTE_DO_GRUPO, type ClienteApi, type GrupoContrato } from './cliente'
@@ -60,6 +60,7 @@ export function criarCliente({ config, obterToken, baseUrl, atrasoMockMs, agora,
     configuracao: mock.configuracao,
     gestor: mock.gestor,
     projecao: mock.projecao,
+    parceria: mock.parceria,
   }
   let requisitar: Requisitar | undefined
 

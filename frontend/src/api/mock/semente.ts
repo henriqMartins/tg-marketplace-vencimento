@@ -11,6 +11,7 @@ import type {
   Data,
   Dinheiro,
   EstadoOferta,
+  EstadoInteresse,
   EstadoReserva,
   Estoque,
   LojaResumo,
@@ -29,6 +30,8 @@ export interface UsuarioMock {
   email: string
   senha: string
   vinculos: VinculoMock[]
+  /** Equipe da plataforma (is_staff no backend). */
+  plataforma?: boolean
 }
 
 /** Vínculo com id (o DELETE de vínculo usa o id); o `Eu` devolve sem ele. */
@@ -45,6 +48,11 @@ export interface LojaMock extends LojaResumo {
   janela_padrao_horas: number
   margem_fim_dias: number
   antecedencia_aviso_dias: number
+  // Grupo I (parceria). As lojas da demonstração não têm CNPJ.
+  cnpj: string | null
+  cnpj_verificado: boolean
+  telefone: string
+  criada_em: Date
 }
 
 export interface OfertaMock {
@@ -123,6 +131,32 @@ export interface LoteMock {
   recebido_em: Data
 }
 
+// ---------- Grupo I: parceria ----------
+
+export interface InteresseMock {
+  id: number
+  usuarioId: number
+  nome_mercado: string
+  cidade: string
+  telefone: string
+  mensagem: string
+  estado: EstadoInteresse
+  motivo_descarte: string | null
+  loja_id: number | null
+  criado_em: Date
+}
+
+export interface ConviteMock {
+  codigo: string
+  lojaId: number
+  email: string
+  criado_em: Date
+  expira_em: Date
+  usado_em: Date | null
+  /** Gerar outro convite para a loja invalida este. */
+  substituido: boolean
+}
+
 export interface BancoMock {
   usuarios: UsuarioMock[]
   lojas: LojaMock[]
@@ -132,6 +166,8 @@ export interface BancoMock {
   produtos: ProdutoMock[]
   grupos: GrupoMock[]
   lotes: LoteMock[]
+  interesses: InteresseMock[]
+  convites: ConviteMock[]
   /** token → id do usuário */
   tokens: Map<string, number>
   proximoId: number
@@ -144,6 +180,8 @@ export const USUARIO = {
   carlos: 1, // responsável do Mercadinho Vila Nova
   juliana: 2, // funcionária do Mercadinho Vila Nova
   ana: 7, // consumidora
+  equipe: 20, // equipe da plataforma (docs/parceria.md, seção 5)
+  marcos: 21, // consumidor com um pedido de parceria "novo"
 } as const
 
 const MARGEM_DIAS = 1
@@ -170,10 +208,23 @@ export function criarSemente(agora: Date): BancoMock {
       vinculos: [{ id: 102, loja: { id: 1, nome: 'Mercadinho Vila Nova' }, papel: 'funcionario' }],
     },
     { id: USUARIO.ana, nome: 'Ana Souza', email: 'ana@email.com', senha: SENHA_MOCK, vinculos: [] },
+    { id: USUARIO.equipe, nome: 'Equipe da Plataforma', email: 'equipe@example.com', senha: SENHA_MOCK, vinculos: [], plataforma: true },
+    { id: USUARIO.marcos, nome: 'Marcos Lima', email: 'marcos@example.com', senha: SENHA_MOCK, vinculos: [] },
+  ]
+
+  const interesses: InteresseMock[] = [
+    {
+      id: 3, usuarioId: USUARIO.marcos, nome_mercado: 'Mercearia São Jorge', cidade: 'São José do Rio Preto',
+      telefone: '17999990000', mensagem: 'Vendo bastante laticínio e quero diminuir a perda.', estado: 'novo',
+      motivo_descarte: null, loja_id: null, criado_em: haDias(1),
+    },
   ]
 
   // Regras das ofertas iguais às do seed (janela 4 h, margem 1 dia); coordenadas do contrato.
-  const regras = { janela_padrao_horas: JANELA_HORAS, margem_fim_dias: MARGEM_DIAS, antecedencia_aviso_dias: ANTECEDENCIA_DIAS }
+  const regras = {
+    janela_padrao_horas: JANELA_HORAS, margem_fim_dias: MARGEM_DIAS, antecedencia_aviso_dias: ANTECEDENCIA_DIAS,
+    cnpj: null, cnpj_verificado: false, telefone: '', criada_em: haDias(120),
+  }
   const lojas: LojaMock[] = [
     { id: 1, nome: 'Mercadinho Vila Nova', endereco: 'Rua das Palmeiras, 410 · Boa Vista', distancia_km: 0.4, latitude: -20.8113, longitude: -49.3758, ...regras },
     { id: 2, nome: 'Empório Santa Cruz', endereco: 'Av. Brasil, 1290 · Santa Cruz', distancia_km: 1.1, latitude: -20.8051, longitude: -49.3812, ...regras },
@@ -281,6 +332,8 @@ export function criarSemente(agora: Date): BancoMock {
     reservas: [...reservas, ...historico.reservas],
     recusas: historico.recusas,
     ...sementeLotes(hoje, ANTECEDENCIA_DIAS),
+    interesses,
+    convites: [],
     tokens: new Map(),
     proximoId: 5000,
   }

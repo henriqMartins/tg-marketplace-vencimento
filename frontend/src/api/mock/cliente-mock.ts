@@ -3,8 +3,8 @@
  * Segue o contrato (formatos, códigos de erro); as regras que só o backend tem
  * ficam fingidas em regras-fingidas.ts. Só src/api/index.ts importa este arquivo.
  *
- * Todos os grupos do contrato (A–G) estão no mock. Os grupos D (grupo-d.ts) e E
- * (config-loja.ts) ficam em arquivos próprios.
+ * Todos os grupos do contrato (A–G, I) estão no mock. Os grupos D (grupo-d.ts), E
+ * (config-loja.ts) e I (grupo-i.ts) ficam em arquivos próprios.
  */
 import type {
   ApiAcesso,
@@ -47,6 +47,7 @@ import {
 import { carregar, salvar, type Guarda } from './persistencia'
 import { conferirParFinal, ErroDeCampo, mudancasDaLoja, paraLojaConfig } from './config-loja'
 import { criarApiLotes } from './grupo-d'
+import { criarApiParceria } from './grupo-i'
 import { calcularProjecao } from './projecao'
 import { criarSemente, type BancoMock, type OfertaMock, type ReservaMock, type UsuarioMock } from './semente'
 
@@ -110,11 +111,13 @@ export function criarClienteMock({
   // ---------- Conversões: modelo interno → formato do contrato ----------
 
   // Vínculo do contrato: sem o id interno e com o nome ATUAL da loja (o PATCH pode renomear).
-  const paraEu = ({ id, nome, email, vinculos }: UsuarioMock): Eu => ({
+  const paraEu = ({ id, nome, email, vinculos, plataforma }: UsuarioMock): Eu => ({
     id,
     nome,
     email,
     vinculos: vinculos.map((v) => ({ loja: { id: v.loja.id, nome: lojaPorId(v.loja.id).nome }, papel: v.papel })),
+    plataforma: plataforma === true,
+    interesse: parceria.interesseDoEu(id),
   })
   const lojaPorId = (lojaId: number) => banco.lojas.find((l) => l.id === lojaId)!
 
@@ -177,6 +180,17 @@ export function criarClienteMock({
     if (!r) throw erro(404, 'nao_encontrada', 'Reserva não encontrada.')
     return r
   }
+
+  // ---------- I · Parceria (grupo-i.ts) ----------
+
+  const { interesseDoEu, ...apiParceria } = criarApiParceria({
+    banco: () => banco,
+    agora,
+    responder,
+    erro,
+    usuarioLogado,
+  })
+  const parceria = { interesseDoEu }
 
   // ---------- /health ----------
 
@@ -749,6 +763,7 @@ export function criarClienteMock({
     configuracao,
     gestor,
     projecao,
+    parceria: apiParceria,
 
     reiniciar() {
       banco = criarSemente(agora())
