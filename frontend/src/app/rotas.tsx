@@ -15,6 +15,7 @@ import { TelaCriarConta } from '../telas/acesso/TelaCriarConta'
 import { TelaEntrar } from '../telas/acesso/TelaEntrar'
 import { TelaEscolher } from '../telas/acesso/TelaEscolher'
 import { A6Parceiro } from '../telas/parceria/A6Parceiro'
+import { A7Convite } from '../telas/parceria/A7Convite'
 import { C1Local } from '../telas/consumidor/C1Local'
 import { C2Vitrine } from '../telas/consumidor/C2Vitrine'
 import { C4Oferta } from '../telas/consumidor/C4Oferta'
@@ -66,8 +67,9 @@ export const rotas: RouteObject[] = [
         element: <ExigeLogin />,
         children: [
           { path: 'escolher', element: <TelaEscolher /> },
-          // Parceria (docs/parceria.md): A6.
+          // Parceria (docs/parceria.md): A6 e A7.
           { path: 'parceiro', element: <A6Parceiro /> },
+          { path: 'convite/:codigo', element: <A7Convite /> },
         ],
       },
       // C1 é pública (o visitante também escolhe o local) e ocupa a tela toda.

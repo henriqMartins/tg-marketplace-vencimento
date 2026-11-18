@@ -53,7 +53,8 @@ export function ExigeVinculo({ papel }: { papel?: Papel }) {
 /**
  * Telas de visitante (entrar, criar conta). Quem já está logado vai direto para o destino —
  * inclusive logo depois de entrar: as telas só chamam entrar()/criarConta() e este guarda leva.
- *   destino="boas-vindas": depois de criar a conta, a C1 (que continua para o ?voltar).
+ *   destino="boas-vindas": depois de criar a conta, a C1 (que continua para o ?voltar);
+ *   vindo de um convite (A7), volta direto para ele.
  */
 export function SoVisitante({ destino }: { destino?: 'boas-vindas' }) {
   const { token, eu, erroEu } = useSessao()
@@ -69,6 +70,8 @@ export function SoVisitante({ destino }: { destino?: 'boas-vindas' }) {
     )
   }
   const voltar = caminhoInternoSeguro(parametros.get('voltar'))
+  // Conta criada pelo link do convite (A7): volta direto, sem passar pela C1 (localização).
+  if (destino === 'boas-vindas' && voltar?.startsWith('/convite/')) return <Navigate to={voltar} replace />
   if (destino === 'boas-vindas') {
     return <Navigate to={voltar ? `/boas-vindas?voltar=${encodeURIComponent(voltar)}` : '/boas-vindas'} replace />
   }
