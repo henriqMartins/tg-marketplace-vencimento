@@ -1,4 +1,4 @@
-import { useId, useState, type InputHTMLAttributes, type ReactNode } from 'react'
+import { useId, useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { classes } from '../util/classes'
 import styles from './Campo.module.css'
 import { IconeOlho, IconeOlhoFechado } from './icones'
@@ -74,5 +74,48 @@ export function CampoSenha(props: Omit<CampoProps, 'type' | 'dentro'>) {
         </button>
       }
     />
+  )
+}
+
+export interface CampoTextoProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'children'> {
+  rotulo: string
+  dica?: string
+  erro?: string | null
+}
+
+/** Rótulo + texto de várias linhas (ex.: mensagem opcional, motivo). Mesmo visual do Campo. */
+export function CampoTexto({ rotulo, dica, erro, id, className, rows = 3, ...entrada }: CampoTextoProps) {
+  const gerado = useId()
+  const idCampo = id ?? gerado
+  const idDica = `${idCampo}-dica`
+  const idErro = `${idCampo}-erro`
+  const descritoPor = [dica && idDica, erro && idErro].filter(Boolean).join(' ') || undefined
+
+  return (
+    <div className={classes(styles.campo, className)}>
+      <label htmlFor={idCampo} className={styles.rotulo}>
+        {rotulo}
+      </label>
+      <div className={classes(styles.caixa, styles.caixaTexto, erro && styles.comErro)}>
+        <textarea
+          id={idCampo}
+          rows={rows}
+          className={classes(styles.entrada, styles.entradaTexto)}
+          aria-invalid={erro ? true : undefined}
+          aria-describedby={descritoPor}
+          {...entrada}
+        />
+      </div>
+      {dica && (
+        <span id={idDica} className={styles.dica}>
+          {dica}
+        </span>
+      )}
+      {erro && (
+        <span id={idErro} className={styles.erro}>
+          {erro}
+        </span>
+      )}
+    </div>
   )
 }

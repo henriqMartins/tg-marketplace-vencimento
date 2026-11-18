@@ -14,6 +14,7 @@ import { NaoEncontrada } from './telas/NaoEncontrada'
 import { TelaCriarConta } from '../telas/acesso/TelaCriarConta'
 import { TelaEntrar } from '../telas/acesso/TelaEntrar'
 import { TelaEscolher } from '../telas/acesso/TelaEscolher'
+import { A6Parceiro } from '../telas/parceria/A6Parceiro'
 import { C1Local } from '../telas/consumidor/C1Local'
 import { C2Vitrine } from '../telas/consumidor/C2Vitrine'
 import { C4Oferta } from '../telas/consumidor/C4Oferta'
@@ -61,7 +62,14 @@ export const rotas: RouteObject[] = [
       // Quem já está logado (inclusive logo após entrar) é levado ao destino pelo SoVisitante.
       { element: <SoVisitante />, children: [{ path: 'entrar', element: <TelaEntrar /> }] },
       { element: <SoVisitante destino="boas-vindas" />, children: [{ path: 'criar-conta', element: <TelaCriarConta /> }] },
-      { element: <ExigeLogin />, children: [{ path: 'escolher', element: <TelaEscolher /> }] },
+      {
+        element: <ExigeLogin />,
+        children: [
+          { path: 'escolher', element: <TelaEscolher /> },
+          // Parceria (docs/parceria.md): A6.
+          { path: 'parceiro', element: <A6Parceiro /> },
+        ],
+      },
       // C1 é pública (o visitante também escolhe o local) e ocupa a tela toda.
       { path: 'boas-vindas', element: <C1Local /> },
 
