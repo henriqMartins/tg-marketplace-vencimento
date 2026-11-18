@@ -22,7 +22,7 @@ Status de cada grupo:
 | F · Gestor | G1, G3, G4 | ✅ | 11 |
 | G · Projeção | G2 | ✅ | 13 |
 | H · Push | C1, C9 | fora até 09/11 | — |
-| I · Parceria | A4, A6, A7, P1–P3 | 📝 | 14 |
+| I · Parceria | A4, A6, A7, P1–P3 | 🔧 | 14 |
 
 ---
 
@@ -476,7 +476,7 @@ a última inclui o topo (lote 60, procura 3.0).
 ## H · Push — fora até 09/11
 Padrão Web Push (VAPID). Rotas previstas: `POST /api/push/inscricao`, `DELETE /api/push/inscricao`.
 
-## I · Parceria 📝
+## I · Parceria 🔧
 Entrada de mercados por **parceria fechada** (decidido 18/11/2026). O processo, as telas e o
 porquê ficam em [`../parceria.md`](../parceria.md); aqui ficam só as rotas.
 
