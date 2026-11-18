@@ -22,6 +22,7 @@ Status de cada grupo:
 | F · Gestor | G1, G3, G4 | ✅ | 11 |
 | G · Projeção | G2 | ✅ | 13 |
 | H · Push | C1, C9 | fora até 09/11 | — |
+| I · Parceria | A4, A6, A7, P1–P3 | 📝 (rascunho em [`../parceria.md`](../parceria.md), seção 3) | 14 |
 
 ---
 

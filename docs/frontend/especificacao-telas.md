@@ -211,7 +211,8 @@ No rodapé: botão primário "Entrar", botão secundário "Criar conta" e o link
 **Validação inline:** e-mail já usado, senha curta e termos não aceitos (botão desabilitado).
 
 ## A4 · Escolher como entrar
-Aparece só para quem tem vínculo com alguma loja.
+**Mudou em 18/11/2026:** aparece sempre depois de entrar (inclusive sem vínculo e no computador) e ganha os cartões "Equipe da plataforma" e "Tenho um mercado". Telas novas A6, A7 e P1–P3 e as regras: ver [`docs/parceria.md`](../parceria.md). Onde divergir, vale o `parceria.md`.
+
 
 **Layout:**
 - "Olá, Ana" e o título "Como você quer entrar?" (26 / 800);
