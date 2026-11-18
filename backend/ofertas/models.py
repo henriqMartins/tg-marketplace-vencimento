@@ -13,6 +13,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
+from django.utils import timezone
 
 import dominio
 
@@ -49,9 +50,17 @@ class Loja(models.Model):
     janela_padrao = models.DurationField(default=timedelta(hours=4))
     # Quantos dias antes da validade o aviso aparece para o lojista (L5).
     antecedencia_aviso_dias = models.PositiveSmallIntegerField(default=10)
+    # Entrada por parceria (etapa 14, docs/parceria.md). CNPJ só com dígitos; nulo nas
+    # lojas antigas da demonstração. "Verificado" = a Receita (BrasilAPI) respondeu.
+    cnpj = models.CharField(max_length=14, unique=True, null=True, blank=True)
+    cnpj_verificado = models.BooleanField(default=False)
+    telefone = models.CharField(max_length=20, blank=True, default="")
+    criada_em = models.DateTimeField(default=timezone.now)
 
     class Meta:
         constraints = [
+            models.CheckConstraint(condition=Q(cnpj__isnull=True) | Q(cnpj__regex=r"^[0-9]{14}$"),
+                                   name="loja_cnpj_14_digitos"),
             models.CheckConstraint(
                 condition=Q(margem_fim__gte=timedelta(0)) & Q(margem_fim__lte=MARGEM_MAXIMA),
                 name="loja_margem_de_0_a_7_dias"),

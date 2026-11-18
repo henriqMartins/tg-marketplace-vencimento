@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar',      # arquivos da página do Swagger, sem CDN
     'contas',
     'ofertas',
+    'parceria',                     # entrada de mercados por parceria (etapa 14)
 ]
 
 REST_FRAMEWORK = {
