@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Resultado da reserva</title>
+<title>Resultado do pedido</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -16,49 +16,52 @@ a{text-decoration:none;color:inherit}
 </helmet>
 <div style="width: 1300px; height: 948px; box-sizing: border-box; padding: 32px; background: #ECEBE5; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #1B1F1C; display: flex; gap: 32px;">
   <div style="display: flex; flex-direction: column; gap: 12px;">
-    <span style="font-size: 14px; font-weight: 700; color: #4A4F4B;">Confirmada (pedido atendido inteiro)</span>
+    <span style="font-size: 14px; font-weight: 700; color: #4A4F4B;">Pedido confirmado inteiro</span>
     <div style="width: 390px; height: 844px; box-sizing: border-box; padding: 0 20px 28px; border-radius: 24px; border: 1px solid #C9C6BC; overflow: hidden; background: #F6F5F1; display: flex; flex-direction: column; gap: 16px;">
       <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center;">
         <span aria-hidden="true" style="width: 88px; height: 88px; border-radius: 44px; background: #E3F0E8; color: #1E6A48; display: flex; align-items: center; justify-content: center;">
           <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
         </span>
-        <h2 style="margin: 0; font-size: 26px; font-weight: 800;">Reservado!</h2>
-        <p style="margin: 0; font-size: 16px; line-height: 1.5;"><strong>2 × Iogurte natural 170 g</strong><br>Mercadinho Vila Nova</p>
-        <p style="margin: 0; font-size: 15px; color: #5B635D; line-height: 1.5;">Retire até <strong style="color: #1B1F1C;">hoje, 20:00</strong>. Você paga R$ 6,28 na loja.</p>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 800;">Pedido confirmado!</h2>
+        <p style="margin: 0; font-size: 16px; line-height: 1.5;"><strong>2 itens · Mercadinho Vila Nova</strong><br>Iogurte ×2 · Presunto ×1</p>
+        <p style="margin: 0; font-size: 15px; color: #5B635D; line-height: 1.5;">Retire até <strong style="color: #1B1F1C;">hoje, 20:00</strong>. Você paga R$ 13,18 na loja, com um código só.</p>
       </div>
       <a href="Codigo.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font-size: 17px; font-weight: 700;">Ver código de retirada</a>
     </div>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 12px;">
-    <span style="font-size: 14px; font-weight: 700; color: #4A4F4B;">Parcial (pediu 3, havia 2 livres)</span>
+    <span style="font-size: 14px; font-weight: 700; color: #4A4F4B;">Algo mudou no caminho (resultado por item)</span>
     <div style="width: 390px; height: 844px; box-sizing: border-box; padding: 0 20px 28px; border-radius: 24px; border: 1px solid #C9C6BC; overflow: hidden; background: #F6F5F1; display: flex; flex-direction: column; gap: 16px;">
       <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center;">
         <span aria-hidden="true" style="width: 88px; height: 88px; border-radius: 44px; background: #FEF3C7; color: #6B3F00; display: flex; align-items: center; justify-content: center;">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>
         </span>
-        <h2 style="margin: 0; font-size: 26px; font-weight: 800;">Reservamos 2 de 3</h2>
-        <p style="margin: 0; font-size: 15px; color: #5B635D; line-height: 1.5;">Alguém reservou antes e só restavam 2 unidades. Elas já estão separadas para você.</p>
-        <div style="width: 100%; padding: 14px; box-sizing: border-box; border-radius: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; display: flex; justify-content: space-between; font-size: 15px;">
-          <span>2 × Iogurte natural 170 g</span><strong>R$ 6,28</strong>
-        </div>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 800;">Pedido confirmado com mudanças</h2>
+        <p style="margin: 0; font-size: 15px; color: #5B635D; line-height: 1.5;">Enquanto você montava o pedido, outras pessoas reservaram parte das unidades.</p>
+        <ul style="width: 100%; margin: 0; padding: 0; list-style: none; box-sizing: border-box; border-radius: 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; text-align: left; font-size: 14px;">
+          <li style="display: flex; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #E3E1DA;"><strong style="color: #1F5B2A;">✓</strong><span style="flex-grow: 1;">Iogurte ×2 · confirmado</span><span>R$ 6,28</span></li>
+          <li style="display: flex; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #E3E1DA;"><strong style="color: #6B3F00;">!</strong><span style="flex-grow: 1;">Presunto: pediu 2, reservamos 1</span><span>R$ 6,90</span></li>
+          <li style="display: flex; gap: 10px; padding: 12px 14px;"><strong style="color: #8A1C13;">×</strong><span style="flex-grow: 1;">Requeijão cremoso · esgotou</span><span>—</span></li>
+        </ul>
+        <span style="align-self: flex-end; font-size: 15px;">Total na loja: <strong>R$ 13,18</strong></span>
       </div>
-      <a href="Codigo.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font-size: 17px; font-weight: 700;">Manter as 2 unidades</a>
-      <a href="CodigoEstados.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; box-sizing: border-box; border: 1.5px solid #E7B4AE; border-radius: 14px; background: #FFFFFF; color: #A3261B; font-size: 16px; font-weight: 700;">Cancelar a reserva</a>
+      <a href="Codigo.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font-size: 17px; font-weight: 700;">Manter o pedido</a>
+      <a href="CodigoEstados.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; box-sizing: border-box; border: 1.5px solid #E7B4AE; border-radius: 14px; background: #FFFFFF; color: #A3261B; font-size: 16px; font-weight: 700;">Cancelar o pedido</a>
     </div>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 12px;">
-    <span style="font-size: 14px; font-weight: 700; color: #4A4F4B;">Recusada (livre chegou a 0)</span>
+    <span style="font-size: 14px; font-weight: 700; color: #4A4F4B;">Nada sobrou (nenhum código gerado)</span>
     <div style="width: 390px; height: 844px; box-sizing: border-box; padding: 0 20px 28px; border-radius: 24px; border: 1px solid #C9C6BC; overflow: hidden; background: #F6F5F1; display: flex; flex-direction: column; gap: 16px;">
       <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center;">
         <span aria-hidden="true" style="width: 88px; height: 88px; border-radius: 44px; background: #FDE8E7; color: #8A1C13; display: flex; align-items: center; justify-content: center;">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 8l8 8M16 8l-8 8"></path></svg>
         </span>
-        <h2 style="margin: 0; font-size: 26px; font-weight: 800;">Esgotou agora há pouco</h2>
-        <p style="margin: 0; font-size: 15px; color: #5B635D; line-height: 1.5;">Outras pessoas reservaram as últimas unidades enquanto você escolhia. Se alguma reserva expirar ou for cancelada, a oferta volta para a vitrine.</p>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 800;">Esgotou tudo agora há pouco</h2>
+        <p style="margin: 0; font-size: 15px; color: #5B635D; line-height: 1.5;">Outras pessoas reservaram as últimas unidades enquanto você montava o pedido. Seus itens continuam no carrinho, marcados como esgotados, e voltam a valer se alguma reserva expirar ou for cancelada.</p>
       </div>
-      <a href="Vitrine.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font-size: 17px; font-weight: 700;">Ver outras ofertas</a>
+      <a href="Pedido.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 14px; background: #1E6A48; color: #FFFFFF; font-size: 17px; font-weight: 700;">Voltar ao pedido</a>
     </div>
   </div>
 </div>

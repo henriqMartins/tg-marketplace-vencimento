@@ -233,6 +233,19 @@ class TestLojasEConvites(BaseCadastro):
         Convite.objects.update(expira_em=timezone.now() - timedelta(seconds=1))
         self.assertEqual(self.lojas()[1]["convite"]["estado"], "vencido")
 
+    def test_codigo_so_do_convite_pendente(self):
+        # Pedido 6 do front: "Copiar link" de novo na P2, sem gerar outro convite.
+        self.assertEqual(self.lojas()[0]["convite"]["codigo"], self.codigo)
+        Convite.objects.update(expira_em=timezone.now() - timedelta(seconds=1))
+        self.assertIsNone(self.lojas()[0]["convite"]["codigo"])            # vencido
+        Convite.objects.update(expira_em=timezone.now() + timedelta(days=1),
+                               estado=EstadoConvite.ACEITO)
+        self.assertIsNone(self.lojas()[0]["convite"]["codigo"])            # aceito
+        # Renovado: aparece o código novo, nunca o substituído.
+        Convite.objects.update(estado=EstadoConvite.PENDENTE)
+        novo = self.renovar().json()["codigo"]
+        self.assertEqual(self.lojas()[0]["convite"]["codigo"], novo)
+
     def test_renovar_invalida_o_anterior(self):
         r = self.renovar()
         self.assertEqual(r.status_code, 201)

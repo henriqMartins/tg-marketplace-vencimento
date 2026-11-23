@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Plataforma · Lojas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+th{font-weight:600}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 960px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-wrap: wrap;">
+  <nav aria-label="Menu da plataforma" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; padding: 24px 16px; background: #14503A; color: #FFFFFF; display: flex; flex-direction: column; gap: 4px;">
+    <div style="padding: 0 12px 20px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #BFE0CD;">Equipe da plataforma</span>
+      <span style="font-size: 16px; font-weight: 800;">[Nome do app]</span>
+    </div>
+    <a href="PlataformaInteressados.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #D7EDE0;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"></path><circle cx="10" cy="7" r="4"></circle><path d="M21 21v-2a4 4 0 00-3-3.9"></path></svg>Interessados</a>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; background: rgba(255,255,255,0.14); font-size: 15px; font-weight: 700;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>Lojas</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 18px; max-width: 1240px;">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Lojas</h1>
+        <span style="font-size: 14px; color: #5B635D;">3 lojas · 1 aguardando o responsável aceitar o convite</span>
+      </div>
+      <a href="PlataformaCadastro.dc.html" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font-size: 15px; font-weight: 700;">+ Cadastrar loja</a>
+    </div>
+
+    <section style="padding: 8px 20px 12px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px; overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 860px;">
+        <thead>
+          <tr style="text-align: left; color: #5B635D; border-bottom: 1px solid #E3E1DA;">
+            <th style="padding: 12px 8px;">Loja</th>
+            <th style="padding: 12px 8px;">CNPJ</th>
+            <th style="padding: 12px 8px;">Responsável</th>
+            <th style="padding: 12px 8px;">Cadastrada em</th>
+            <th style="padding: 12px 8px; text-align: right;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #E3E1DA;">
+            <td style="padding: 12px 8px; font-weight: 700;">Mercearia São Jorge<br><span style="font-size: 13px; font-weight: 400; color: #5B635D;">Rua Bahia, 120 · Vila Ercília</span></td>
+            <td style="padding: 12px 8px; font-variant-numeric: tabular-nums;">12.345.678/0001-90 <span style="margin-left: 4px; padding: 2px 8px; border-radius: 999px; background: #E4F1E4; color: #1F5B2A; font-size: 12px; font-weight: 700;">Verificado</span></td>
+            <td style="padding: 12px 8px;"><span style="padding: 3px 10px; border-radius: 999px; background: #FBEFD0; color: #6B4A00; font-size: 12px; font-weight: 700;">Convite pendente · vence 25/11</span><br><span style="font-size: 13px; color: #5B635D;">marcos@example.com</span></td>
+            <td style="padding: 12px 8px; color: #5B635D;">18/11/2026</td>
+            <td style="padding: 12px 8px;">
+              <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button onClick="{{copiar}}" style="height: 36px; padding: 0 12px; border: 1.5px solid #C9C6BC; border-radius: 10px; background: #FFFFFF; font: inherit; font-size: 13px; font-weight: 600; color: #1B1F1C; cursor: pointer;">{{rotuloCopiar}}</button>
+                <button style="height: 36px; padding: 0 12px; border: 1.5px solid #C9C6BC; border-radius: 10px; background: #FFFFFF; font: inherit; font-size: 13px; font-weight: 600; color: #1B1F1C; cursor: pointer;">Gerar novo convite</button>
+              </div>
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid #E3E1DA;">
+            <td style="padding: 12px 8px; font-weight: 700;">Mercadinho Vila Nova<br><span style="font-size: 13px; font-weight: 400; color: #5B635D;">Rua das Palmeiras, 410 · Boa Vista</span></td>
+            <td style="padding: 12px 8px; font-variant-numeric: tabular-nums;">23.456.789/0001-01 <span style="margin-left: 4px; padding: 2px 8px; border-radius: 999px; background: #E4F1E4; color: #1F5B2A; font-size: 12px; font-weight: 700;">Verificado</span></td>
+            <td style="padding: 12px 8px;">Carlos<br><span style="font-size: 13px; color: #5B635D;">carlos@example.com</span></td>
+            <td style="padding: 12px 8px; color: #5B635D;">22/10/2026</td>
+            <td style="padding: 12px 8px; text-align: right; color: #5B635D;">Ativa</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 8px; font-weight: 700;">Empório Santa Rita<br><span style="font-size: 13px; font-weight: 400; color: #5B635D;">Av. Brasil, 1290 · Santa Cruz</span></td>
+            <td style="padding: 12px 8px; font-variant-numeric: tabular-nums;">34.567.890/0001-12 <span style="margin-left: 4px; padding: 2px 8px; border-radius: 999px; background: #FEF3C7; color: #6B3F00; font-size: 12px; font-weight: 700;">Não verificado</span></td>
+            <td style="padding: 12px 8px;">Rosa<br><span style="font-size: 13px; color: #5B635D;">rosa@example.com</span></td>
+            <td style="padding: 12px 8px; color: #5B635D;">05/11/2026</td>
+            <td style="padding: 12px 8px; text-align: right; color: #5B635D;">Ativa</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <span style="font-size: 13px; color: #5B635D;">"Não verificado": a Receita não respondeu na hora do cadastro; a equipe confirma na visita. Gerar novo convite invalida o anterior.</span>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { copiado: false }; }
+  renderVals() {
+    return { rotuloCopiar: this.state.copiado ? 'Link copiado' : 'Copiar link do convite', copiar: () => this.setState({ copiado: true }) };
+  }
+}
+</script>
+</body>
+</html>

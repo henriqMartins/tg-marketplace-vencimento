@@ -22,7 +22,7 @@ a{text-decoration:none;color:inherit}
     <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Revisar e publicar</h1>
   </header>
 
-  <main style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; overflow: hidden;">
+  <main style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; overflow: hidden;">
     <section style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
       <div aria-hidden="true" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; box-sizing: border-box; background: #FFFFFF; border: 2px solid #9A968A;"></div>
       <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
@@ -38,11 +38,21 @@ a{text-decoration:none;color:inherit}
     <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
       <div style="display: flex; flex-direction: column; gap: 6px;">
         <label for="preco" style="font-size: 14px; font-weight: 600;">Preço normal</label>
-        <input id="preco" inputmode="decimal" value="R$ 4,49" style="height: 50px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 16px; color: #1B1F1C; min-width: 0;">
+        <input id="preco" inputmode="decimal" value="R$ 4,49" aria-describedby="sug" style="height: 50px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 16px; color: #1B1F1C; min-width: 0;">
       </div>
       <div style="display: flex; flex-direction: column; gap: 6px;">
         <span style="font-size: 14px; font-weight: 600;">Preço na oferta</span>
-        <span style="height: 50px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; background: #E3F0E8; color: #14503A; font-size: 18px; font-weight: 800; display: flex; align-items: center;">R$ 3,14 <span style="margin-left: 6px; font-size: 13px; font-weight: 700; color: #C2410C;">−30%</span></span>
+        <span style="height: 50px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; background: #E3F0E8; color: #14503A; font-size: 18px; font-weight: 800; display: flex; align-items: center;">{{preco}} <span style="margin-left: 6px; font-size: 13px; font-weight: 700; color: #C2410C;">−{{desc}}%</span></span>
+      </div>
+      <span id="sug" style="grid-column: 1 / -1; font-size: 12px; color: #5B635D;">Sugerido pela última oferta deste produto.</span>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px;">
+      <span id="desc-label" style="font-size: 14px; font-weight: 600;">Desconto</span>
+      <div role="group" aria-labelledby="desc-label" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+        <sc-for list="{{descontos}}" as="d" hint-placeholder-count="4">
+          <button onClick="{{d.pick}}" aria-pressed="{{d.on}}" style="{{d.style}}">{{d.label}}</button>
+        </sc-for>
       </div>
     </section>
 
@@ -79,13 +89,16 @@ a{text-decoration:none;color:inherit}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
-  constructor(p) { super(p); this.state = { j: '4 h', ok: true }; }
+  constructor(p) { super(p); this.state = { j: '4 h', ok: true, desc: 30 }; }
   renderVals() {
     const base = 'height: 44px; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0; ';
     const on = base + 'border: 2px solid #1E6A48; background: #1E6A48; color: #FFFFFF;';
     const off = base + 'border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C;';
     return {
       janelas: ['1 h', '2 h', '4 h', '8 h', '12 h', '24 h'].map((j) => ({ label: j, on: this.state.j === j, style: this.state.j === j ? on : off, pick: () => this.setState({ j: j }) })),
+      desc: this.state.desc,
+      preco: 'R$ ' + (4.49 * (1 - this.state.desc / 100)).toFixed(2).replace('.', ','),
+      descontos: [20, 30, 40, 50].map((v) => ({ label: v + '%', on: this.state.desc === v, style: this.state.desc === v ? on : off, pick: () => this.setState({ desc: v }) })),
       ok: this.state.ok,
       naoOk: !this.state.ok,
       alternar: () => this.setState({ ok: !this.state.ok })

@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from config.erros import erro
-from ofertas.apresentacao import quando
+from parceria.api import interesse_json
 from parceria.servico import interesse_em_aberto
 
 Usuario = get_user_model()
@@ -31,8 +31,8 @@ def eu(usuario) -> dict:
                      for v in vinculos],
         # Grupo I (parceria): A4 mostra "Equipe da plataforma" e o estado de "Tenho um mercado".
         "plataforma": usuario.is_staff,
-        "interesse": ({"id": interesse.id, "estado": interesse.estado,
-                       "criado_em": quando(interesse.criado_em)} if interesse else None),
+        # Pedido 5 do front (aceito 23/11/2026): o Interesse inteiro, para a A6 em modo leitura.
+        "interesse": interesse_json(interesse) if interesse else None,
     }
 
 

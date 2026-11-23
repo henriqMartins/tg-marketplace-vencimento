@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Plataforma · Cadastrar loja</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 1000px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-wrap: wrap;">
+  <nav aria-label="Menu da plataforma" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; padding: 24px 16px; background: #14503A; color: #FFFFFF; display: flex; flex-direction: column; gap: 4px;">
+    <div style="padding: 0 12px 20px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #BFE0CD;">Equipe da plataforma</span>
+      <span style="font-size: 16px; font-weight: 800;">[Nome do app]</span>
+    </div>
+    <a href="PlataformaInteressados.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #D7EDE0;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"></path><circle cx="10" cy="7" r="4"></circle><path d="M21 21v-2a4 4 0 00-3-3.9"></path></svg>Interessados</a>
+    <a href="PlataformaLojas.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; background: rgba(255,255,255,0.14); font-size: 15px; font-weight: 700;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>Lojas</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 18px; max-width: 760px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 13px; color: #5B635D;">Do interessado: Mercearia São Jorge · Marcos Lima</span>
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Cadastrar loja</h1>
+    </div>
+
+    <sc-if value="{{formulario}}" hint-placeholder-val="{{ true }}">
+      <section aria-labelledby="p1" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <h2 id="p1" style="margin: 0; font-size: 17px; font-weight: 700;">1 · CNPJ</h2>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <label for="cnpj" style="position: absolute; left: -9999px;">CNPJ</label>
+          <input id="cnpj" value="12.345.678/0001-90" style="flex: 1 1 220px; height: 48px; padding: 0 14px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #FFFFFF; font: inherit; font-size: 16px; color: #1B1F1C; font-variant-numeric: tabular-nums;">
+          <button style="height: 48px; padding: 0 18px; border: 1.5px solid #1E6A48; border-radius: 12px; background: #FFFFFF; color: #1E6A48; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;">Consultar na Receita</button>
+        </div>
+        <sc-if value="{{ativa}}" hint-placeholder-val="{{ true }}">
+          <dl style="margin: 0; display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 8px 12px; padding: 14px; border-radius: 12px; background: #F6F5F1; font-size: 14px;">
+            <dt style="color: #5B635D;">Razão social</dt><dd style="margin: 0;">J. LIMA COMÉRCIO DE ALIMENTOS LTDA</dd>
+            <dt style="color: #5B635D;">Nome fantasia</dt><dd style="margin: 0;">Mercearia São Jorge</dd>
+            <dt style="color: #5B635D;">Situação</dt><dd style="margin: 0;"><span style="padding: 2px 8px; border-radius: 999px; background: #E4F1E4; color: #1F5B2A; font-size: 12px; font-weight: 700;">Ativa</span></dd>
+            <dt style="color: #5B635D;">Atividade principal</dt><dd style="margin: 0;">4712-1/00 · minimercados, mercearias e armazéns</dd>
+            <dt style="color: #5B635D;">Endereço</dt><dd style="margin: 0;">Rua Bahia, 120 · Vila Ercília · São José do Rio Preto/SP</dd>
+          </dl>
+        </sc-if>
+        <sc-if value="{{inativa}}" hint-placeholder-val="{{ false }}">
+          <div role="alert" style="padding: 12px 14px; border-radius: 12px; background: #FDE8E7; color: #8A1C13; font-size: 14px; line-height: 1.45;"><strong>A Receita mostra este CNPJ como BAIXADA.</strong> Não dá para cadastrar uma loja com CNPJ inativo.</div>
+        </sc-if>
+        <sc-if value="{{foraDoAr}}" hint-placeholder-val="{{ false }}">
+          <div role="status" style="padding: 12px 14px; border-radius: 12px; background: #FEF3C7; color: #6B3F00; font-size: 14px; line-height: 1.45;"><strong>Não deu para consultar a Receita agora.</strong> Preencha à mão; a loja fica marcada como "não verificado" até a visita.</div>
+        </sc-if>
+      </section>
+
+      <section aria-labelledby="p2" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <h2 id="p2" style="margin: 0; font-size: 17px; font-weight: 700;">2 · Dados da loja</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="nome" style="font-size: 14px; font-weight: 600;">Nome de exibição</label>
+            <input id="nome" value="Mercearia São Jorge" style="height: 46px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; font: inherit; font-size: 15px; color: #1B1F1C; min-width: 0;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="tel" style="font-size: 14px; font-weight: 600;">Telefone</label>
+            <input id="tel" value="(17) 99999-0000" style="height: 46px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; font: inherit; font-size: 15px; color: #1B1F1C; min-width: 0;">
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="end" style="font-size: 14px; font-weight: 600;">Endereço</label>
+          <input id="end" value="Rua Bahia, 120 · Vila Ercília · São José do Rio Preto/SP" style="height: 46px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; font: inherit; font-size: 15px; color: #1B1F1C;">
+          <span style="font-size: 13px; font-weight: 600; color: #1F5B2A;">✓ Localização encontrada · usada só para calcular a distância</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="email" style="font-size: 14px; font-weight: 600;">E-mail do responsável</label>
+          <input id="email" value="marcos@example.com" style="height: 46px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; font: inherit; font-size: 15px; color: #1B1F1C;">
+          <span style="font-size: 13px; color: #5B635D;">Só a conta com este e-mail consegue aceitar o convite.</span>
+        </div>
+        <button onClick="{{cadastrar}}" style="height: 52px; border: none; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Cadastrar loja e gerar convite</button>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{resultado}}" hint-placeholder-val="{{ false }}">
+      <section style="display: flex; flex-direction: column; gap: 14px; padding: 24px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span aria-hidden="true" style="width: 48px; height: 48px; border-radius: 24px; background: #E4F1E4; color: #1F5B2A; display: flex; align-items: center; justify-content: center;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+          </span>
+          <div style="display: flex; flex-direction: column;">
+            <h2 style="margin: 0; font-size: 20px; font-weight: 800;">Loja cadastrada</h2>
+            <span style="font-size: 14px; color: #5B635D;">Convite para marcos@example.com · vale até 25/11</span>
+          </div>
+        </div>
+        <label for="link" style="font-size: 14px; font-weight: 600;">Link do convite</label>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <input id="link" readonly value="https://app.exemplo/convite/q8Zt3mK2vN7wLp4x" style="flex: 1 1 320px; height: 46px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid #C9C6BC; border-radius: 12px; background: #F6F5F1; font: inherit; font-size: 14px; color: #1B1F1C; min-width: 0;">
+          <button onClick="{{copiar}}" style="height: 46px; padding: 0 16px; border: none; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;">{{rotuloCopiar}}</button>
+        </div>
+        <span style="font-size: 14px; font-weight: 600;">Mensagem pronta para o WhatsApp</span>
+        <p style="margin: 0; padding: 14px; border-radius: 12px; background: #E3F0E8; color: #14503A; font-size: 14px; line-height: 1.55;">Olá! Sua loja <strong>Mercearia São Jorge</strong> está pronta na plataforma. Para ativar, abra: https://app.exemplo/convite/q8Zt3mK2vN7wLp4x (vale até 25/11). Entre ou crie a conta com <strong>marcos@example.com</strong>.</p>
+        <a href="PlataformaLojas.dc.html" style="align-self: flex-start; display: flex; align-items: center; height: 44px; padding: 0 16px; border: 1.5px solid #C9C6BC; border-radius: 12px; font-size: 15px; font-weight: 600;">Ver lojas</a>
+      </section>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"receita":{"editor":"enum","options":["ativa","inativa","fora do ar"],"default":"ativa"},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { feito: false, copiado: false }; }
+  renderVals() {
+    const r = this.props.receita ?? 'ativa';
+    return {
+      formulario: !this.state.feito,
+      resultado: this.state.feito,
+      ativa: r === 'ativa',
+      inativa: r === 'inativa',
+      foraDoAr: r === 'fora do ar',
+      cadastrar: () => this.setState({ feito: true }),
+      copiar: () => this.setState({ copiado: true }),
+      rotuloCopiar: this.state.copiado ? 'Copiado' : 'Copiar link'
+    };
+  }
+}
+</script>
+</body>
+</html>

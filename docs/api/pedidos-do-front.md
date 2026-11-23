@@ -76,7 +76,7 @@ código com `// PEDIDO-API n`.
   simula a rota.
 - Decisão (preenchida no main): Aceito em 13/11/2026, como proposto. Mesmo papel responde `200` sem mudar nada. A troca trava a loja, como a remoção.
 
-### 5 · `Eu.interesse` com o interesse inteiro (aberto)
+### 5 · `Eu.interesse` com o interesse inteiro (aceito)
 - Tela: A6 (Quero ser parceiro, modo leitura) e A4 (cartão "Tenho um mercado")
 - Grupo do contrato: I (rascunho em `docs/parceria.md`, seção 3)
 - O que falta: a A6 em modo leitura "mostra os dados enviados e o estado", mas `Eu.interesse`
@@ -88,9 +88,9 @@ código com `// PEDIDO-API n`.
   É um superconjunto do que já está combinado, então nada quebra.
 - Enquanto não houver: a A6 mostra os dados só logo depois de enviar (vêm na resposta do
   `POST /api/interesses`); voltando depois, mostra o estado e a data (`// PEDIDO-API 5`).
-- Decisão (preenchida no main):
+- Decisão (preenchida no main): Aceito em 23/11/2026, como proposto: `Eu.interesse` é o objeto `Interesse` inteiro (o pedido em aberto) ou `null`.
 
-### 6 · `codigo` do convite pendente em `LojaPlataforma` (aberto)
+### 6 · `codigo` do convite pendente em `LojaPlataforma` (aceito)
 - Tela: P2 (Plataforma · Lojas), ação "Copiar link do convite"
 - Grupo do contrato: I
 - O que falta: `LojaPlataforma.convite` traz `email`, `expira_em` e `estado`, mas não o `codigo`.
@@ -101,9 +101,9 @@ código com `// PEDIDO-API n`.
   só quando `estado = "pendente"` (usado ou vencido não precisa). A rota já é só da equipe.
 - Enquanto não houver: o mock simula (`// PEDIDO-API 6`); sem o campo, a P2 mostra só
   "Gerar novo convite".
-- Decisão (preenchida no main):
+- Decisão (preenchida no main): Aceito em 23/11/2026. `LojaPlataforma.convite.codigo` vem preenchido só com `estado = "pendente"`; nos outros estados vem `null` (a chave sempre existe). A rota já é só da equipe; o aceite continua exigindo o e-mail convidado.
 
-### 7 · Formato do `vinculo` no aceite do convite (aberto)
+### 7 · Formato do `vinculo` no aceite do convite (aceito)
 - Tela: A7 (Convite para ativar a loja)
 - Grupo do contrato: I
 - O que falta: `POST /api/convites/{codigo}/aceitar` devolve `201 {vinculo}`, sem dizer o formato.
@@ -112,4 +112,4 @@ código com `// PEDIDO-API n`.
 - Proposta de formato: o mesmo `VinculoEu` do `Eu`:
   `{"vinculo": {"loja": {"id": 4, "nome": "Mercearia São Jorge"}, "papel": "responsavel"}}`.
 - Enquanto não houver: o mock devolve nesse formato (`// PEDIDO-API 7`).
-- Decisão (preenchida no main):
+- Decisão (preenchida no main): Aceito em 23/11/2026, como proposto (implementado na etapa 14): `201 {"vinculo": {"loja": {id, nome}, "papel": "responsavel"}}`.
