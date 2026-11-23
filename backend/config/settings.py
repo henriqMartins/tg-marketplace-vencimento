@@ -127,6 +127,9 @@ SPECTACULAR_SETTINGS = {
         {"name": "F · Gestor", "description": "Só o responsável. Indicadores e histórico (G1, G3)."},
         {"name": "G · Projeção",
          "description": "Só o responsável. Lê o resumo da simulação; não simula (G2)."},
+        {"name": "I · Parceria",
+         "description": "Interesse e convite (qualquer conta); /plataforma: só a equipe "
+                        "(is_staff). Telas A4, A6, A7, P1–P3."},
     ],
 }
 

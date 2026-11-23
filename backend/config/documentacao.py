@@ -34,6 +34,8 @@ from ofertas import api_lotes as d
 from ofertas import indicadores, projecao
 from ofertas.fita import CORES
 from ofertas.models import Categoria
+from parceria import api as i
+from parceria.models import EstadoInteresse
 
 # Os grupos do contrato (lista em settings.SPECTACULAR_SETTINGS["TAGS"]): "A" -> "A · Acesso"
 GRUPOS = {t["name"][0]: t["name"] for t in settings.SPECTACULAR_SETTINGS["TAGS"]}
@@ -42,6 +44,7 @@ ERRO = "Erro no formato {\"erro\": \"<frase>\", \"codigo\": \"<identificador>\"}
 SEM_LOGIN = {401: "Sem token (ou token inválido)."}
 SEM_VINCULO = {**SEM_LOGIN, 403: "Sem vínculo com esta loja."}
 SO_RESPONSAVEL = {**SEM_LOGIN, 403: "Só o responsável da loja."}
+SO_EQUIPE = {**SEM_LOGIN, 403: "Só a equipe da plataforma (is_staff)."}
 
 
 def _resposta(status, descricao):
@@ -261,6 +264,23 @@ documentar(f.Projecao, get=rota(
                     [str(c) for c in projecao.CHEGADAS])),
     respostas={200: "{rodadas, filtro, janelas}", 400: ERRO + ": parametro_invalido",
                **SO_RESPONSAVEL}))
+
+# ------------------------------------------------------------------ I · Parceria
+documentar(i.Interesses, post=rota(
+    "I", "Pedir parceria: \"Tenho um mercado\" (A6)",
+    corpo={"nome_mercado": "Mercearia São Jorge", "cidade": "São José do Rio Preto",
+           "telefone": "17999990000", "mensagem": ""},
+    respostas={201: "Interesse", 400: ERRO + ": campo_obrigatorio, campo_longo",
+               409: ERRO + ": interesse_em_aberto", **SEM_LOGIN}))
+documentar(i.InteressesDaPlataforma, get=rota(
+    "I", "Interessados (P1)",
+    filtros=(filtro("estado", "Sem filtro: todos.", EstadoInteresse.values),),
+    respostas={200: "[Interesse]", 400: ERRO + ": estado_invalido", **SO_EQUIPE}))
+documentar(i.InteresseDaPlataforma, patch=rota(
+    "I", "Marcar em conversa ou descartar (P1)",
+    corpo={"estado": "descartado", "motivo": "Não vende embalados"},
+    respostas={200: "Interesse", 400: ERRO + ": estado_invalido, campo_obrigatorio",
+               404: ERRO + ": nao_encontrado", **SO_EQUIPE}))
 
 
 def rotas():

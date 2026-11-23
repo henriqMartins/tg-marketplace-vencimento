@@ -28,6 +28,7 @@ urlpatterns = [
     path('tarefas/varrer', ofertas_views.varrer, name='varrer'),
     path('api/', include('contas.urls')),          # grupo A do contrato (acesso)
     path('api/', include('ofertas.urls')),         # grupos B a G do contrato
+    path('api/', include('parceria.urls')),        # grupo I do contrato (parceria)
 ]
 
 # Swagger (/api/docs e /api/schema): SÓ em desenvolvimento (decidido 14/11/2026).

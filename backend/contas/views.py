@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from config.erros import erro
+from ofertas.apresentacao import quando
+from parceria.servico import interesse_em_aberto
 
 Usuario = get_user_model()
 SENHA_MINIMA = 8
@@ -20,12 +22,17 @@ SENHA_MINIMA = 8
 def eu(usuario) -> dict:
     """O objeto "Eu" do contrato: quem é a pessoa e com quais lojas tem vínculo."""
     vinculos = usuario.vinculos.select_related("loja").order_by("loja__nome")
+    interesse = interesse_em_aberto(usuario)
     return {
         "id": usuario.id,
         "nome": usuario.nome,
         "email": usuario.email,
         "vinculos": [{"loja": {"id": v.loja.id, "nome": v.loja.nome}, "papel": v.papel}
                      for v in vinculos],
+        # Grupo I (parceria): A4 mostra "Equipe da plataforma" e o estado de "Tenho um mercado".
+        "plataforma": usuario.is_staff,
+        "interesse": ({"id": interesse.id, "estado": interesse.estado,
+                       "criado_em": quando(interesse.criado_em)} if interesse else None),
     }
 
 

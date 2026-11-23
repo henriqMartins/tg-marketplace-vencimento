@@ -1,7 +1,8 @@
 """
 Porteiros por papel (permissões do DRF), aceitos em 05/11/2026:
   - EhDaLoja:      funcionário OU responsável da loja da rota (telas L1–L13);
-  - EhResponsavel: só o responsável da loja da rota (L14, G1–G6).
+  - EhResponsavel: só o responsável da loja da rota (L14, G1–G6);
+  - EhEquipe:      só a equipe da plataforma (is_staff), rotas /api/plataforma/... (P1–P3).
 
 As rotas de loja têm o id da loja no endereço: /api/lojas/<loja_id>/...
 O DRF chama has_permission() ANTES da rota; devolver False = barrado.
@@ -41,3 +42,15 @@ class EhResponsavel(BasePermission):
             return False
         loja_id = view.kwargs.get("loja_id")
         return papel_na_loja(request.user, loja_id) == Papel.RESPONSAVEL
+
+
+class EhEquipe(BasePermission):
+    """
+    Equipe da plataforma = conta com is_staff (docs/parceria.md; sem tabela nova).
+    is_staff é do próprio Django: só nasce pelo createsuperuser (do PC, contra o banco)
+    ou pelo popular_demo. Nenhuma rota da API liga essa marca.
+    """
+    message = "Só a equipe da plataforma pode fazer isso."
+
+    def has_permission(self, request, view):
+        return bool(request.user.is_authenticated and request.user.is_staff)
