@@ -16,7 +16,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from ofertas.api_config import ErroDeCampo, _coordenadas
-from ofertas.models import Loja, Papel
+from ofertas.models import Loja, Papel, Vinculo
 
 from . import cnpj as receita
 from .models import EM_ABERTO, Convite, EstadoConvite, EstadoInteresse, Interesse
@@ -231,3 +231,67 @@ def renovar_convite(loja_id: int) -> Convite:
         if anterior is None:
             raise ErroParceria(409, "Essa loja não foi cadastrada por convite.", "sem_convite")
         return _gerar_convite(loja, anterior.email)
+
+
+# ---------------------------------------------------------------- Aceite do convite (A7)
+
+def mascarar(email: str) -> str:
+    """marcos@example.com -> m…@example.com (a A7 mostra para quem é o convite)."""
+    nome, _, dominio = email.partition("@")
+    return f"{nome[:1]}…@{dominio}"
+
+
+def _achar_convite(codigo: str) -> Convite:
+    convite = Convite.objects.filter(codigo=codigo).first()
+    if convite is None:
+        raise ErroParceria(404, "Convite não encontrado.", "nao_encontrado")
+    return convite
+
+
+def _conferir_validade(convite: Convite):
+    if convite.estado == EstadoConvite.ACEITO:
+        raise ErroParceria(409, "Este convite já foi usado.", "convite_usado")
+    if convite.vencido():                        # inclui o substituído (decidido 17/11/2026)
+        raise ErroParceria(410, "Este convite venceu. Peça um novo à equipe da plataforma.",
+                           "convite_vencido")
+
+
+def ver_convite(codigo: str) -> Convite:
+    """GET /api/convites/{codigo}: o que a A7 mostra antes de aceitar."""
+    convite = _achar_convite(codigo)
+    _conferir_validade(convite)
+    return convite
+
+
+def _travar(convite: Convite) -> Convite:
+    """Trava a loja e relê o convite travado (o controle negativo troca esta função)."""
+    Loja.objects.select_for_update().get(pk=convite.loja_id)   # mesma trava da renovação
+    return Convite.objects.select_for_update().get(pk=convite.pk)
+
+
+# 📖 ESTUDAR: a mesma receita da reserva (trava → confere de novo → grava). Dois toques
+# em "Aceitar" ao mesmo tempo: o segundo ESPERA o primeiro terminar e, ao reler o
+# convite travado, já o encontra "aceito" → 409 convite_usado. O vínculo e o "convite
+# usado" são gravados juntos: não existe vínculo sem convite usado, nem o contrário.
+def aceitar_convite(pessoa, codigo: str) -> Vinculo:
+    """POST /api/convites/{codigo}/aceitar: a pessoa vira responsável da loja."""
+    convite = _achar_convite(codigo)
+    with transaction.atomic():
+        convite = _travar(convite)
+        _conferir_validade(convite)
+        if pessoa.email.lower() != convite.email.lower():
+            raise ErroParceria(403, f"Este convite é para outro e-mail. Entre com a conta de "
+                                    f"{mascarar(convite.email)}.", "email_diferente",
+                               email_convite=mascarar(convite.email))
+        if Vinculo.objects.filter(usuario=pessoa, loja_id=convite.loja_id).exists():
+            raise ErroParceria(409, "Você já faz parte da equipe desta loja.", "ja_vinculado")
+        try:
+            with transaction.atomic():           # segunda tranca: um vínculo por loja (banco)
+                vinculo = Vinculo.objects.create(usuario=pessoa, loja_id=convite.loja_id,
+                                                 papel=Papel.RESPONSAVEL)
+        except IntegrityError:
+            raise ErroParceria(409, "Você já faz parte da equipe desta loja.", "ja_vinculado")
+        convite.estado = EstadoConvite.ACEITO
+        convite.aceito_por, convite.aceito_em = pessoa, timezone.now()
+        convite.save(update_fields=["estado", "aceito_por", "aceito_em"])
+    return vinculo

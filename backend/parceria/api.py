@@ -133,3 +133,28 @@ class ConviteDaLoja(RotaDaEquipe):
         except servico.ErroParceria as e:
             return recusa(e)
         return Response(convite_json(convite), status=201)
+
+
+class VerConvite(APIView):
+    """GET /api/convites/{codigo} (logado) -> 200 {loja: {nome, endereco}, email, expira_em}."""
+
+    def get(self, request, codigo):
+        try:
+            convite = servico.ver_convite(codigo)
+        except servico.ErroParceria as e:
+            return recusa(e)
+        return Response({"loja": {"nome": convite.loja.nome, "endereco": convite.loja.endereco},
+                         "email": convite.email, "expira_em": quando(convite.expira_em)})
+
+
+class AceitarConvite(APIView):
+    """POST /api/convites/{codigo}/aceitar (logado) -> 201 {vinculo}."""
+
+    def post(self, request, codigo):
+        try:
+            vinculo = servico.aceitar_convite(request.user, codigo)
+        except servico.ErroParceria as e:
+            return recusa(e)
+        # Mesmo formato de um item de Eu.vinculos: a tela vai direto para a L14 da loja.
+        return Response({"vinculo": {"loja": {"id": vinculo.loja.id, "nome": vinculo.loja.nome},
+                                     "papel": vinculo.papel}}, status=201)

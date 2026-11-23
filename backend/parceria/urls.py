@@ -13,4 +13,6 @@ urlpatterns = [
     path("plataforma/lojas", api.LojasDaPlataforma.as_view(), name="plataforma-lojas"),
     path("plataforma/lojas/<int:loja_id>/convite", api.ConviteDaLoja.as_view(),
          name="plataforma-convite"),
+    path("convites/<str:codigo>", api.VerConvite.as_view(), name="convite"),
+    path("convites/<str:codigo>/aceitar", api.AceitarConvite.as_view(), name="aceitar-convite"),
 ]

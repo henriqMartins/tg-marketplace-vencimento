@@ -309,6 +309,17 @@ documentar(i.ConviteDaLoja, post=rota(
     descricao="O convite pendente anterior deixa de valer (responde 410 convite_vencido).",
     respostas={201: "Convite", 404: ERRO + ": nao_encontrado",
                409: ERRO + ": loja_ja_ativa, sem_convite", **SO_EQUIPE}))
+documentar(i.VerConvite, get=rota(
+    "I", "Ver convite (A7)",
+    respostas={200: "{loja: {nome, endereco}, email, expira_em}", 404: ERRO + ": nao_encontrado",
+               409: ERRO + ": convite_usado", 410: ERRO + ": convite_vencido", **SEM_LOGIN}))
+documentar(i.AceitarConvite, post=rota(
+    "I", "Aceitar convite e virar responsável (A7)",
+    descricao="Exige login com o MESMO e-mail do convite. Trava: dois aceites → um vínculo.",
+    respostas={201: "{vinculo: {loja: {id, nome}, papel}}",
+               403: ERRO + ": email_diferente (traz email_convite mascarado)",
+               404: ERRO + ": nao_encontrado", 409: ERRO + ": convite_usado, ja_vinculado",
+               410: ERRO + ": convite_vencido", **SEM_LOGIN}))
 
 
 def rotas():
