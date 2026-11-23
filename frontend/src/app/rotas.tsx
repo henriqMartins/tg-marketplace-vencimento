@@ -19,6 +19,7 @@ import { A6Parceiro } from '../telas/parceria/A6Parceiro'
 import { A7Convite } from '../telas/parceria/A7Convite'
 import { P1Interessados } from '../telas/plataforma/P1Interessados'
 import { P2Lojas } from '../telas/plataforma/P2Lojas'
+import { P3CadastrarLoja } from '../telas/plataforma/P3CadastrarLoja'
 import { C1Local } from '../telas/consumidor/C1Local'
 import { C2Vitrine } from '../telas/consumidor/C2Vitrine'
 import { C4Oferta } from '../telas/consumidor/C4Oferta'
@@ -150,6 +151,7 @@ export const rotas: RouteObject[] = [
                   { index: true, element: <Navigate to="interessados" replace /> },
                   { path: 'interessados', element: <P1Interessados /> },
                   { path: 'lojas', element: <P2Lojas /> },
+                  { path: 'lojas/nova', element: <P3CadastrarLoja /> },
                 ],
               },
             ],

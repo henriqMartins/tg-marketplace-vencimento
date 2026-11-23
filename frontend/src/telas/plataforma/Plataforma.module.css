@@ -179,3 +179,13 @@
   font-weight: 800;
   color: var(--success-text);
 }
+
+/* CNPJ + "Consultar" na mesma linha (quebra no celular). */
+.campoFlexivel {
+  flex: 1 1 260px;
+}
+
+.botaoAoLado {
+  align-self: flex-start;
+  margin-top: 26px; /* altura do rótulo: alinha com a caixa do campo */
+}

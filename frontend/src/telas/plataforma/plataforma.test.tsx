@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { CNPJ_ATIVA } from '../../api/mock/grupo-i'
+import { CNPJ_ATIVA, CNPJ_FORA_DO_AR, CNPJ_INATIVA, CNPJ_NAO_ALIMENTAR } from '../../api/mock/grupo-i'
 import { abrir, ANA, CARLOS, EQUIPE, MARCOS } from '../../test/abrir'
 import { criarPecas } from '../../test/pecas'
 
@@ -138,5 +138,109 @@ describe('P2 · Lojas', () => {
     const { caminhoAtual } = await abrir('/plataforma/lojas', { email: EQUIPE, largura: COMPUTADOR })
     await usuario.click(await screen.findByRole('button', { name: '+ Cadastrar loja' }))
     await waitFor(() => expect(caminhoAtual()).toBe('/plataforma/lojas/nova'))
+  })
+})
+
+describe('P3 · Cadastrar loja', () => {
+  async function consultar(usuario: ReturnType<typeof userEvent.setup>, cnpj: string) {
+    const campo = await screen.findByLabelText('CNPJ')
+    await usuario.clear(campo)
+    await usuario.type(campo, cnpj)
+    await usuario.click(screen.getByRole('button', { name: 'Consultar' }))
+  }
+
+  it('dígito errado: avisa no campo sem consultar a Receita', async () => {
+    const usuario = userEvent.setup()
+    const { mock } = await abrir('/plataforma/lojas/nova', { email: EQUIPE, largura: COMPUTADOR })
+    const consultarCnpj = vi.spyOn(mock.parceria, 'consultarCnpj')
+    await consultar(usuario, '11222333000182')
+    expect(screen.getByLabelText('CNPJ')).toHaveValue('11.222.333/0001-82')
+    expect(screen.getByLabelText('CNPJ')).toHaveAccessibleDescription('CNPJ inválido. Confira os números.')
+    expect(consultarCnpj).not.toHaveBeenCalled()
+  })
+
+  it('Receita: inativa bloqueia o cadastro', async () => {
+    const usuario = userEvent.setup()
+    await abrir('/plataforma/lojas/nova', { email: EQUIPE, largura: COMPUTADOR })
+    await consultar(usuario, CNPJ_INATIVA)
+    const receita = await screen.findByRole('region', { name: 'Dados da Receita' })
+    expect(within(receita).getByText('Inativa')).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('A Receita mostra este CNPJ como BAIXADA.')
+    expect(screen.queryByRole('button', { name: 'Continuar' })).toBeNull()
+  })
+
+  it('Receita: atividade fora do varejo de alimentos só alerta', async () => {
+    const usuario = userEvent.setup()
+    await abrir('/plataforma/lojas/nova', { email: EQUIPE, largura: COMPUTADOR })
+    await consultar(usuario, CNPJ_NAO_ALIMENTAR)
+    expect(await screen.findByText(/não é varejo de alimentos/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Continuar' })).toBeEnabled()
+  })
+
+  it('Receita fora do ar (503): segue à mão e a loja fica "não verificado"', async () => {
+    const usuario = userEvent.setup()
+    await abrir('/plataforma/lojas/nova', { email: EQUIPE, largura: COMPUTADOR })
+    await consultar(usuario, CNPJ_FORA_DO_AR)
+    expect(await screen.findByText('Não deu para consultar a Receita agora; preencha à mão.')).toBeInTheDocument()
+    await usuario.click(screen.getByRole('button', { name: 'Continuar sem a consulta' }))
+
+    expect(screen.getByLabelText('Endereço')).toHaveValue('')
+    await usuario.type(screen.getByLabelText('Nome de exibição'), 'Armazém Novo')
+    await usuario.type(screen.getByLabelText('Endereço'), 'Rua Ipiranga, 500 · Centro')
+    await usuario.type(screen.getByLabelText('E-mail do responsável'), 'dono@email.com')
+    await usuario.click(screen.getByRole('button', { name: 'Cadastrar loja e gerar convite' }))
+    await usuario.click(await screen.findByRole('button', { name: 'Cadastrar com esta localização' }))
+
+    const loja = await screen.findByRole('region', { name: 'Loja cadastrada' })
+    expect(within(loja).getByText('CNPJ não verificado')).toBeInTheDocument()
+  })
+
+  it('vindo da P1, ativa: preenche pelo pedido, confirma no mapa, e o link copiado tem o código recebido', async () => {
+    const usuario = userEvent.setup()
+    const copiar = areaDeTransferencia()
+    const { mock } = await abrir('/plataforma/lojas/nova?interesse=3', { email: EQUIPE, largura: COMPUTADOR })
+    expect(await screen.findByText(/Pedido de Marcos Lima/)).toBeInTheDocument()
+    await consultar(usuario, CNPJ_ATIVA)
+    const receita = await screen.findByRole('region', { name: 'Dados da Receita' })
+    expect(within(receita).getByText('Ativa')).toBeInTheDocument()
+    await usuario.click(screen.getByRole('button', { name: 'Continuar' }))
+
+    expect(screen.getByLabelText('Nome de exibição')).toHaveValue('Mercearia São Jorge')
+    expect(screen.getByLabelText('Endereço')).toHaveValue('RUA BERNARDINO DE CAMPOS, 1500 · CENTRO · SAO JOSE DO RIO PRETO/SP')
+    expect(screen.getByLabelText('E-mail do responsável')).toHaveValue('marcos@example.com')
+
+    const cadastrar = vi.spyOn(mock.parceria, 'cadastrarLoja')
+    await usuario.click(screen.getByRole('button', { name: 'Cadastrar loja e gerar convite' }))
+    const confirmar = await screen.findByRole('region', { name: 'Confirmar localização' })
+    expect(confirmar).toHaveTextContent('Localização encontrada:')
+    await usuario.click(within(confirmar).getByRole('button', { name: 'Cadastrar com esta localização' }))
+
+    expect(await screen.findByRole('heading', { name: /Loja cadastrada/ })).toBeInTheDocument()
+    expect(cadastrar).toHaveBeenCalledWith(
+      expect.objectContaining({ cnpj: CNPJ_ATIVA, interesse_id: 3, latitude: -20.8051, longitude: -49.3812 }),
+    )
+    const { convite } = await cadastrar.mock.results[0].value
+    const link = screen.getByLabelText('Link do convite')
+    expect(link).toHaveValue(`${window.location.origin}/convite/${convite.codigo}`)
+    expect(screen.getByLabelText('Mensagem para o WhatsApp')).toHaveValue(
+      `Olá! Sua loja Mercearia São Jorge está pronta na plataforma. Para ativar, abra: ${window.location.origin}/convite/${convite.codigo} (vale até 29/10). Entre ou crie a conta com marcos@example.com.`,
+    )
+    await usuario.click(screen.getByRole('button', { name: 'Copiar link' }))
+    await waitFor(() => expect(copiar).toHaveBeenCalledWith(`${window.location.origin}/convite/${convite.codigo}`))
+  })
+
+  it('endereço não achado no mapa: cadastra sem localização', async () => {
+    const usuario = userEvent.setup()
+    const { mock } = await abrir('/plataforma/lojas/nova', { email: EQUIPE, largura: COMPUTADOR })
+    await consultar(usuario, CNPJ_ATIVA)
+    await usuario.click(await screen.findByRole('button', { name: 'Continuar' }))
+    await usuario.clear(screen.getByLabelText('Endereço'))
+    await usuario.type(screen.getByLabelText('Endereço'), 'Rua inexistente, 1')
+    await usuario.type(screen.getByLabelText('E-mail do responsável'), 'dono@email.com')
+    const cadastrar = vi.spyOn(mock.parceria, 'cadastrarLoja')
+    await usuario.click(screen.getByRole('button', { name: 'Cadastrar loja e gerar convite' }))
+    await usuario.click(await screen.findByRole('button', { name: 'Cadastrar sem localização' }))
+    expect(await screen.findByRole('heading', { name: /Loja cadastrada/ })).toBeInTheDocument()
+    expect(cadastrar).toHaveBeenCalledWith(expect.objectContaining({ latitude: null, longitude: null }))
   })
 })
