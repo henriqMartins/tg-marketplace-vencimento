@@ -22,7 +22,7 @@ Status de cada grupo:
 | F · Gestor | G1, G3, G4 | ✅ | 11 |
 | G · Projeção | G2 | ✅ | 13 |
 | H · Push | C1, C9 | fora até 09/11 | — |
-| I · Parceria | A4, A6, A7, P1–P3 | 🔧 | 14 |
+| I · Parceria | A4, A6, A7, P1–P3 | ✅ | 14 |
 
 ---
 
@@ -476,9 +476,24 @@ a última inclui o topo (lote 60, procura 3.0).
 ## H · Push — fora até 09/11
 Padrão Web Push (VAPID). Rotas previstas: `POST /api/push/inscricao`, `DELETE /api/push/inscricao`.
 
-## I · Parceria 🔧
+## I · Parceria ✅
 Entrada de mercados por **parceria fechada** (decidido 18/11/2026). O processo, as telas e o
 porquê ficam em [`../parceria.md`](../parceria.md); aqui ficam só as rotas.
+
+Pronto em 23/11/2026. Detalhes que valem para o mock:
+- Erros de campo (`campo_obrigatorio`, `campo_longo`) trazem também `"campo"` com o nome do
+  campo, ex.: `{"erro": "Informe a cidade.", "codigo": "campo_obrigatorio", "campo": "cidade"}`.
+  Limites: nome do mercado, cidade e nome da loja 120; endereço 255; mensagem 1000; motivo 255;
+  telefone até 20 dígitos (guardado **só com dígitos**: a máscara é da tela).
+- `GET /api/plataforma/interesses` e `GET /api/plataforma/lojas`: mais recentes primeiro.
+- `POST /api/plataforma/lojas`: o e-mail do responsável é guardado em minúsculas.
+  `interesse_id` inexistente → `404 nao_encontrado`.
+- `POST /api/plataforma/lojas/{id}/convite` numa loja antiga, que nunca teve convite →
+  `409 sem_convite` (não há e-mail para convidar).
+- `LojaPlataforma.convite` = o convite **mais recente** da loja; `null` nas lojas antigas da
+  demonstração (cadastradas antes da parceria, também com `cnpj: null`).
+- Aceite: `201 {"vinculo": {"loja": {"id": 4, "nome": "Mercearia São Jorge"}, "papel": "responsavel"}}`
+  — o mesmo formato de um item de `Eu.vinculos`, para a tela ir direto à L14 da loja.
 
 "Equipe" = conta com `is_staff` (sem tabela nova; criada do PC com `createsuperuser` ou pelo
 `popular_demo`, nunca pela API). Fora dela, rotas `/api/plataforma/...` → `403`.
@@ -492,13 +507,13 @@ porquê ficam em [`../parceria.md`](../parceria.md); aqui ficam só as rotas.
 
 | Método e rota | Quem | Entrada | Saída | Erros |
 |---|---|---|---|---|
-| `POST /api/interesses` | logado | `{nome_mercado, cidade, telefone, mensagem?}` | `201 Interesse` | `400 campo_obrigatorio`, `409 interesse_em_aberto` |
+| `POST /api/interesses` | logado | `{nome_mercado, cidade, telefone, mensagem?}` | `201 Interesse` | `400 campo_obrigatorio`, `400 campo_longo`, `409 interesse_em_aberto` |
 | `GET /api/plataforma/interesses?estado=` | equipe | — | `200 [Interesse]` | `400 estado_invalido` |
-| `PATCH /api/plataforma/interesses/{id}` | equipe | `{estado: "em_conversa"\|"descartado", motivo?}` | `200 Interesse` | `400 estado_invalido`, `400 campo_obrigatorio`, `404` |
+| `PATCH /api/plataforma/interesses/{id}` | equipe | `{estado: "em_conversa"\|"descartado", motivo?}` | `200 Interesse` | `400 estado_invalido`, `400 campo_obrigatorio`, `400 campo_longo`, `404` |
 | `GET /api/plataforma/cnpj/{cnpj}` | equipe | — | `200 ConsultaCnpj` | `400 cnpj_invalido`, `404 cnpj_nao_encontrado`, `503 consulta_indisponivel` |
-| `POST /api/plataforma/lojas` | equipe | `{cnpj, nome, endereco, latitude?, longitude?, telefone, email_responsavel, interesse_id?}` | `201 {loja: LojaPlataforma, convite: Convite}` | `400 cnpj_invalido`, `400 cnpj_inativo`, `400 cnpj_nao_encontrado`, `400 email_invalido`, `400 campo_obrigatorio`, `400 coordenadas_*`, `400 estado_invalido`, `409 cnpj_ja_cadastrado` |
+| `POST /api/plataforma/lojas` | equipe | `{cnpj, nome, endereco, latitude?, longitude?, telefone, email_responsavel, interesse_id?}` | `201 {loja: LojaPlataforma, convite: Convite}` | `400 cnpj_invalido`, `400 cnpj_inativo`, `400 cnpj_nao_encontrado`, `400 email_invalido`, `400 campo_obrigatorio`, `400 campo_longo`, `400 coordenadas_*`, `400 estado_invalido`, `404` (interesse), `409 cnpj_ja_cadastrado` |
 | `GET /api/plataforma/lojas` | equipe | — | `200 [LojaPlataforma]` | — |
-| `POST /api/plataforma/lojas/{id}/convite` | equipe | — | `201 Convite` (o anterior deixa de valer) | `404`, `409 loja_ja_ativa` |
+| `POST /api/plataforma/lojas/{id}/convite` | equipe | — | `201 Convite` (o anterior deixa de valer) | `404`, `409 loja_ja_ativa`, `409 sem_convite` |
 | `GET /api/convites/{codigo}` | logado | — | `200 {loja: {nome, endereco}, email, expira_em}` | `404`, `409 convite_usado`, `410 convite_vencido` |
 | `POST /api/convites/{codigo}/aceitar` | logado | — | `201 {vinculo}` | `403 email_diferente`, `404`, `409 convite_usado`, `409 ja_vinculado`, `410 convite_vencido` |
 
