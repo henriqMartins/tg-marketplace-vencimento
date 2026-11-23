@@ -247,6 +247,8 @@ No rodapé: botão primário "Entrar", botão secundário "Criar conta" e o link
 - **A confirmar:** o serviço de push e o serviço de CEP para coordenada.
 
 ## C2 · Vitrine com filtros (Figura 4)
+**Muda com o grupo J (pedido, 23/11/2026):** ícone de sacola com a contagem de itens do pedido; a tela nova **C10 · Meu pedido** (carrinho por loja, só no aparelho). Regras e telas: ver [`docs/pedido.md`](../pedido.md); rotas: seção J do contrato. Onde divergir, vale o `pedido.md`.
+
 **Cabeçalho branco:**
 - "Ofertas perto de você" e o botão de local com pino `primary`: "Boa Vista · CEP 15025-000 ▾" (abre C1);
 - busca de 46 px;
@@ -271,6 +273,8 @@ No rodapé: botão primário "Entrar", botão secundário "Criar conta" e o link
 3. **CEP não encontrado:** campo com borda `danger`, "Não encontramos esse CEP. Confira os números", e os botões "Buscar de novo" e "Usar minha localização". Nota: sem local, a vitrine aparece sem ordem de distância.
 
 ## C4 · Reserva da quantidade (Figura 4)
+**Muda com o grupo J (pedido, 23/11/2026):** "Adicionar ao pedido" (principal) e "Reservar só este agora" (secundário). Regras e telas: ver [`docs/pedido.md`](../pedido.md); rotas: seção J do contrato. Onde divergir, vale o `pedido.md`.
+
 **Layout:**
 - imagem de 165 px de altura, com o selo de desconto à direita e o botão voltar redondo à esquerda;
 - título do produto (22 / 800) e preço (24 / 800, `primary`), com o original riscado e "· vence 28/10/2026";
@@ -291,11 +295,15 @@ No rodapé: botão primário "Entrar", botão secundário "Criar conta" e o link
 - O consumidor precisa estar logado. Se não estiver, reservar leva a A2 e depois volta para cá.
 
 ## C5 · Resultado da reserva (3 estados)
+**Muda com o grupo J (pedido, 23/11/2026):** resultado por item (tudo confirmado, algo mudou, nada sobrou). Regras e telas: ver [`docs/pedido.md`](../pedido.md); rotas: seção J do contrato. Onde divergir, vale o `pedido.md`.
+
 1. **Confirmada:** círculo `primary-soft` com ✓, "Reservado!", "2 × Iogurte natural 170 g · Mercadinho Vila Nova", "Retire até hoje, 20:00. Você paga R$ 6,28 na loja", botão "Ver código de retirada" (vai para C6).
 2. **Parcial:** círculo `warn` com "!", "Reservamos 2 de 3", "Alguém reservou antes e só restavam 2 unidades. Elas já estão separadas para você", um card com o item e o total, botão "Manter as 2 unidades" (C6) e botão de perigo "Cancelar a reserva" (C7, folha).
 3. **Recusada:** círculo `danger` com ×, "Esgotou agora há pouco", o texto explicando que a oferta volta se alguém cancelar ou deixar expirar, e o botão "Ver outras ofertas". O backend grava isso como **Recusa**, que entra em "compradores bloqueados". A reserva parcial também entra (ver G1).
 
 ## C6 · Código de retirada (Figura 4)
+**Muda com o grupo J (pedido, 23/11/2026):** um código por pedido, com a lista dos itens ativos e o prazo do primeiro que vence. Regras e telas: ver [`docs/pedido.md`](../pedido.md); rotas: seção J do contrato. Onde divergir, vale o `pedido.md`.
+
 **Layout:**
 - cabeçalho "Sua reserva";
 - card central com:
@@ -312,11 +320,15 @@ No rodapé: botão primário "Entrar", botão secundário "Criar conta" e o link
 - A contagem é local, mas o estado é revalidado a cada 30 s. Se a reserva virar expirada ou retirada, a tela muda para o estado de C7.
 
 ## C7 · Reserva — desfechos (3 estados)
+**Muda com o grupo J (pedido, 23/11/2026):** desfechos por pedido. Regras e telas: ver [`docs/pedido.md`](../pedido.md); rotas: seção J do contrato. Onde divergir, vale o `pedido.md`.
+
 1. **Confirmar cancelamento** (folha sobre C6): "Cancelar esta reserva?", o texto "As 2 unidades… voltam para a vitrine na hora… Não dá para desfazer", o botão de perigo sólido "Sim, cancelar" e o secundário "Manter reserva". **API:** `POST /reservas/:id/cancelar`.
 2. **Expirada:** selo Expirada, o código riscado em `placeholder`, o texto "O prazo terminou hoje às 20:00 sem retirada. As unidades voltaram para a vitrine e este código não vale mais", e o botão "Ver se ainda tem na vitrine".
 3. **Retirada:** círculo `success` com ✓, selo Retirada, "Retirada hoje às 18:12 · Obrigado por evitar desperdício!", o valor pago, "Você economizou R$ 2,70" e o botão "Voltar para a vitrine".
 
 ## C8 · Minhas reservas
+**Muda com o grupo J (pedido, 23/11/2026):** um cartão por pedido. Regras e telas: ver [`docs/pedido.md`](../pedido.md); rotas: seção J do contrato. Onde divergir, vale o `pedido.md`.
+
 **Layout:** título "Minhas reservas" e abas **Ativas (n)** e **Histórico** (sublinhado de 3 px em `primary`). Cada card de reserva tem:
 - produto e selo de estado;
 - "quantidade · loja";
@@ -474,6 +486,8 @@ Legenda da barra no fim da lista.
 **API:** `POST /ofertas/:id/ajustes {quantidade, motivo}`. A resposta 409 vira mensagem inline.
 
 ## L12 · Validar retirada
+**Muda com o grupo J (pedido, 23/11/2026):** o código é do pedido (a prévia é `GET /api/lojas/{lojaId}/pedidos/ativo`). Regras e telas: ver [`docs/pedido.md`](../pedido.md); rotas: seção J do contrato. Onde divergir, vale o `pedido.md`.
+
 **Layout:**
 - cabeçalho "Validar retirada · 6 aguardando";
 - texto "Digite o código de 6 dígitos que o cliente mostra no celular";
@@ -484,6 +498,8 @@ Legenda da barra no fim da lista.
 **API:** `GET /lojas/:id/reservas/ativa?codigo=` procura a reserva ativa **daquela loja**.
 
 ## L13 · Retirada — resultado (3 estados)
+**Muda com o grupo J (pedido, 23/11/2026):** lista dos itens ativos do pedido e "Cobrar no caixa: R$ X". Regras e telas: ver [`docs/pedido.md`](../pedido.md); rotas: seção J do contrato. Onde divergir, vale o `pedido.md`.
+
 1. **Encontrada:**
    - "Código 482 917", cliente "Ana S." e selo "Reservada · expira em 3 h 42";
    - item com amostra da fita e "Zona Branco · área de reservas";
