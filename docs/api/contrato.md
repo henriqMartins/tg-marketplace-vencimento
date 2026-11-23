@@ -23,6 +23,7 @@ Status de cada grupo:
 | G · Projeção | G2 | ✅ | 13 |
 | H · Push | C1, C9 | fora até 09/11 | — |
 | I · Parceria | A4, A6, A7, P1–P3 | ✅ | 14 |
+| J · Pedido | C4–C8, C10, L12, L13 | 📝 | 15 |
 
 ---
 
@@ -178,6 +179,10 @@ Outros erros: `401` (tela leva a A2 e volta), `409 oferta_encerrada`, `400 pedid
 
 A tela C6 revalida com `GET /api/reservas/{id}` a cada 30 s; se `estado` mudar, vai para C7.
 
+> **Grupo J (pedido, etapa 15):** o código passa a ser do **pedido**. Estas rotas continuam
+> funcionando na transição; `POST /ofertas/{id}/reservas` cria um pedido de 1 item e a
+> `Reserva` ganha `pedido_id`. Ver a seção J.
+
 ## C · Operação da loja ✅
 Exigem vínculo com a loja `{lojaId}` (funcionário ou responsável), senão `403`.
 
@@ -233,6 +238,10 @@ Erros: `409 acima_do_livre` (com `"livre": 6` no corpo — o livre **já sem** a
 
 A retirada é por **loja + código** (o código prova que o cliente está no balcão), não pelo
 id da reserva.
+
+> **Grupo J (pedido, etapa 15):** o código é do pedido e a retirada retira **todos os itens
+> ativos** dele. A prévia nova é `GET /api/lojas/{lojaId}/pedidos/ativo`; a `RetiradaFeita`
+> ganha `itens`. Ver a seção J.
 ```jsonc
 // RetiradaPrevia
 { "reserva": ReservaLoja, "codigo": "482917", "total": "6.28",
@@ -567,3 +576,84 @@ Regras e detalhes (decisões de 17/11/2026 marcadas com ★):
 // Convite
 { "codigo": "q8Zt3...", "email": "marcos@example.com", "expira_em": "2026-11-25T10:00:00-03:00" }
 ```
+
+## J · Pedido 📝
+Várias reservas de **uma pessoa em uma loja** com **um código só** (decidido 18/11/2026;
+regra, telas e o porquê em [`../pedido.md`](../pedido.md)). O carrinho fica **só no aparelho**:
+nada é reservado antes de confirmar. Cada item continua sendo uma `Reserva` (mesma regra,
+mesma janela, mesmo `expira_em`); o domínio e a simulação não mudam. Exigem login; cada
+pessoa só vê os próprios pedidos (`404` para o de outra pessoa).
+
+| Método e rota | Entrada | Saída | Erros |
+|---|---|---|---|
+| `POST /api/pedidos` | `{loja_id, itens: [{oferta_id, pedido}]}` | `201 Pedido` (com `status` por item) | `400 itens_vazios`, `400 item_repetido`, `400 pedido_invalido`, `400 oferta_de_outra_loja`, `409 tudo_esgotado` |
+| `GET /api/pedidos?estado=ativo\|encerrado` | — | `200 [Pedido]` | `400 parametro_invalido` |
+| `GET /api/pedidos/{id}` | — | `200 Pedido` | `404 nao_encontrado` |
+| `POST /api/pedidos/{id}/cancelar` | — | `200 Pedido` | `404`, `409 nada_ativo` |
+| `POST /api/pedidos/{id}/itens/{reservaId}/cancelar` | — | `200 Pedido` | `404`, `409 ja_encerrado` |
+| `GET /api/lojas/{lojaId}/pedidos/ativo?codigo=` | — | `200 PedidoNoBalcao` | `404 nao_encontrado`, `409 venceu` |
+| `POST /api/lojas/{lojaId}/retiradas` | `{codigo}` | `200 RetiradaFeita` (agora com `itens`) | `404 nao_encontrada`, `409 venceu` |
+
+```jsonc
+// Pedido
+{ "id": 12, "codigo": "482917",                       // completo só para o dono
+  "loja": LojaResumo,
+  "estado": "ativo",                  // ativo | retirado | encerrado (calculado pelos itens)
+  "criado_em": "2026-11-18T16:00:00-03:00",
+  "expira_em_proximo": "2026-11-18T20:00:00-03:00",   // menor expira_em entre os itens ativos; null sem ativos
+  "total": "7.88",                    // ativo: soma dos itens ativos; retirado: dos retirados; encerrado: "0.00"
+  "itens": [
+    { "reserva_id": 40, "oferta_id": 3, "produto": "Iogurte natural 170 g",
+      "pedido": 2, "quantidade": 2, "status": "confirmada",   // confirmada | parcial | recusada
+      "motivo": null,                                          // na recusada: esgotada | oferta_encerrada
+      "estado": "reservada",                                   // estado da reserva; null na recusada
+      "expira_em": "2026-11-18T20:00:00-03:00", "encerrada_em": null,
+      "preco": "3.14", "subtotal": "6.28" },
+    { "reserva_id": null, "oferta_id": 9, "produto": "Molho de tomate 340 g",
+      "pedido": 1, "quantidade": 0, "status": "recusada", "motivo": "esgotada",
+      "estado": null, "expira_em": null, "encerrada_em": null,
+      "preco": "1.60", "subtotal": "0.00" }
+  ] }
+
+// PedidoNoBalcao (L13) — visão da loja
+{ "pedido_id": 12, "codigo": "482917", "cliente": "Ana S.", "total": "7.88",
+  "itens": [ { "reserva": ReservaLoja, "produto": "Iogurte natural 170 g", "fita": Fita,
+               "validade": "2026-10-28", "total": "6.28" } ] }   // só os itens ativos
+
+// RetiradaFeita (L13 confirmada) — os campos antigos continuam (do 1º item); novos: codigo, cliente, itens
+{ "codigo": "482917", "cliente": "Ana S.", "total": "7.88", "retirada_por": "Carlos Lima",
+  "itens": [ { "reserva": ReservaLoja, "produto": "Iogurte natural 170 g", "total": "6.28",
+               "oferta": { "id": 1, "estoque": Estoque } } ],
+  "reserva": ReservaLoja, "oferta": { "id": 1, "estoque": Estoque } }
+```
+
+Regras e detalhes:
+- **Estado do pedido** (não é gravado; sai dos itens): `ativo` se algum item está `reservada`;
+  senão `retirado` se algum foi retirado; senão `encerrado` (todos expirados ou cancelados).
+- **Confirmar** (`POST /api/pedidos`) é uma transação só: cada item passa pelo mesmo `reservar`
+  do domínio (parcial quando o livre não basta; recusa total gravada em `Recusa`, como hoje).
+  Responde **201** quando ao menos um item foi reservado; o resultado de cada item vem em
+  `status`. Nenhum item reservado → `409 tudo_esgotado`, **sem gerar código**, com
+  `"itens"` (mesmo formato, todos `recusada`) no corpo; as recusas ficam gravadas.
+- Itens: no máximo uma linha por oferta (`400 item_repetido`); `pedido` inteiro ≥ 1
+  (`400 pedido_invalido`); oferta inexistente ou de outra loja → `400 oferta_de_outra_loja`;
+  lista vazia → `400 itens_vazios`. Oferta encerrada no meio do carrinho: o item volta
+  `recusada` com `motivo: "oferta_encerrada"` (não grava `Recusa`, como hoje).
+- **Trava em ordem crescente de id da oferta**: dois pedidos com os mesmos itens em ordem
+  diferente não ficam esperando um ao outro (sem deadlock).
+- **Código**: 6 dígitos, um por pedido, único entre os pedidos ativos da loja. Cada item guarda
+  uma cópia (o `codigo_final` da loja e a busca do G3 continuam iguais).
+- `GET /api/pedidos` sem `estado`: os ativos (por `expira_em_proximo`) e depois os outros (pelo
+  mais recente `encerrada_em`). Antes de responder, as reservas vencidas são expiradas.
+- `itens` fora do `POST` traz só as reservas do pedido (os recusados não viram reserva); o
+  `status` delas sai de `quantidade == pedido` (confirmada) ou `<` (parcial).
+- **Cancelar o pedido** cancela todos os itens ativos (`409 nada_ativo` se não houver).
+  **Cancelar um item** devolve só ele ao livre; o código continua para o resto
+  (`409 ja_encerrado` se o item já saiu de `reservada`; item de outro pedido → `404`).
+- **Balcão**: prévia e retirada procuram o pedido ativo **da loja da rota** pelo código. A
+  retirada retira, tudo ou nada, os itens ainda `reservada`; os que venceram antes ficam de fora
+  (gravados como expirados). Nenhum item ativo e algum venceu nas últimas 24 h → `409 venceu`;
+  senão `404`. Dois balcões com o mesmo código ao mesmo tempo: um `200`, o outro `404`.
+- **Transição**: `POST /api/ofertas/{id}/reservas` cria um pedido de 1 item (a `Reserva` ganha
+  `pedido_id`); `minhas-reservas`, `reservas/{id}`, `reservas/{id}/cancelar` e
+  `reservas/ativa` seguem funcionando. Indicadores e histórico continuam **por item**.
