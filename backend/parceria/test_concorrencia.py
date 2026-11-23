@@ -8,10 +8,13 @@ própria conexão; uma barreira solta todas juntas. TransactionTestCase para as
 threads enxergarem os dados de verdade.
 
 Rodar (dentro de backend/):  python manage.py test parceria.test_concorrencia
+Controle negativo (sem a trava, de propósito; depende de as threads colidirem):
+  PowerShell:  $env:CONTROLE_NEGATIVO="1"; python manage.py test parceria.test_concorrencia
 """
+import os
 import threading
 from datetime import timedelta
-from unittest import mock
+from unittest import mock, skipUnless
 
 from django.contrib.auth import get_user_model
 from django.db import connection
@@ -70,6 +73,8 @@ class Aceites(TransactionTestCase):
                                  .count(), 1)
                 self.assertEqual(Convite.objects.get(loja=loja).estado, EstadoConvite.ACEITO)
 
+    @skipUnless(os.environ.get("CONTROLE_NEGATIVO") == "1",
+                "controle negativo: ligue com CONTROLE_NEGATIVO=1")
     def test_controle_negativo_sem_a_trava(self):
         """
         Troca a leitura TRAVADA por uma comum. Os toques leem "pendente" juntos e passam
