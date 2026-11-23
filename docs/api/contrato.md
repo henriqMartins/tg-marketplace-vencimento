@@ -22,6 +22,7 @@ Status de cada grupo:
 | F · Gestor | G1, G3, G4 | ✅ | 11 |
 | G · Projeção | G2 | ✅ | 13 |
 | H · Push | C1, C9 | fora até 09/11 | — |
+| I · Parceria | A4, A6, A7, P1–P3 | 🔧 | 14 |
 
 ---
 
@@ -474,3 +475,78 @@ a última inclui o topo (lote 60, procura 3.0).
 
 ## H · Push — fora até 09/11
 Padrão Web Push (VAPID). Rotas previstas: `POST /api/push/inscricao`, `DELETE /api/push/inscricao`.
+
+## I · Parceria 🔧
+Entrada de mercados por **parceria fechada** (decidido 18/11/2026). O processo, as telas e o
+porquê ficam em [`../parceria.md`](../parceria.md); aqui ficam só as rotas.
+
+"Equipe" = conta com `is_staff` (sem tabela nova; criada do PC com `createsuperuser` ou pelo
+`popular_demo`, nunca pela API). Fora dela, rotas `/api/plataforma/...` → `403`.
+
+**`Eu` ganha dois campos:**
+```jsonc
+{ "...": "...", "plataforma": false,
+  "interesse": { "id": 3, "estado": "novo", "criado_em": "2026-11-18T10:00:00-03:00" } }  // ou null
+```
+`interesse` = o pedido **em aberto** da pessoa (`novo` ou `em_conversa`); `null` se não houver.
+
+| Método e rota | Quem | Entrada | Saída | Erros |
+|---|---|---|---|---|
+| `POST /api/interesses` | logado | `{nome_mercado, cidade, telefone, mensagem?}` | `201 Interesse` | `400 campo_obrigatorio`, `409 interesse_em_aberto` |
+| `GET /api/plataforma/interesses?estado=` | equipe | — | `200 [Interesse]` | `400 estado_invalido` |
+| `PATCH /api/plataforma/interesses/{id}` | equipe | `{estado: "em_conversa"\|"descartado", motivo?}` | `200 Interesse` | `400 estado_invalido`, `400 campo_obrigatorio`, `404` |
+| `GET /api/plataforma/cnpj/{cnpj}` | equipe | — | `200 ConsultaCnpj` | `400 cnpj_invalido`, `404 cnpj_nao_encontrado`, `503 consulta_indisponivel` |
+| `POST /api/plataforma/lojas` | equipe | `{cnpj, nome, endereco, latitude?, longitude?, telefone, email_responsavel, interesse_id?}` | `201 {loja: LojaPlataforma, convite: Convite}` | `400 cnpj_invalido`, `400 cnpj_inativo`, `400 cnpj_nao_encontrado`, `400 email_invalido`, `400 campo_obrigatorio`, `400 coordenadas_*`, `400 estado_invalido`, `409 cnpj_ja_cadastrado` |
+| `GET /api/plataforma/lojas` | equipe | — | `200 [LojaPlataforma]` | — |
+| `POST /api/plataforma/lojas/{id}/convite` | equipe | — | `201 Convite` (o anterior deixa de valer) | `404`, `409 loja_ja_ativa` |
+| `GET /api/convites/{codigo}` | logado | — | `200 {loja: {nome, endereco}, email, expira_em}` | `404`, `409 convite_usado`, `410 convite_vencido` |
+| `POST /api/convites/{codigo}/aceitar` | logado | — | `201 {vinculo}` | `403 email_diferente`, `404`, `409 convite_usado`, `409 ja_vinculado`, `410 convite_vencido` |
+
+Regras e detalhes (decisões de 17/11/2026 marcadas com ★):
+- **CNPJ:** só dígitos (a máscara é da tela; o backend tira pontos, barra e traço). Dígitos
+  verificadores conferidos **antes** de consultar a Receita (`400 cnpj_invalido`). A consulta
+  à BrasilAPI é feita **pelo backend**, com limite de 5 s.
+- **Criação da loja:** CNPJ inativo → `400 cnpj_inativo`. ★ CNPJ que a Receita não conhece →
+  `400 cnpj_nao_encontrado` (bloqueia). Receita fora do ar ou lenta → a loja é criada com
+  `cnpj_verificado: false`. Loja, convite e interesse → `virou_loja` gravados **juntos** (tudo
+  ou nada). Padrões da loja: janela 4 h, margem 1 dia, antecedência 10 dias.
+- ★ `latitude` e `longitude` **opcionais** na criação; se vierem, mesma validação da L14
+  (`coordenadas_incompletas`, `coordenadas_invalidas`). O responsável acerta depois na L14.
+- ★ `interesse_id` que não está em aberto (já virou loja ou foi descartado) → `400 estado_invalido`.
+- ★ **PATCH do interesse:** só `novo → em_conversa` e `novo`/`em_conversa → descartado`. Outra
+  mudança → `400 estado_invalido`. Descartar exige `motivo` (`400 campo_obrigatorio`).
+- **Interesse:** no máximo um em aberto por pessoa (`409 interesse_em_aberto`). Depois de
+  descartado ou de virar loja, a pessoa pode pedir de novo.
+- **Convite:** código aleatório longo, uso único, vale **7 dias**, no máximo um pendente por
+  loja. Gerar outro invalida o anterior. ★ O convite substituído responde como vencido
+  (`410 convite_vencido`). Loja que já tem responsável → `409 loja_ja_ativa`.
+- **Aceite:** exige login com **o mesmo e-mail** do convite, sem diferenciar maiúsculas
+  (`403 email_diferente`, que traz `email_convite` mascarado, ex.: `"m…@example.com"`).
+  O vínculo `responsavel` e o "convite usado" são gravados juntos, com trava: dois aceites
+  ao mesmo tempo → um vínculo só.
+- O **link** é montado pelo frontend: `${origem do app}/convite/${codigo}`.
+- Loja sem responsável não quebra nada: não tem oferta, não aparece na vitrine.
+
+```jsonc
+// Interesse
+{ "id": 3, "nome_mercado": "Mercearia São Jorge", "cidade": "São José do Rio Preto",
+  "telefone": "17999990000", "mensagem": "", "estado": "novo",   // novo | em_conversa | virou_loja | descartado
+  "pessoa": { "nome": "Marcos Lima", "email": "marcos@example.com" },
+  "motivo_descarte": null, "loja_id": null, "criado_em": "2026-11-18T10:00:00-03:00" }
+
+// ConsultaCnpj (vinda da BrasilAPI, normalizada pelo backend)
+{ "cnpj": "12345678000190", "razao_social": "...", "nome_fantasia": "...",
+  "situacao": "ATIVA", "ativa": true,
+  "cnae_principal": { "codigo": "4712100", "descricao": "Comércio varejista ... minimercados ..." },
+  "alimentar": true,   // CNAE principal nos grupos 47.1 ou 47.2; só informativo
+  "endereco": { "logradouro": "...", "numero": "...", "bairro": "...", "municipio": "...", "uf": "SP", "cep": "..." } }
+
+// LojaPlataforma
+{ "id": 4, "nome": "Mercearia São Jorge", "cnpj": "12345678000190", "cnpj_verificado": true,
+  "endereco": "...", "telefone": "...", "criada_em": "2026-11-18T10:00:00-03:00",
+  "responsavel": null,                                   // ou { "nome", "email" }
+  "convite": { "email": "marcos@example.com", "expira_em": "...", "estado": "pendente" } }  // pendente | vencido | aceito | null
+
+// Convite
+{ "codigo": "q8Zt3...", "email": "marcos@example.com", "expira_em": "2026-11-25T10:00:00-03:00" }
+```
