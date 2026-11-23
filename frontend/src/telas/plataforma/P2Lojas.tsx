@@ -48,7 +48,6 @@ export function P2Lojas() {
   const acoes = (l: LojaPlataforma) =>
     !l.responsavel && l.convite ? (
       <div className={styles.acoes}>
-        {/* PEDIDO-API 6: sem o código no contrato, só dá para gerar um novo. */}
         {l.convite.codigo && (
           <Botao variante="secundario" larguraTotal={false} onClick={() => copiarLink(l.convite!.codigo!)}>
             Copiar link do convite

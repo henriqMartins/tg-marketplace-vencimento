@@ -47,7 +47,8 @@ describe('mock · grupo I · Eu', () => {
     await entrarComo('marcos@example.com')
     expect(await api.acesso.eu()).toMatchObject({
       plataforma: false,
-      interesse: { id: 3, estado: 'novo', criado_em: expect.any(String) },
+      // Pedido 5: o Interesse inteiro, igual ao que o POST /api/interesses devolve.
+      interesse: { id: 3, estado: 'novo', nome_mercado: 'Mercearia São Jorge', telefone: '17999990000', pessoa: { email: 'marcos@example.com' } },
     })
     await entrarComo('ana@email.com')
     expect(await api.acesso.eu()).toMatchObject({ plataforma: false, interesse: null })
@@ -246,5 +247,17 @@ describe('mock · grupo I · detalhes do contrato publicado (23/11/2026)', () =>
     expect(lojas.find((l) => l.id === 2)).toMatchObject({ cnpj: null, convite: null, responsavel: null })
     const e = await erroDe(api.parceria.novoConvite(2))
     expect([e.status, e.codigo]).toEqual([409, 'sem_convite'])
+  })
+
+  it('pedido 6: convite.codigo só enquanto pendente; aceito → null (a chave sempre vem)', async () => {
+    await entrarComo('equipe@example.com')
+    const { loja, convite } = await api.parceria.cadastrarLoja(ENTRADA_LOJA)
+    const pendente = (await api.parceria.listarLojas()).find((l) => l.id === loja.id)!
+    expect(pendente.convite).toMatchObject({ estado: 'pendente', codigo: convite.codigo })
+    await entrarComo('marcos@example.com')
+    await api.parceria.aceitarConvite(convite.codigo)
+    await entrarComo('equipe@example.com')
+    const aceita = (await api.parceria.listarLojas()).find((l) => l.id === loja.id)!
+    expect(aceita.convite).toMatchObject({ estado: 'aceito', codigo: null })
   })
 })

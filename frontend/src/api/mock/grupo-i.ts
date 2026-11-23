@@ -5,7 +5,7 @@
  */
 import type { ApiParceria } from '../cliente'
 import { ErroApi, mensagemPadrao } from '../erros'
-import type { ConsultaCnpj, Convite, EstadoConvite, Interesse, InteresseEu, LojaPlataforma } from '../tipos'
+import type { ConsultaCnpj, Convite, EstadoConvite, Interesse, LojaPlataforma } from '../tipos'
 import { cnpjValido, completarCnpj, soDigitos } from '../../util/cnpj'
 import { mascararEmail } from '../../util/email'
 import { isoBrasilia } from './datas'
@@ -79,7 +79,7 @@ const emAberto = (i: InteresseMock) => i.estado === 'novo' || i.estado === 'em_c
 const TELEFONE_MAXIMO = 20
 
 export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
-  interesseDoEu: (usuarioId: number) => InteresseEu | null
+  interesseDoEu: (usuarioId: number) => Interesse | null
 } {
   const { erro, responder } = d
   const banco = () => d.banco()
@@ -163,8 +163,7 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
               email: ultimo.email,
               expira_em: isoBrasilia(ultimo.expira_em),
               estado,
-              // PEDIDO-API 6: o código do convite pendente, para copiar o link de novo.
-              ...(estado === 'pendente' ? { codigo: ultimo.codigo } : {}),
+              codigo: estado === 'pendente' ? ultimo.codigo : null,
             }
           : null,
     }
@@ -208,10 +207,10 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
   }
 
   return {
-    // Contrato: só o pedido EM ABERTO (novo ou em_conversa); null se não houver.
+    // Contrato: só o pedido EM ABERTO (novo ou em_conversa), inteiro; null se não houver.
     interesseDoEu(usuarioId) {
       const aberto = banco().interesses.find((i) => i.usuarioId === usuarioId && emAberto(i))
-      return aberto ? { id: aberto.id, estado: aberto.estado, criado_em: isoBrasilia(aberto.criado_em) } : null
+      return aberto ? paraInteresse(aberto) : null
     },
 
     registrarInteresse: (entrada) =>
@@ -377,7 +376,7 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
         // Vínculo e "usado" juntos (no backend, na mesma transação, com trava).
         usuario.vinculos.push({ id: banco().proximoId++, loja: { id: loja.id, nome: loja.nome }, papel: 'responsavel' })
         c.usado_em = d.agora()
-        // PEDIDO-API 7: o vínculo no formato do Eu.
+        // O vínculo no formato de Eu.vinculos (pedido 7).
         return { vinculo: { loja: { id: loja.id, nome: loja.nome }, papel: 'responsavel' as const } }
       }),
   }

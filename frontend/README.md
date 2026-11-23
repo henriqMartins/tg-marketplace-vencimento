@@ -123,6 +123,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 23/11/2026 | `Eu.plataforma` e `Eu.interesse` agora **obrigatórios** no tipo (a API sempre manda); a A4 não esconde mais "Tenho um mercado" |
 | 23/11/2026 | Mock com os detalhes do grupo I ✅: erro de campo com `campo` e `campo_longo` (limites e frases do `servico.py`), telefone só com dígitos, `interesse_id` inexistente → 404, loja antiga sem convite → `409 sem_convite`. Na P3, o telefone passou a ser **obrigatório** (o backend exige; antes o mock aceitava vazio) |
 | 23/11/2026 | PEDIDO-API 7 atendido pelo contrato. PEDIDO-API 5 e 6 aguardam decisão do Henrique (o backend recomendou aceitar); até lá, a A6 e a P2 seguem no modo reduzido e o mock continua simulando o 6 |
+| 23/11/2026 | **PEDIDO-API 5, 6 e 7 aceitos** (main `d5540b6`). `Eu.interesse` é o `Interesse` inteiro: a A6 em modo leitura mostra também mercado, cidade, telefone e mensagem. `LojaPlataforma.convite.codigo` é `string | null` (só pendente tem código): a P2 copia o link de novo. O tipo `InteresseEu` saiu; no mock, os comentários `PEDIDO-API` saíram |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos

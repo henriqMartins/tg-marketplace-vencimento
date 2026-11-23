@@ -81,8 +81,8 @@ export interface Eu {
   vinculos: VinculoEu[]
   /** Grupo I: a pessoa é da equipe da plataforma (is_staff). */
   plataforma: boolean
-  /** O interesse em parceria em aberto da pessoa (ou null). PEDIDO-API 5: trazer o Interesse inteiro. */
-  interesse: InteresseEu | null
+  /** O pedido de parceria EM ABERTO da pessoa, inteiro (pedido 5, aceito), ou null. */
+  interesse: Interesse | null
 }
 
 export interface Sessao {
@@ -469,14 +469,10 @@ export interface Projecao {
 /** Em aberto = novo ou em_conversa (um por pessoa). */
 export type EstadoInteresse = 'novo' | 'em_conversa' | 'virou_loja' | 'descartado'
 
-/** O que o `Eu` traz do interesse. */
-export interface InteresseEu {
+export interface Interesse {
   id: number
   estado: EstadoInteresse
   criado_em: DataHora
-}
-
-export interface Interesse extends InteresseEu {
   nome_mercado: string
   cidade: string
   telefone: string
@@ -527,8 +523,8 @@ export interface LojaPlataforma {
     email: string
     expira_em: DataHora
     estado: EstadoConvite
-    /** PEDIDO-API 6: o código do convite pendente, para copiar o link de novo na P2. */
-    codigo?: string
+    /** Só com estado "pendente"; senão null (pedido 6, aceito): a P2 copia o link de novo. */
+    codigo: string | null
   } | null
 }
 
@@ -561,7 +557,7 @@ export interface ConviteAberto {
   expira_em: DataHora
 }
 
-/** PEDIDO-API 7: formato do vínculo devolvido no aceite (o mesmo do `Eu`). */
+/** Vínculo devolvido no aceite, no formato de `Eu.vinculos` (pedido 7, aceito). */
 export interface ConviteAceito {
   vinculo: VinculoEu
 }

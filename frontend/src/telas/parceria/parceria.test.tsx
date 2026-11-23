@@ -50,11 +50,14 @@ describe('A6 · Quero ser parceiro', () => {
     expect(screen.getByLabelText('Telefone (WhatsApp)')).toHaveAttribute('aria-invalid', 'true')
   })
 
-  it('com pedido em aberto: modo leitura, sem formulário', async () => {
+  it('com pedido em aberto: modo leitura com os dados enviados (vêm no Eu), sem formulário', async () => {
     await abrir('/parceiro', { email: MARCOS })
     const pedido = await screen.findByRole('region', { name: 'Seu pedido' })
     expect(within(pedido).getByText('Recebido')).toBeInTheDocument()
     expect(pedido).toHaveTextContent(/Enviado em \d{2}\/\d{2}/)
+    expect(within(pedido).getByText('Mercearia São Jorge')).toBeInTheDocument()
+    expect(within(pedido).getByText('São José do Rio Preto')).toBeInTheDocument()
+    expect(within(pedido).getByText('17999990000')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Enviar pedido' })).toBeNull()
   })
 

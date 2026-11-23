@@ -39,8 +39,7 @@ export function A6Parceiro() {
   const corpo = enviar.isSuccess ? (
     <Recebido interesse={enviar.data} />
   ) : interesseEmAberto(eu) && eu.interesse ? (
-    // PEDIDO-API 5: com o Interesse inteiro no Eu, esta leitura mostraria também os dados enviados.
-    <EmAndamento estado={eu.interesse.estado} criadoEm={eu.interesse.criado_em} />
+    <EmAndamento interesse={eu.interesse} />
   ) : (
     formulario()
   )
@@ -164,35 +163,44 @@ function Recebido({ interesse }: { interesse: Interesse }) {
       </span>
       <h2 className={styles.nomeLoja}>Recebemos seu pedido</h2>
       <section className={styles.cartao} aria-label="Dados enviados">
-        <dl className={styles.dados}>
-          <dt>Mercado</dt>
-          <dd>{interesse.nome_mercado}</dd>
-          <dt>Cidade</dt>
-          <dd>{interesse.cidade}</dd>
-          <dt>Telefone</dt>
-          <dd>{interesse.telefone}</dd>
-          {interesse.mensagem && (
-            <>
-              <dt>Mensagem</dt>
-              <dd>{interesse.mensagem}</dd>
-            </>
-          )}
-        </dl>
+        <DadosEnviados interesse={interesse} />
       </section>
       <ProximasEtapas />
     </>
   )
 }
 
-function EmAndamento({ estado, criadoEm }: { estado: EstadoInteresse; criadoEm: string }) {
+/** O que a pessoa mandou no pedido (o telefone volta só com dígitos: é como o backend guarda). */
+function DadosEnviados({ interesse }: { interesse: Interesse }) {
+  return (
+    <dl className={styles.dados}>
+      <dt>Mercado</dt>
+      <dd>{interesse.nome_mercado}</dd>
+      <dt>Cidade</dt>
+      <dd>{interesse.cidade}</dd>
+      <dt>Telefone</dt>
+      <dd>{interesse.telefone}</dd>
+      {interesse.mensagem && (
+        <>
+          <dt>Mensagem</dt>
+          <dd>{interesse.mensagem}</dd>
+        </>
+      )}
+    </dl>
+  )
+}
+
+/** Voltando outro dia: o estado, a data e os dados enviados (vêm inteiros no `Eu`). */
+function EmAndamento({ interesse }: { interesse: Interesse }) {
   return (
     <>
       <section className={styles.cartao} aria-label="Seu pedido">
         <span className={styles.linhaTopo}>
           <strong>Pedido de parceria</strong>
-          <Selo variante="pending">{ROTULO_ESTADO[estado]}</Selo>
+          <Selo variante="pending">{ROTULO_ESTADO[interesse.estado]}</Selo>
         </span>
-        <span className={styles.texto}>Enviado em {formatarDataCurta(criadoEm)} · entraremos em contato</span>
+        <span className={styles.texto}>Enviado em {formatarDataCurta(interesse.criado_em)} · entraremos em contato</span>
+        <DadosEnviados interesse={interesse} />
       </section>
       <ProximasEtapas />
     </>
