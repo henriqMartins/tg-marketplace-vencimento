@@ -129,7 +129,7 @@ describe('mock · grupo I · loja e convite', () => {
     const [interesse] = await api.parceria.listarInteresses('virou_loja')
     expect(interesse).toMatchObject({ id: 3, loja_id: loja.id })
     // CNPJ repetido
-    expect((await erroDe(api.parceria.cadastrarLoja(ENTRADA_LOJA))).codigo).toBe('cnpj_ja_cadastrado')
+    expect((await erroDe(api.parceria.cadastrarLoja({ ...ENTRADA_LOJA, interesse_id: undefined }))).codigo).toBe('cnpj_ja_cadastrado')
   })
 
   it('inativa bloqueia; Receita fora do ar segue como não verificado', async () => {
@@ -175,5 +175,38 @@ describe('mock · grupo I · loja e convite', () => {
     agora = new Date('2026-11-26T10:00:00-03:00') // passou dos 7 dias
     expect((await erroDe(api.parceria.obterConvite(novo.codigo))).codigo).toBe('convite_vencido')
     expect((await erroDe(api.parceria.obterConvite('nao-existe'))).status).toBe(404)
+  })
+})
+
+describe('mock · grupo I · decisões ★ do contrato (17/11/2026)', () => {
+  it('Eu.interesse só traz o pedido em aberto', async () => {
+    await entrarComo('equipe@example.com')
+    await api.parceria.cadastrarLoja(ENTRADA_LOJA) // o pedido 3 vira loja
+    await entrarComo('marcos@example.com')
+    expect((await api.acesso.eu()).interesse).toBeNull()
+  })
+
+  it('PATCH: descartar exige motivo; virou_loja não volta a em_conversa', async () => {
+    await entrarComo('equipe@example.com')
+    const semMotivo = await erroDe(api.parceria.atualizarInteresse(3, { estado: 'descartado' }))
+    expect([semMotivo.status, semMotivo.codigo]).toEqual([400, 'campo_obrigatorio'])
+    await api.parceria.cadastrarLoja(ENTRADA_LOJA)
+    expect((await erroDe(api.parceria.atualizarInteresse(3, { estado: 'em_conversa' }))).codigo).toBe('estado_invalido')
+  })
+
+  it('criação: CNPJ que a Receita não conhece bloqueia; interesse fechado → estado_invalido', async () => {
+    await entrarComo('equipe@example.com')
+    const desconhecido = await erroDe(api.parceria.cadastrarLoja({ ...ENTRADA_LOJA, cnpj: completarCnpj('112223330002') }))
+    expect([desconhecido.status, desconhecido.codigo]).toEqual([400, 'cnpj_nao_encontrado'])
+    await api.parceria.atualizarInteresse(3, { estado: 'descartado', motivo: 'Fora da região' })
+    expect((await erroDe(api.parceria.cadastrarLoja(ENTRADA_LOJA))).codigo).toBe('estado_invalido')
+  })
+
+  it('403 email_diferente traz email_convite mascarado', async () => {
+    await entrarComo('equipe@example.com')
+    const { convite } = await api.parceria.cadastrarLoja(ENTRADA_LOJA)
+    await entrarComo('ana@email.com')
+    const e = await erroDe(api.parceria.aceitarConvite(convite.codigo))
+    expect(e.corpo).toMatchObject({ codigo: 'email_diferente', email_convite: 'm…@example.com' })
   })
 })

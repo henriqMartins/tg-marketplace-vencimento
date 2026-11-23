@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { ehErroApi } from '../../api'
 import { useApi, useSessao } from '../../app/contextos'
-import { mascararEmail } from '../../app/parceria'
+import { mascararEmail } from '../../util/email'
 import { useEhDesktop } from '../../app/tela'
 import { Botao } from '../../componentes/Botao'
 import { EsqueletoLista } from '../../componentes/Esqueleto'
@@ -102,7 +102,12 @@ function fraseDoErro(erro: unknown, email: string | undefined): string {
   if (ehErroApi(erro) && erro.status === 404) return 'Convite não encontrado. Confira se o link foi copiado inteiro.'
   switch (codigoDoErro(erro)) {
     case 'email_diferente':
-      return `Este convite é para outro e-mail. Entre com a conta de ${email ? mascararEmail(email) : 'quem foi convidado'}.`
+    {
+      // O 403 traz `email_convite` já mascarado (contrato); sem ele, mascara o e-mail do convite.
+      const corpo = ehErroApi(erro) ? (erro.corpo as { email_convite?: string } | undefined) : undefined
+      const conta = corpo?.email_convite ?? (email ? mascararEmail(email) : 'quem foi convidado')
+      return `Este convite é para outro e-mail. Entre com a conta de ${conta}.`
+    }
     case 'convite_vencido':
       return 'Este convite venceu. Peça um novo à equipe da plataforma.'
     case 'convite_usado':

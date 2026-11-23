@@ -7,7 +7,6 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useLocal } from './contexto'
 import type { LocalDoEndereco } from './endereco'
-import styles from './BuscaNoMapa.module.css'
 
 export type ConfirmacaoLocal = { tipo: 'encontrado'; local: LocalDoEndereco } | { tipo: 'nao_encontrado' }
 
@@ -38,23 +37,4 @@ export function useBuscaNoMapa() {
         ? { latitude: c.local.latitude, longitude: c.local.longitude }
         : { latitude: null, longitude: null },
   }
-}
-
-/** "Localização encontrada: …. É aqui?" ou "Não encontramos…", com o crédito do OpenStreetMap (ODbL). */
-export function TextoConfirmacao({ confirmacao }: { confirmacao: ConfirmacaoLocal }) {
-  return (
-    <>
-      {confirmacao.tipo === 'encontrado' ? (
-        <span>
-          <strong>Localização encontrada:</strong> {confirmacao.local.descricao}. É aqui?
-        </span>
-      ) : (
-        <span>
-          <strong>Não encontramos esse endereço no mapa.</strong> Sem localização, a loja aparece no fim da lista ordenada
-          por distância.
-        </span>
-      )}
-      <small className={styles.credito}>Mapa: © colaboradores do OpenStreetMap</small>
-    </>
-  )
 }

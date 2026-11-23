@@ -7,6 +7,7 @@ import type { ApiParceria } from '../cliente'
 import { ErroApi, mensagemPadrao } from '../erros'
 import type { ConsultaCnpj, Convite, EstadoConvite, Interesse, InteresseEu, LojaPlataforma } from '../tipos'
 import { cnpjValido, completarCnpj, soDigitos } from '../../util/cnpj'
+import { mascararEmail } from '../../util/email'
 import { isoBrasilia } from './datas'
 import type { BancoMock, ConviteMock, InteresseMock, LojaMock, UsuarioMock } from './semente'
 
@@ -184,9 +185,10 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
   }
 
   return {
+    // Contrato: só o pedido EM ABERTO (novo ou em_conversa); null se não houver.
     interesseDoEu(usuarioId) {
-      const ultimo = banco().interesses.filter((i) => i.usuarioId === usuarioId).at(-1)
-      return ultimo ? { id: ultimo.id, estado: ultimo.estado, criado_em: isoBrasilia(ultimo.criado_em) } : null
+      const aberto = banco().interesses.find((i) => i.usuarioId === usuarioId && emAberto(i))
+      return aberto ? { id: aberto.id, estado: aberto.estado, criado_em: isoBrasilia(aberto.criado_em) } : null
     },
 
     registrarInteresse: (entrada) =>
@@ -220,6 +222,9 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
     listarInteresses: (estado) =>
       responder(() => {
         equipe()
+        if (estado && !['novo', 'em_conversa', 'virou_loja', 'descartado'].includes(estado)) {
+          throw erro(400, 'estado_invalido', 'Estado inválido.')
+        }
         return banco()
           .interesses.filter((i) => !estado || i.estado === estado)
           .sort((a, b) => b.criado_em.getTime() - a.criado_em.getTime())
@@ -231,11 +236,16 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
         equipe()
         const i = banco().interesses.find((x) => x.id === id)
         if (!i) throw erro(404, 'nao_encontrado', 'Interesse não encontrado.')
-        if ((entrada.estado !== 'em_conversa' && entrada.estado !== 'descartado') || i.estado === 'virou_loja') {
-          throw erro(400, 'estado_invalido', 'Não dá para mudar este pedido para esse estado.')
+        // Só novo → em_conversa e novo/em_conversa → descartado (contrato, ★ 17/11/2026).
+        const permitida =
+          (entrada.estado === 'em_conversa' && i.estado === 'novo') || (entrada.estado === 'descartado' && emAberto(i))
+        if (!permitida) throw erro(400, 'estado_invalido', 'Não dá para mudar este pedido para esse estado.')
+        const motivo = texto(entrada.motivo)
+        if (entrada.estado === 'descartado' && !motivo) {
+          throw erro(400, 'campo_obrigatorio', 'Diga o motivo do descarte.')
         }
         i.estado = entrada.estado
-        i.motivo_descarte = entrada.estado === 'descartado' ? texto(entrada.motivo) || null : null
+        i.motivo_descarte = entrada.estado === 'descartado' ? motivo : null
         return paraInteresse(i)
       }),
 
@@ -259,15 +269,22 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
         if (!nome || !endereco) throw erro(400, 'campo_obrigatorio', 'Preencha o nome e o endereço da loja.')
         const email = texto(entrada.email_responsavel).toLowerCase()
         if (!EMAIL_VALIDO.test(email)) throw erro(400, 'email_invalido', 'Informe um e-mail válido para o responsável.')
+        const interesse = entrada.interesse_id ? banco().interesses.find((i) => i.id === entrada.interesse_id) : undefined
+        if (entrada.interesse_id && (!interesse || !emAberto(interesse))) {
+          throw erro(400, 'estado_invalido', 'Este pedido não está mais em aberto.')
+        }
         if (banco().lojas.some((l) => l.cnpj === cnpj)) {
           throw erro(409, 'cnpj_ja_cadastrado', 'Já existe uma loja com este CNPJ.')
         }
-        // Receita fora do ar ou CNPJ não achado: a criação segue, "não verificado".
+        // Receita fora do ar: a criação segue, "não verificado". CNPJ que ela não conhece bloqueia (★).
         let consulta: ConsultaCnpj | undefined
         try {
           consulta = consultarReceita(cnpj)
         } catch (e) {
           if (!(e instanceof ErroApi && e.status === 503)) throw e
+        }
+        if (!consulta && cnpj !== CNPJ_FORA_DO_AR) {
+          throw erro(400, 'cnpj_nao_encontrado', 'A Receita não encontrou este CNPJ.')
         }
         if (consulta && !consulta.ativa) {
           throw erro(400, 'cnpj_inativo', `A Receita mostra este CNPJ como ${consulta.situacao}.`)
@@ -291,7 +308,6 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
         }
         banco().lojas.push(loja)
         const convite = gerarConvite(loja.id, email)
-        const interesse = entrada.interesse_id ? banco().interesses.find((i) => i.id === entrada.interesse_id) : undefined
         if (interesse) {
           interesse.estado = 'virou_loja'
           interesse.loja_id = loja.id
@@ -329,7 +345,7 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
         const usuario = d.usuarioLogado()
         const c = conviteValido(codigo)
         if (usuario.email.toLowerCase() !== c.email.toLowerCase()) {
-          throw erro(403, 'email_diferente', 'Este convite é para outro e-mail.')
+          throw erro(403, 'email_diferente', 'Este convite é para outro e-mail.', { email_convite: mascararEmail(c.email) })
         }
         if (usuario.vinculos.some((v) => v.loja.id === c.lojaId)) {
           throw erro(409, 'ja_vinculado', 'Você já faz parte da equipe desta loja.')

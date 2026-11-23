@@ -12,11 +12,6 @@ export function linkDoConvite(codigo: string, origem = window.location.origin): 
   return `${origem}/convite/${encodeURIComponent(codigo)}`
 }
 
-/** "marcos@example.com" → "m…@example.com": diz qual conta usar sem expor o e-mail inteiro. */
-export function mascararEmail(email: string): string {
-  const [nome, dominio] = email.split('@')
-  return dominio ? `${nome.slice(0, 1)}…@${dominio}` : '…'
-}
 
 /** Mensagem pronta para o WhatsApp (docs/parceria.md, P3). */
 export function mensagemDoConvite({ nomeLoja, link, expiraEm, email }: { nomeLoja: string; link: string; expiraEm: string; email: string }): string {
