@@ -17,16 +17,11 @@
   text-align: center;
 }
 
-.icone {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.selo {
+  /* O SVG já traz o quadrado branco arredondado com o símbolo. */
   width: 104px;
   height: 104px;
   margin-bottom: 8px;
-  border-radius: 30px;
-  background: #fff;
-  color: var(--primary);
 }
 
 .nome {

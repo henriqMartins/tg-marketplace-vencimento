@@ -1,7 +1,7 @@
 /*
  * PWA (F9): o manifesto num lugar só. O vite.config.ts entrega isto ao vite-plugin-pwa,
  * que gera o manifest.webmanifest e o service worker no build.
- * Nome e ícone são PROVISÓRIOS: trocar o nome é mexer só em marca.ts.
+ * O nome vem de marca.ts; os ícones estão em public/icons/.
  */
 import type { ManifestOptions } from 'vite-plugin-pwa'
 import { NOME_DO_APP } from './marca.ts'
@@ -16,12 +16,13 @@ export const MANIFESTO: Partial<ManifestOptions> = {
   display: 'standalone',
   orientation: 'portrait',
   theme_color: '#1E6A48', // primary
-  background_color: '#F6F5F1', // bg
+  background_color: '#1E6A48', // primary: a tela de abertura do Android emenda na A1, que é verde
   icons: [
-    { src: 'icone-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-    { src: 'icone-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-    // Android recorta em círculo ou "gota": a etiqueta fica dentro da área segura (70%).
-    { src: 'icone-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+    { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+    { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+    // Android recorta em círculo ou "gota": o símbolo fica dentro da área segura.
+    { src: 'icons/icon-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+    { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
   ],
 }
 

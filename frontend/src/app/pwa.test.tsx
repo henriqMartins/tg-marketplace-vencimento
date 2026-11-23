@@ -8,17 +8,17 @@ import { FORA_DO_APP, MANIFESTO } from './pwa'
 import { avisarVersaoNova } from './servico'
 
 describe('PWA · manifesto', () => {
-  it('nome, idioma, cores do tema e ícones (192, 512 e maskable)', () => {
+  it('nome, idioma, cores do tema e ícones (192 e 512, comuns e maskable)', () => {
     expect(MANIFESTO).toMatchObject({
       name: NOME_DO_APP,
       lang: 'pt-BR',
       display: 'standalone',
       start_url: '/',
       theme_color: '#1E6A48',
-      background_color: '#F6F5F1',
+      background_color: '#1E6A48',
     })
     const icones = MANIFESTO.icons!.map((i) => `${i.sizes} ${i.purpose}`)
-    expect(icones).toEqual(['192x192 any', '512x512 any', '512x512 maskable'])
+    expect(icones).toEqual(['192x192 any', '512x512 any', '192x192 maskable', '512x512 maskable'])
   })
 
   it('o service worker nunca responde a API com o app', () => {

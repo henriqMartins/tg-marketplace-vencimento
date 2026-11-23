@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router'
-import { IconeCasa } from '../../componentes/icones'
 import { useApi, useSessao } from '../contextos'
 import { destinoAposEntrar } from '../destino'
 import { lerEscolha } from '../escolha'
@@ -48,9 +47,7 @@ export function A1Abertura() {
   return (
     <div className={styles.abertura}>
       <div className={styles.centro}>
-        <div className={styles.icone} aria-hidden="true">
-          <IconeCasa tamanho={56} />
-        </div>
+        <img className={styles.selo} src="/icons/abertura-selo.svg" alt="" width={104} height={104} />
         <h1 className={styles.nome}>{NOME_DO_APP}</h1>
         <p className={styles.slogan}>{SLOGAN}</p>
       </div>

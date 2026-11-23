@@ -1,3 +1,3 @@
-/** Nome do app ainda em aberto (especificação, "Ainda em aberto"): espaço reservado. */
-export const NOME_DO_APP = '[Nome do app]'
+/** Nome do app (o símbolo e os ícones estão em public/icons/). */
+export const NOME_DO_APP = 'Pé de Preço'
 export const SLOGAN = '[Slogan a definir]'

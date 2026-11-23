@@ -117,6 +117,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 18/11/2026 | A7: depois do aceite, espera o `Eu` novo (`invalidateQueries(['eu'])`) antes de abrir a L14; senão a loja abriria em "Sem acesso" |
 | 18/11/2026 | Área da plataforma: menu lateral no computador (o mesmo CSS do gestor) e **navegação inferior** no celular (Interessados · Lojas · Nova loja), com as listas empilhadas em cartões |
 | 18/11/2026 | P3 reaproveita a busca no mapa da L14, extraída para `localizacao/useBuscaNoMapa.ts` + `TextoConfirmacao.tsx`. Nome de exibição padrão = o nome que o dono deu no pedido (vindo da P1); sem pedido, o nome fantasia da Receita. "Copiar" usa `navigator.clipboard`; se o navegador recusar, o texto fica selecionado |
+| 23/11/2026 | Nome **Pé de Preço** e ícones definitivos (`public/icons/` + `favicon.ico`), no lugar dos provisórios. A A1 usa o selo branco `abertura-selo.svg`; o manifesto ganhou o maskable 192 e o fundo verde (`background_color` = primary), para a abertura do Android emendar na A1 |
 | 23/11/2026 | Mock alinhado ao grupo I publicado no contrato (🔧): `Eu.interesse` só com o pedido em aberto; PATCH só `novo → em_conversa` e `novo`/`em_conversa → descartado`, com motivo obrigatório; CNPJ que a Receita não conhece **bloqueia** a criação; `interesse_id` fechado → `estado_invalido`; `403 email_diferente` traz `email_convite` mascarado, que a A7 usa |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
@@ -353,4 +354,4 @@ frontend/
     └── test/setup.ts     # comparadores do jest-dom + limpeza entre testes
 ```
 
-O nome do app ainda está em aberto: aparece como "[Nome do app]" (`NOME_DO_APP` em `App.tsx`).
+O nome do app é **Pé de Preço** (`NOME_DO_APP` em `src/app/marca.ts`). Os ícones (toldo + broto + sorriso) estão em `public/icons/`, com o `favicon.ico` na raiz de `public/`.
