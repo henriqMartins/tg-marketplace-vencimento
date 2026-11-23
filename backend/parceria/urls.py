@@ -9,4 +9,8 @@ urlpatterns = [
          name="plataforma-interesses"),
     path("plataforma/interesses/<int:interesse_id>", api.InteresseDaPlataforma.as_view(),
          name="plataforma-interesse"),
+    path("plataforma/cnpj/<str:cnpj>", api.ConsultaCnpj.as_view(), name="plataforma-cnpj"),
+    path("plataforma/lojas", api.LojasDaPlataforma.as_view(), name="plataforma-lojas"),
+    path("plataforma/lojas/<int:loja_id>/convite", api.ConviteDaLoja.as_view(),
+         name="plataforma-convite"),
 ]

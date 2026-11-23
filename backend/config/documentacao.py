@@ -281,6 +281,34 @@ documentar(i.InteresseDaPlataforma, patch=rota(
     corpo={"estado": "descartado", "motivo": "Não vende embalados"},
     respostas={200: "Interesse", 400: ERRO + ": estado_invalido, campo_obrigatorio",
                404: ERRO + ": nao_encontrado", **SO_EQUIPE}))
+documentar(i.ConsultaCnpj, get=rota(
+    "I", "Consultar CNPJ na Receita (P3, passo 1)",
+    descricao="Dígitos conferidos antes; a BrasilAPI é chamada pelo backend (limite 5 s).",
+    respostas={200: "ConsultaCnpj", 400: ERRO + ": cnpj_invalido",
+               404: ERRO + ": cnpj_nao_encontrado", 503: ERRO + ": consulta_indisponivel",
+               **SO_EQUIPE}))
+documentar(i.LojasDaPlataforma,
+           get=rota("I", "Lojas da plataforma (P2)",
+                    respostas={200: "[LojaPlataforma]", **SO_EQUIPE}),
+           post=rota("I", "Cadastrar loja e gerar convite (P3)",
+                     descricao="Loja + convite (+ interesse → virou_loja) numa transação só. "
+                               "Receita fora do ar: cria com `cnpj_verificado: false`.",
+                     corpo={"cnpj": "11222333000181", "nome": "Mercearia São Jorge",
+                            "endereco": "Rua das Palmeiras, 410 · Boa Vista",
+                            "latitude": -20.8113, "longitude": -49.3758,
+                            "telefone": "17999990000", "email_responsavel": "marcos@example.com",
+                            "interesse_id": 1},
+                     respostas={201: "{loja: LojaPlataforma, convite: Convite}",
+                                400: ERRO + ": cnpj_invalido, cnpj_inativo, cnpj_nao_encontrado, "
+                                            "email_invalido, campo_obrigatorio, coordenadas_*, "
+                                            "estado_invalido",
+                                404: ERRO + ": nao_encontrado (interesse)",
+                                409: ERRO + ": cnpj_ja_cadastrado", **SO_EQUIPE}))
+documentar(i.ConviteDaLoja, post=rota(
+    "I", "Gerar novo convite (P2)",
+    descricao="O convite pendente anterior deixa de valer (responde 410 convite_vencido).",
+    respostas={201: "Convite", 404: ERRO + ": nao_encontrado",
+               409: ERRO + ": loja_ja_ativa, sem_convite", **SO_EQUIPE}))
 
 
 def rotas():
