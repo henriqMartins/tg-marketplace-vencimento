@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Plataforma · Interessados</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+th{font-weight:600}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 960px; box-sizing: border-box; background: #F6F5F1; color: #1B1F1C; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-wrap: wrap;">
+  <nav aria-label="Menu da plataforma" style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; padding: 24px 16px; background: #14503A; color: #FFFFFF; display: flex; flex-direction: column; gap: 4px;">
+    <div style="padding: 0 12px 20px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #BFE0CD;">Equipe da plataforma</span>
+      <span style="font-size: 16px; font-weight: 800;">[Nome do app]</span>
+    </div>
+    <a href="#" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; background: rgba(255,255,255,0.14); font-size: 15px; font-weight: 700;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"></path><circle cx="10" cy="7" r="4"></circle><path d="M21 21v-2a4 4 0 00-3-3.9"></path></svg>Interessados</a>
+    <a href="PlataformaLojas.dc.html" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: 10px; font-size: 15px; font-weight: 600; color: #D7EDE0;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>Lojas</a>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 18px; max-width: 1240px;">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Interessados</h1>
+        <span style="font-size: 14px; color: #5B635D;">Mercados que pediram para entrar pela A4 ("Tenho um mercado"). Converse, visite e, com o acordo feito, cadastre a loja.</span>
+      </div>
+      <a href="PlataformaCadastro.dc.html" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font-size: 15px; font-weight: 700;">+ Cadastrar loja</a>
+    </div>
+
+    <div role="tablist" aria-label="Estado do pedido" style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{abas}}" as="a" hint-placeholder-count="4">
+        <button role="tab" aria-selected="{{a.on}}" onClick="{{a.pick}}" style="{{a.style}}">{{a.label}}</button>
+      </sc-for>
+    </div>
+
+    <section style="padding: 8px 20px 12px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px; overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 820px;">
+        <thead>
+          <tr style="text-align: left; color: #5B635D; border-bottom: 1px solid #E3E1DA;">
+            <th style="padding: 12px 8px;">Mercado</th>
+            <th style="padding: 12px 8px;">Cidade</th>
+            <th style="padding: 12px 8px;">Telefone</th>
+            <th style="padding: 12px 8px;">Quem pediu</th>
+            <th style="padding: 12px 8px;">Pedido em</th>
+            <th style="padding: 12px 8px; text-align: right;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{linhas}}" as="l" hint-placeholder-count="3">
+            <tr style="border-bottom: 1px solid #E3E1DA;">
+              <td style="padding: 12px 8px; font-weight: 700;">{{l.mercado}}<br><span style="font-size: 13px; font-weight: 400; color: #5B635D;">{{l.msg}}</span></td>
+              <td style="padding: 12px 8px;">{{l.cidade}}</td>
+              <td style="padding: 12px 8px; font-variant-numeric: tabular-nums;">{{l.tel}}</td>
+              <td style="padding: 12px 8px;">{{l.pessoa}}<br><span style="font-size: 13px; color: #5B635D;">{{l.email}}</span></td>
+              <td style="padding: 12px 8px; color: #5B635D;">{{l.data}}</td>
+              <td style="padding: 12px 8px;">
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                  <button style="height: 36px; padding: 0 12px; border: 1.5px solid #C9C6BC; border-radius: 10px; background: #FFFFFF; font: inherit; font-size: 13px; font-weight: 600; color: #1B1F1C; cursor: pointer;">{{l.acao}}</button>
+                  <a href="PlataformaCadastro.dc.html" style="display: flex; align-items: center; height: 36px; padding: 0 12px; border-radius: 10px; background: #1E6A48; color: #FFFFFF; font-size: 13px; font-weight: 700;">Cadastrar loja</a>
+                </div>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+    <span style="font-size: 13px; color: #5B635D;">"Descartar" pede um motivo curto. Um pedido em aberto por pessoa.</span>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { aba: 'Novos' }; }
+  renderVals() {
+    const pill = 'height: 36px; padding: 0 14px; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ';
+    const on = pill + 'border: 1.5px solid #1E6A48; background: #1E6A48; color: #FFFFFF;';
+    const off = pill + 'border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C;';
+    const dados = {
+      'Novos': [
+        { mercado: 'Mercearia São Jorge', msg: 'Melhor horário para visita: de manhã.', cidade: 'São José do Rio Preto', tel: '(17) 99999-0000', pessoa: 'Marcos Lima', email: 'marcos@example.com', data: '18/11', acao: 'Marcar em conversa' },
+        { mercado: 'Mini Mercado Bom Jesus', msg: '', cidade: 'Mirassol', tel: '(17) 98888-1111', pessoa: 'Cláudia Reis', email: 'claudia@example.com', data: '17/11', acao: 'Marcar em conversa' }
+      ],
+      'Em conversa': [
+        { mercado: 'Armazém do Tião', msg: 'Visita marcada para 25/11.', cidade: 'Bady Bassitt', tel: '(17) 97777-2222', pessoa: 'Sebastião Alves', email: 'tiao@example.com', data: '12/11', acao: 'Descartar' }
+      ],
+      'Viraram loja': [
+        { mercado: 'Empório Santa Rita', msg: 'Loja ativa desde 05/11.', cidade: 'São José do Rio Preto', tel: '(17) 96666-3333', pessoa: 'Rosa', email: 'rosa@example.com', data: '30/10', acao: 'Ver loja' }
+      ],
+      'Descartados': [
+        { mercado: 'Padaria Central', msg: 'Motivo: vende só a peso (fora do escopo).', cidade: 'Cedral', tel: '(17) 95555-4444', pessoa: 'Jorge Melo', email: 'jorge@example.com', data: '28/10', acao: 'Reabrir' }
+      ]
+    };
+    const nomes = ['Novos', 'Em conversa', 'Viraram loja', 'Descartados'];
+    return {
+      abas: nomes.map((n) => ({ label: n + ' (' + dados[n].length + ')', on: this.state.aba === n, style: this.state.aba === n ? on : off, pick: () => this.setState({ aba: n }) })),
+      linhas: dados[this.state.aba]
+    };
+  }
+}
+</script>
+</body>
+</html>
