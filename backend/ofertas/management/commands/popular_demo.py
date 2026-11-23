@@ -10,7 +10,9 @@ lote, adiar, publicar, reservar, cancelar, retirar). Assim a fita, o grupo, o
 fim da oferta e o estoque saem pelas mesmas regras do sistema — o vídeo mostra o
 comportamento real, não números escritos à mão.
 
-Rodar de novo não duplica: se a conta do Carlos já existe, o comando não faz nada.
+Rodar de novo não duplica: se a conta do Carlos já existe, o cenário das lojas é
+pulado. A parte da PARCERIA (etapa 14: equipe da plataforma + o Marcos com um pedido
+"novo") tem a própria checagem, então rodar num banco já populado só acrescenta o que falta.
 Para recomeçar do zero no banco local: python manage.py flush, depois popular_demo.
 """
 from datetime import date, datetime, time, timedelta
@@ -25,9 +27,12 @@ from ofertas import servico, servico_lotes
 from ofertas.calendario import BRASILIA
 from ofertas.fita import fita
 from ofertas.models import Loja, Papel, Produto, Vinculo
+from parceria import servico as servico_parceria
 
 SENHA = "demo1234"
 CARLOS = "carlos@example.com"
+EQUIPE = "equipe@example.com"
+MARCOS = "marcos@example.com"
 
 
 def _mesma_fita(a: date, b: date) -> bool:
@@ -40,19 +45,27 @@ class Command(BaseCommand):
     def handle(self, *args, **opcoes):
         Usuario = get_user_model()
         if Usuario.objects.filter(email__iexact=CARLOS).exists():
-            self.stdout.write("Dados de demonstração já existem; nada a fazer.")
+            self.stdout.write("Lojas de demonstração já existem; nada a fazer nelas.")
+        else:
+            with transaction.atomic():          # ou cria tudo, ou nada
+                self.popular(timezone.now())
+            self.stdout.write(self.style.SUCCESS(
+                f"Pronto. Entre com {CARLOS} (responsável), juliana@example.com (funcionária) "
+                f"ou ana@example.com (consumidora). Senha de todos: {SENHA}"))
+        if Usuario.objects.filter(email__iexact=EQUIPE).exists():
+            self.stdout.write("Parceria de demonstração já existe; nada a fazer.")
             return
-        with transaction.atomic():          # ou cria tudo, ou nada
-            self.popular(timezone.now())
+        with transaction.atomic():
+            self.popular_parceria()
         self.stdout.write(self.style.SUCCESS(
-            f"Pronto. Entre com {CARLOS} (responsável), juliana@example.com (funcionária) ou "
-            f"ana@example.com (consumidora). Senha de todos: {SENHA}"))
+            f"Parceria: {EQUIPE} (equipe da plataforma) e {MARCOS} (pediu parceria). "
+            f"Senha: {SENHA}"))
 
     # ------------------------------------------------------------ ajudantes
 
-    def pessoa(self, email, nome):
+    def pessoa(self, email, nome, **extras):
         return get_user_model().objects.create_user(username=email, email=email,
-                                                    password=SENHA, nome=nome)
+                                                    password=SENHA, nome=nome, **extras)
 
     def produto(self, loja, nome, categoria):
         return Produto.objects.create(loja=loja, nome=nome, categoria=categoria)
@@ -91,6 +104,21 @@ class Command(BaseCommand):
             r = servico.reservar(oferta.id, clientes[0], oferta.livre + 1, agora=h(5))
             servico.retirar(produto.loja_id, r.codigo, equipe, agora=h(6))
             servico.reservar(oferta.id, clientes[1], 1, agora=h(6))       # recusa
+
+    # ------------------------------------------------------------ parceria (etapa 14)
+
+    def popular_parceria(self):
+        """
+        A cena do vídeo (docs/parceria.md, seção 5): Marcos pede → equipe cadastra (P3)
+        → copia o link → Marcos aceita (A7). Aqui só o começo: a equipe e o pedido "novo".
+        O pedido passa pelo serviço de verdade, como o resto da demonstração.
+        """
+        self.pessoa(EQUIPE, "Equipe da plataforma", is_staff=True)
+        marcos = self.pessoa(MARCOS, "Marcos Lima")
+        servico_parceria.pedir_parceria(marcos, {
+            "nome_mercado": "Mercearia São Jorge", "cidade": "São José do Rio Preto",
+            "telefone": "17999990000",
+            "mensagem": "Vendo bastante iogurte e frios; sobra perto do vencimento toda semana."})
 
     # ------------------------------------------------------------ cenário
 

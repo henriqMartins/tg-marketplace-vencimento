@@ -34,6 +34,8 @@ from ofertas import api_lotes as d
 from ofertas import indicadores, projecao
 from ofertas.fita import CORES
 from ofertas.models import Categoria
+from parceria import api as i
+from parceria.models import EstadoInteresse
 
 # Os grupos do contrato (lista em settings.SPECTACULAR_SETTINGS["TAGS"]): "A" -> "A · Acesso"
 GRUPOS = {t["name"][0]: t["name"] for t in settings.SPECTACULAR_SETTINGS["TAGS"]}
@@ -42,6 +44,7 @@ ERRO = "Erro no formato {\"erro\": \"<frase>\", \"codigo\": \"<identificador>\"}
 SEM_LOGIN = {401: "Sem token (ou token inválido)."}
 SEM_VINCULO = {**SEM_LOGIN, 403: "Sem vínculo com esta loja."}
 SO_RESPONSAVEL = {**SEM_LOGIN, 403: "Só o responsável da loja."}
+SO_EQUIPE = {**SEM_LOGIN, 403: "Só a equipe da plataforma (is_staff)."}
 
 
 def _resposta(status, descricao):
@@ -261,6 +264,62 @@ documentar(f.Projecao, get=rota(
                     [str(c) for c in projecao.CHEGADAS])),
     respostas={200: "{rodadas, filtro, janelas}", 400: ERRO + ": parametro_invalido",
                **SO_RESPONSAVEL}))
+
+# ------------------------------------------------------------------ I · Parceria
+documentar(i.Interesses, post=rota(
+    "I", "Pedir parceria: \"Tenho um mercado\" (A6)",
+    corpo={"nome_mercado": "Mercearia São Jorge", "cidade": "São José do Rio Preto",
+           "telefone": "17999990000", "mensagem": ""},
+    respostas={201: "Interesse", 400: ERRO + ": campo_obrigatorio, campo_longo",
+               409: ERRO + ": interesse_em_aberto", **SEM_LOGIN}))
+documentar(i.InteressesDaPlataforma, get=rota(
+    "I", "Interessados (P1)",
+    filtros=(filtro("estado", "Sem filtro: todos.", EstadoInteresse.values),),
+    respostas={200: "[Interesse]", 400: ERRO + ": estado_invalido", **SO_EQUIPE}))
+documentar(i.InteresseDaPlataforma, patch=rota(
+    "I", "Marcar em conversa ou descartar (P1)",
+    corpo={"estado": "descartado", "motivo": "Não vende embalados"},
+    respostas={200: "Interesse", 400: ERRO + ": estado_invalido, campo_obrigatorio",
+               404: ERRO + ": nao_encontrado", **SO_EQUIPE}))
+documentar(i.ConsultaCnpj, get=rota(
+    "I", "Consultar CNPJ na Receita (P3, passo 1)",
+    descricao="Dígitos conferidos antes; a BrasilAPI é chamada pelo backend (limite 5 s).",
+    respostas={200: "ConsultaCnpj", 400: ERRO + ": cnpj_invalido",
+               404: ERRO + ": cnpj_nao_encontrado", 503: ERRO + ": consulta_indisponivel",
+               **SO_EQUIPE}))
+documentar(i.LojasDaPlataforma,
+           get=rota("I", "Lojas da plataforma (P2)",
+                    respostas={200: "[LojaPlataforma]", **SO_EQUIPE}),
+           post=rota("I", "Cadastrar loja e gerar convite (P3)",
+                     descricao="Loja + convite (+ interesse → virou_loja) numa transação só. "
+                               "Receita fora do ar: cria com `cnpj_verificado: false`.",
+                     corpo={"cnpj": "11222333000181", "nome": "Mercearia São Jorge",
+                            "endereco": "Rua das Palmeiras, 410 · Boa Vista",
+                            "latitude": -20.8113, "longitude": -49.3758,
+                            "telefone": "17999990000", "email_responsavel": "marcos@example.com",
+                            "interesse_id": 1},
+                     respostas={201: "{loja: LojaPlataforma, convite: Convite}",
+                                400: ERRO + ": cnpj_invalido, cnpj_inativo, cnpj_nao_encontrado, "
+                                            "email_invalido, campo_obrigatorio, coordenadas_*, "
+                                            "estado_invalido",
+                                404: ERRO + ": nao_encontrado (interesse)",
+                                409: ERRO + ": cnpj_ja_cadastrado", **SO_EQUIPE}))
+documentar(i.ConviteDaLoja, post=rota(
+    "I", "Gerar novo convite (P2)",
+    descricao="O convite pendente anterior deixa de valer (responde 410 convite_vencido).",
+    respostas={201: "Convite", 404: ERRO + ": nao_encontrado",
+               409: ERRO + ": loja_ja_ativa, sem_convite", **SO_EQUIPE}))
+documentar(i.VerConvite, get=rota(
+    "I", "Ver convite (A7)",
+    respostas={200: "{loja: {nome, endereco}, email, expira_em}", 404: ERRO + ": nao_encontrado",
+               409: ERRO + ": convite_usado", 410: ERRO + ": convite_vencido", **SEM_LOGIN}))
+documentar(i.AceitarConvite, post=rota(
+    "I", "Aceitar convite e virar responsável (A7)",
+    descricao="Exige login com o MESMO e-mail do convite. Trava: dois aceites → um vínculo.",
+    respostas={201: "{vinculo: {loja: {id, nome}, papel}}",
+               403: ERRO + ": email_diferente (traz email_convite mascarado)",
+               404: ERRO + ": nao_encontrado", 409: ERRO + ": convite_usado, ja_vinculado",
+               410: ERRO + ": convite_vencido", **SEM_LOGIN}))
 
 
 def rotas():

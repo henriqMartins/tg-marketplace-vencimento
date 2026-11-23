@@ -9,12 +9,12 @@ informação nasce no cadastro do lote. Sem pagamento online e sem entrega.
 
 Trabalho de Graduação — Fatec Rio Preto, 2026 — Henrique Martins e Yan Henrry.
 
-## Situação (14/11/2026)
+## Situação (23/11/2026)
 
 | Parte | Situação |
 |---|---|
 | Domínio (regras da reserva) | ✅ pronto — 53 testes |
-| Backend (API) | ✅ todos os grupos do contrato (A a G) — 292 testes + 1 pulado |
+| Backend (API) | ✅ todos os grupos do contrato (A a G e I · Parceria) — 356 testes + 2 pulados |
 | Simulação (Monte Carlo) | ✅ pronta, resultados no artigo — 16 testes |
 | Frontend (PWA) | 🔄 todas as telas prontas contra um **mock** do contrato (branch `frontend`); integração com a API real em andamento |
 | Vídeo do sistema | ⏳ para a apresentação final (17/11 a 02/12/2026) |
@@ -162,6 +162,13 @@ simulação (`resultados_n5000`), filtrados por faixa de lote, de procura e temp
 Não roda simulação no servidor. Sem filtro, mostra exatamente a Tabela 5 do artigo. Nenhum
 texto recomenda uma janela.
 
+**Entrada por parceria.** Nenhuma loja nasce por `insert` no banco nem pelo `/admin`. O dono
+pede pelo app ("Tenho um mercado"); a equipe da plataforma (contas `is_staff`) conversa,
+visita e cadastra a loja numa tela, com o **CNPJ conferido** (dígitos verificadores no backend
+e consulta à Receita pela BrasilAPI; fora do ar → loja "não verificada"). O sistema gera um
+**convite de uso único** (7 dias), que a equipe manda por WhatsApp; o dono aceita com o
+**mesmo e-mail** e vira responsável. Regra completa em [docs/parceria.md](docs/parceria.md).
+
 **Simulação.** Monte Carlo que mede como a janela de reserva afeta desperdício e bloqueio de
 compradores; cada ação passa pelo pacote `dominio`. O resultado é **cenário projetado**, não
 previsão; os parâmetros entram como faixas, com procedência em
@@ -178,6 +185,7 @@ previsão; os parâmetros entram como faixas, com procedência em
 │   ├── config/                 configuração (só por ambiente), /health, formato dos erros
 │   ├── Dockerfile              imagem de produção (Render), multi-stage, usuário sem privilégio
 │   ├── contas/                 usuário (login por e-mail), token, porteiros por papel
+│   ├── parceria/               entrada por parceria: interesse, CNPJ (BrasilAPI), convite
 │   └── ofertas/
 │       ├── models.py             Loja, Vínculo, Produto, Lote, Grupo, Oferta, Reserva, Ajuste, Recusa
 │       ├── servico*.py           escrita com transação + trava: reserva, lotes, equipe, varredura
@@ -193,6 +201,7 @@ previsão; os parâmetros entram como faixas, com procedência em
 ├── docs/
 │   ├── api/contrato.md         contrato da API (dono: backend)
 │   ├── api/pedidos-do-front.md pedidos do frontend para o contrato
+│   ├── parceria.md             regra da entrada de mercados por parceria (grupo I)
 │   ├── frontend/               especificação das telas, protótipos e briefing
 │   ├── roteiro-de-testes-em-tela.md  testes manuais por tela
 │   └── colinha-python.md
@@ -259,7 +268,9 @@ desligado (produção), `/api/docs` e `/api/schema` não existem.
 
 Contas da demonstração (senha `demo1234`, tudo fictício): `carlos@example.com` (responsável do
 Mercadinho Vila Nova), `juliana@example.com` (funcionária), `ana@example.com` e
-`bruno@example.com` (consumidores), `rosa@example.com` (responsável do Empório São Jorge).
+`bruno@example.com` (consumidores), `rosa@example.com` (responsável do Empório São Jorge),
+`equipe@example.com` (equipe da plataforma) e `marcos@example.com` (consumidor com um pedido
+de parceria "novo": a cena Marcos pede → equipe cadastra → Marcos aceita o convite).
 O cenário cobre reservas em todos os estados, parcial, recusa, avisos, colisão de fita e
 4 semanas de histórico. Para recomeçar: `python manage.py flush` e `popular_demo` de novo.
 
@@ -328,6 +339,20 @@ Logo depois:
   antes fica com um token que não vale mais (as telas dão erro ou voltam ao login).
 - Abra o app da Vercel e espere a API acordar (a primeira chamada pode levar ~1 min); não deixe
   o app parado mais de ~15 min entre as cenas.
+**Conta da equipe da plataforma no Neon** (quem cadastra lojas; nunca pela API). Com a
+mesma janela apontada para o Neon (o `$env:DATABASE_URL` acima):
+
+```powershell
+..\.venv\Scripts\python manage.py createsuperuser
+# Username: o próprio e-mail (o login do app é por e-mail) · Email address: o mesmo e-mail · Password: forte
+Remove-Item Env:DATABASE_URL
+```
+
+O `createsuperuser` liga `is_staff` (é isso que dá o `eu.plataforma: true` e as telas P1–P3).
+Na gravação com `popular_demo`, a conta `equipe@example.com` já existe e não precisa disso.
+Para não depender da BrasilAPI na hora, use um CNPJ real e ativo de exemplo ou siga no
+modo "não verificado".
+
 Com `DJANGO_DEBUG=false`, o Swagger não existe em produção e o `/admin` abre sem estilo
 (não servimos arquivos estáticos): nenhum dos dois entra no vídeo.
 
@@ -337,7 +362,7 @@ Com `DJANGO_DEBUG=false`, o Swagger não existe em produção e o `/admin` abre 
 |---|---|---|---|
 | Domínio | `python -m unittest discover -s tests -v` em `dominio/` | 53 | não |
 | Simulação | `python -m unittest -v` em `simulacao/` | 16 | não |
-| Backend | `python manage.py test` em `backend/` | 292 + 1 pulado | sim (cria e apaga `test_tg`) |
+| Backend | `python manage.py test` em `backend/` | 356 + 2 pulados | sim (cria e apaga `test_tg`) |
 
 Regra da casa: **nenhum teste existente pode quebrar.**
 
@@ -354,7 +379,16 @@ Regra da casa: **nenhum teste existente pode quebrar.**
 - **Painel:** cenário com números conhecidos (6 de 9 retiradas, perda 15…).
 - **Projeção:** sem filtro = Tabela 5 do artigo, número por número; o resumo versionado é
   igual ao regenerado a partir do CSV da simulação (pulado se o CSV não estiver na máquina).
-- **Permissões:** sem login → 401; sem papel na loja → 403; reserva de outra pessoa → 404.
+- **Permissões:** sem login → 401; sem papel na loja → 403; reserva de outra pessoa → 404;
+  rotas `/api/plataforma/...` só para a equipe (`is_staff`).
+- **Parceria:** a BrasilAPI é **simulada** (nenhum teste usa rede): ativa, inativa, não
+  encontrada, fora do ar; dígito do CNPJ errado nem chama a Receita; cadastro tudo ou nada;
+  aceite com e-mail certo, diferente, vencido, usado e renovado. **5 toques simultâneos em
+  "Aceitar" → 1 vínculo e 4 `convite_usado`** (5 rodadas). Controle negativo (sem a trava, os
+  toques extras só são barrados pela restrição do banco):
+  ```powershell
+  $env:CONTROLE_NEGATIVO="1"; python manage.py test parceria.test_concorrencia; Remove-Item Env:CONTROLE_NEGATIVO
+  ```
 
 **Testes em tela** (à mão, para a integração e o ensaio do vídeo):
 [docs/roteiro-de-testes-em-tela.md](docs/roteiro-de-testes-em-tela.md).
@@ -378,6 +412,7 @@ sendo a referência oficial.
 | E · Configuração | L14/G6 | `PATCH /api/lojas/{id}`, `POST .../vinculos` | ler: equipe · mudar: responsável |
 | F · Gestor | G1, G3, G4 | `GET /api/lojas/{id}/indicadores`, `GET .../historico` | responsável |
 | G · Projeção | G2 | `GET /api/lojas/{id}/projecao?lote=&procura=&chegada=` | responsável |
+| I · Parceria | A4, A6, A7, P1–P3 | `POST /api/interesses`, `POST /api/plataforma/lojas`, `POST /api/convites/{codigo}/aceitar` | logado / equipe da plataforma |
 | Tarefa diária | — | `POST /tarefas/varrer` (com `CRON_TOKEN`) | agendador |
 
 <details>
@@ -459,6 +494,7 @@ Um item só entra como ✅ depois de existir **e** ter sido verificado (a coluna
 | 14/11/2026 | Backend (etapa 13): projeção (grupo G, tela G2) — comando `resumir_projecao` (só lê o CSV da simulação, biblioteca padrão) gera um resumo versionado de 525 células com **somas e contagens**; a rota filtra por faixa de lote, faixa de procura e chegada, soma e divide uma vez; não roda simulação no servidor | 12 testes (**sem filtro = Tabela 5**, número por número; faixas somam 5000 rodadas; chegada 1 h e 4 h diferem; soma-e-divide ≠ média de médias; resumo versionado = regenerado do CSV; filtro = média lida direto do CSV) · controle negativo: um número alterado no resumo → os 2 testes de consistência falham · backend: 279 ok + 1 pulado |
 | 14/11/2026 | Backend: **Swagger** para testar as rotas no navegador (`/api/docs`, drf-spectacular + sidecar, sem CDN), **só com DEBUG ligado**; descrições de todas as rotas num arquivo só (`config/documentacao.py`), com grupo do contrato, filtros, corpo de exemplo e respostas possíveis | 6 testes (toda rota DRF documentada no grupo certo; rotas públicas sem cadeado e as outras com; documento válido **sem nenhum aviso**; sem DEBUG → 404) · controle negativo: uma rota sem anotação → 2 testes falham · conferido ao vivo (login → Authorize → projeção 200) · backend: 285 ok + 1 pulado |
 | 14/11/2026 | Backend pronto para o deploy (Neon + Render): `backend/Dockerfile` multi-stage (Python 3.13.7, domínio instalado como pacote, código do root com o `app` só lendo), `.dockerignore` por **lista de permitidos**, versões fixas no `requirements.txt`; settings com `RENDER_EXTERNAL_HOSTNAME`, HTTPS atrás do proxy e conexão reaproveitada (`CONN_MAX_AGE=60` + checagem); seção Deploy no README | 7 testes (host do Render aceito; HTTPS pelo `X-Forwarded-Proto`; conexão reaproveitada) · imagem testada no Docker do WSL contra o banco local: `migrate` + gunicorn ao ligar, `/health` 200, varredura com token → resumo (2× igual), sem token 401, token errado 403, host estranho 400, Swagger 404; dentro da imagem: usuário `app`, `projecao_resumo.json` presente, 0 testes, 0 `.env`/`.md`, código sem escrita · 313 MB · backend: 292 ok + 1 pulado |
+| 23/11/2026 | Backend (etapa 14): entrada de mercados por parceria (grupo I) — app `parceria`: pedido de parceria (um em aberto por pessoa), interessados para a equipe, **CNPJ com dígito verificador + Receita pela BrasilAPI** (5 s; fora do ar → "não verificado"), cadastro de loja + convite + interesse numa transação, convite de uso único (7 dias, renovar invalida o anterior), **aceite com trava e e-mail igual**; `Eu` com `plataforma` e `interesse`; porteiro `EhEquipe` (`is_staff`); `popular_demo` com `equipe@` e `marcos@` | 63 testes, BrasilAPI simulada (ativa, inativa, não encontrada, fora do ar; CNPJ repetido; cadastro tudo ou nada; aceite certo, e-mail diferente, vencido, usado, renovado; não-equipe → 403) + **5 aceites simultâneos → 1 vínculo e 4 `convite_usado`** (5 rodadas) · controle negativo: sem a trava, 4 de 4 toques passaram da conferência em todas as rodadas (o banco segurou) · migração aplicada, desfeita e reaplicada · `popular_demo` rodado 2× no banco local (acrescenta só a parceria) · backend: 356 ok + 2 pulados |
 
 ### Próximos passos
 

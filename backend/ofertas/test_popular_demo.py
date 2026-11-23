@@ -17,6 +17,8 @@ from django.test import TestCase
 from django.utils import timezone
 
 from . import indicadores, servico
+from parceria.models import Interesse
+
 from .models import Grupo, Loja, Oferta, Produto, Recusa, Reserva
 from .servico_lotes import situacao_exibida
 
@@ -33,12 +35,34 @@ class TestPopularDemo(TestCase):
 
     def contagem(self):
         return [m.objects.count() for m in (get_user_model(), Loja, Produto, Grupo,
-                                             Oferta, Reserva, Recusa)]
+                                             Oferta, Reserva, Recusa, Interesse)]
 
     def test_rodar_duas_vezes_nao_duplica(self):
         antes = self.contagem()
         popular()
         self.assertEqual(self.contagem(), antes)
+
+    def test_parceria_equipe_e_marcos_com_pedido_novo(self):
+        Usuario = get_user_model()
+        equipe = Usuario.objects.get(email="equipe@example.com")
+        self.assertTrue(equipe.is_staff)
+        self.assertTrue(equipe.check_password("demo1234"))
+        marcos = Usuario.objects.get(email="marcos@example.com")
+        self.assertFalse(marcos.is_staff)
+        self.assertFalse(marcos.vinculos.exists())                 # consumidor
+        interesse = Interesse.objects.get()
+        self.assertEqual((interesse.pessoa, interesse.estado, interesse.nome_mercado),
+                         (marcos, "novo", "Mercearia São Jorge"))
+
+    def test_banco_ja_populado_ganha_so_a_parceria(self):
+        # Banco populado antes da etapa 14: sem equipe nem Marcos.
+        get_user_model().objects.filter(email__in=["equipe@example.com",
+                                                   "marcos@example.com"]).delete()
+        lojas = Loja.objects.count()
+        popular()
+        self.assertTrue(get_user_model().objects.filter(email="equipe@example.com").exists())
+        self.assertEqual(Interesse.objects.count(), 1)
+        self.assertEqual(Loja.objects.count(), lojas)              # lojas não duplicam
 
     def test_senha_de_demonstracao(self):
         carlos = get_user_model().objects.get(email="carlos@example.com")
