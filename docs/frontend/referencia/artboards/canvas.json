@@ -30,7 +30,7 @@
     "Codigo.dc.html": {
       "h": 844,
       "page": "consumidor",
-      "title": "C6 · Código de retirada",
+      "title": "C6 · Código do pedido (um por loja)",
       "w": 390,
       "x": 1850,
       "y": 1300
@@ -55,7 +55,7 @@
       "h": 844,
       "is_interactive": true,
       "page": "lojista",
-      "title": "L6 · Conferência na gôndola (Figura 3)",
+      "title": "L6 · Conferência na gôndola (só conta)",
       "w": 390,
       "x": 470,
       "y": 1300
@@ -63,8 +63,8 @@
     "ConferenciaEstados.dc.html": {
       "h": 948,
       "page": "lojista",
-      "title": "L8 · Adiar aviso e oferta publicada",
-      "w": 876,
+      "title": "L8 · Adiar aviso, não vai para oferta e oferta publicada",
+      "w": 1300,
       "x": 1410,
       "y": 1300
     },
@@ -95,7 +95,7 @@
     "EscolherPerfil.dc.html": {
       "h": 844,
       "page": "acesso",
-      "title": "A4 · Escolher como entrar",
+      "title": "A4 · Escolher como entrar (sempre, ao entrar)",
       "w": 390,
       "x": 1410,
       "y": 0
@@ -156,7 +156,7 @@
       "h": 844,
       "is_interactive": true,
       "page": "consumidor",
-      "title": "C8 · Minhas reservas",
+      "title": "C8 · Minhas reservas (por pedido)",
       "w": 390,
       "x": 0,
       "y": 2600
@@ -226,7 +226,7 @@
       "h": 844,
       "is_interactive": true,
       "page": "lojista",
-      "title": "L7 · Revisar e publicar oferta",
+      "title": "L7 · Revisar e publicar (preço, desconto e janela)",
       "w": 390,
       "x": 940,
       "y": 1300
@@ -235,7 +235,7 @@
       "h": 844,
       "is_interactive": true,
       "page": "consumidor",
-      "title": "C4 · Reserva da quantidade",
+      "title": "C4 · Oferta: adicionar ao pedido",
       "w": 390,
       "x": 0,
       "y": 1300
@@ -243,7 +243,7 @@
     "ReservaResultado.dc.html": {
       "h": 948,
       "page": "consumidor",
-      "title": "C5 · Resultado da reserva",
+      "title": "C5 · Resultado do pedido (por item)",
       "w": 1300,
       "x": 470,
       "y": 1300
@@ -251,7 +251,7 @@
     "RetiradaResultado.dc.html": {
       "h": 948,
       "page": "lojista",
-      "title": "L13 · Retirada — encontrada, não encontrada, confirmada",
+      "title": "L13 · Retirada do pedido — encontrado, não encontrado, confirmado",
       "w": 1300,
       "x": 470,
       "y": 3900
@@ -319,6 +319,62 @@
       "h": 900,
       "title": "A5 · Entrar no computador",
       "expand": "fill"
+    },
+    "Pedido.dc.html": {
+      "page": "consumidor",
+      "x": 940,
+      "y": 2600,
+      "w": 390,
+      "h": 844,
+      "title": "C10 · Meu pedido (carrinho por loja)",
+      "is_interactive": true
+    },
+    "Parceiro.dc.html": {
+      "page": "acesso",
+      "x": 0,
+      "y": 2700,
+      "w": 390,
+      "h": 844,
+      "title": "A6 · Quero ser parceiro",
+      "is_interactive": true
+    },
+    "Convite.dc.html": {
+      "page": "acesso",
+      "x": 470,
+      "y": 2700,
+      "w": 390,
+      "h": 844,
+      "title": "A7 · Convite para ativar a loja"
+    },
+    "PlataformaInteressados.dc.html": {
+      "page": "plataforma",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 960,
+      "title": "P1 · Interessados",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "PlataformaLojas.dc.html": {
+      "page": "plataforma",
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 960,
+      "title": "P2 · Lojas",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "PlataformaCadastro.dc.html": {
+      "page": "plataforma",
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "title": "P3 · Cadastrar loja e gerar convite",
+      "expand": "fill",
+      "is_interactive": true
     }
   },
   "createdOnFiles": {
@@ -347,7 +403,11 @@
     "npapel",
     "tg1",
     "npaleta",
-    "tacesso2"
+    "tacesso2",
+    "tparceria",
+    "nparceria",
+    "tplat",
+    "npedido"
   ],
   "notes": {
     "fitas": {
@@ -361,7 +421,7 @@
     "nacesso": {
       "page": "acesso",
       "size": 24,
-      "text": "Login único (decidido 23/10): a mesma conta reserva como consumidor e, se tiver vínculo com uma loja, entra como Responsável ou Funcionário.\n\nA CONFIRMAR: login por e-mail e senha (recomendação: token do DRF).",
+      "text": "Login único: a mesma conta compra e, se tiver vínculo com uma loja, entra como Responsável ou Funcionário.\n\nA4 aparece SEMPRE depois de entrar (até sem vínculo e no computador), salvo \"Lembrar minha escolha\". Cartões: Comprar · Minhas lojas · Equipe da plataforma (só equipe) · Tenho um mercado.",
       "w": 360,
       "x": 1880,
       "y": 0
@@ -406,16 +466,16 @@
       "kind": "title1",
       "maxW": 3620,
       "page": "consumidor",
-      "text": "Consumidor · reservar e retirar (Figura 4: C2, C4, C6)",
+      "text": "Consumidor · pedir e retirar (Figura 4: C2, C4, C6)",
       "w": 240,
       "x": 0,
       "y": 1020
     },
     "tc3": {
       "kind": "title1",
-      "maxW": 860,
+      "maxW": 1330,
       "page": "consumidor",
-      "text": "Consumidor · conta",
+      "text": "Consumidor · pedido e conta",
       "w": 240,
       "x": 0,
       "y": 2320
@@ -499,6 +559,40 @@
       "text": "Acesso no computador",
       "x": 0,
       "y": 960
+    },
+    "tparceria": {
+      "page": "acesso",
+      "kind": "title1",
+      "maxW": 860,
+      "text": "Parceria · entrada de mercados",
+      "x": 0,
+      "y": 2420
+    },
+    "nparceria": {
+      "page": "acesso",
+      "x": 940,
+      "y": 2700,
+      "w": 380,
+      "size": 24,
+      "fill": "green",
+      "text": "Entrada por parceria (decisão 66):\n1. Dono pede pela A4 (A6)\n2. Equipe visita e faz o acordo\n3. Equipe cadastra a loja (P3), CNPJ conferido na Receita\n4. Link de convite pelo WhatsApp\n5. Dono aceita (A7) e vira Responsável\n\nEspecificação: docs/parceria.md"
+    },
+    "tplat": {
+      "page": "plataforma",
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "Plataforma · equipe credencia os mercados",
+      "x": 0,
+      "y": -280
+    },
+    "npedido": {
+      "page": "consumidor",
+      "x": 1410,
+      "y": 2600,
+      "w": 380,
+      "size": 24,
+      "fill": "blue",
+      "text": "Pedido (decisão 67): o carrinho é só uma lista no aparelho; nada fica preso até confirmar. Ao confirmar, a API reserva tudo da loja de uma vez e gera UM código por loja. Cada item continua sendo uma reserva com o próprio prazo.\n\nEspecificação: docs/pedido.md"
     }
   },
   "order": [
@@ -538,7 +632,13 @@
     "OfertasGestor.dc.html",
     "LotesGestor.dc.html",
     "ConfigGestor.dc.html",
-    "EntrarDesktop.dc.html"
+    "EntrarDesktop.dc.html",
+    "Pedido.dc.html",
+    "Parceiro.dc.html",
+    "Convite.dc.html",
+    "PlataformaInteressados.dc.html",
+    "PlataformaLojas.dc.html",
+    "PlataformaCadastro.dc.html"
   ],
   "pages": [
     {
@@ -560,6 +660,10 @@
     {
       "id": "gestor",
       "name": "4 · Gestor"
+    },
+    {
+      "id": "plataforma",
+      "name": "5 · Plataforma (equipe)"
     }
   ],
   "title": "Telas TG — Marketplace"

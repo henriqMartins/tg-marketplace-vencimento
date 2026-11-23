@@ -49,14 +49,20 @@ a{text-decoration:none;color:inherit}
       <section aria-label="Parâmetros" style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
         <h2 style="margin: 0; font-size: 17px; font-weight: 700;">Parâmetros do cenário</h2>
         <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="lote" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">Tamanho do lote <span>24 un.</span></label>
-          <input id="lote" type="range" min="5" max="60" value="24" style="accent-color: #1E6A48;">
-          <span style="font-size: 12px; color: #5B635D;">Faixa simulada: 5 a 60 unidades</span>
+          <span id="lote" style="font-size: 14px; font-weight: 600;">Tamanho do lote</span>
+          <div role="group" aria-labelledby="lote" style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <sc-for list="{{lotes}}" as="f" hint-placeholder-count="6">
+              <button onClick="{{f.pick}}" aria-pressed="{{f.on}}" style="{{f.style}}">{{f.label}}</button>
+            </sc-for>
+          </div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="proc" style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600;">Procura esperada <span>1,0 × o lote</span></label>
-          <input id="proc" type="range" min="0.3" max="3" step="0.1" value="1" style="accent-color: #1E6A48;">
-          <span style="font-size: 12px; color: #5B635D;">0,3 (pouca procura) a 3,0 (muita)</span>
+          <span id="proc" style="font-size: 14px; font-weight: 600;">Procura esperada (× o lote)</span>
+          <div role="group" aria-labelledby="proc" style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <sc-for list="{{procuras}}" as="f" hint-placeholder-count="6">
+              <button onClick="{{f.pick}}" aria-pressed="{{f.on}}" style="{{f.style}}">{{f.label}}</button>
+            </sc-for>
+          </div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px;">
           <span id="tc" style="font-size: 14px; font-weight: 600;">Tempo típico até o cliente chegar</span>
@@ -66,8 +72,9 @@ a{text-decoration:none;color:inherit}
             <span style="height: 40px; border-radius: 10px; border: 1.5px solid #C9C6BC; box-sizing: border-box; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">4 h</span>
           </div>
         </div>
-        <button style="height: 50px; border: none; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Recalcular projeção</button>
-        <span style="font-size: 12px; color: #5B635D; line-height: 1.45;">Demais valores (quem não aparece, quem cancela, tamanho do pedido) seguem as faixas do estudo.</span>
+        <button style="height: 50px; border: none; border-radius: 12px; background: #1E6A48; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Atualizar projeção</button>
+        <span style="font-size: 13px; font-weight: 700;">Baseado em {{rodadas}} rodadas simuladas</span>
+        <span style="font-size: 12px; color: #5B635D; line-height: 1.45;">Os controles filtram rodadas já simuladas; nada é simulado na hora. Com tudo em "Todos", a tela mostra a Tabela 5 do artigo. Demais valores seguem as faixas do estudo.</span>
       </section>
 
       <section aria-label="Resultado" style="flex: 3 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: #FFFFFF; border: 1.5px solid #E3E1DA; border-radius: 16px;">
@@ -125,7 +132,7 @@ a{text-decoration:none;color:inherit}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1060}}'>
 class Component extends DCLogic {
-  constructor(p) { super(p); this.state = { j: 4 }; }
+  constructor(p) { super(p); this.state = { j: 4, lote: 'Todos', proc: 'Todas' }; }
   renderVals() {
     const J = [0.5, 1, 2, 4, 8, 12, 24];
     // Tabela 5 do artigo (resultados_n5000)
@@ -137,7 +144,15 @@ class Component extends DCLogic {
     const i = J.indexOf(this.state.j);
     const base = 'height: 36px; padding: 0 10px; border-radius: 10px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ';
     const k = 2.5;
+    const pill = 'height: 34px; padding: 0 10px; border-radius: 17px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ';
+    const pOn = pill + 'border: 1.5px solid #1E6A48; background: #1E6A48; color: #FFFFFF;';
+    const pOff = pill + 'border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C;';
+    const filtro = (opts, chave) => opts.map((o) => ({ label: o, on: this.state[chave] === o, style: this.state[chave] === o ? pOn : pOff, pick: () => this.setState({ [chave]: o }) }));
+    const tudo = this.state.lote === 'Todos' && this.state.proc === 'Todas';
     return {
+      lotes: filtro(['Todos', '5–14', '15–24', '25–34', '35–44', '45–60'], 'lote'),
+      procuras: filtro(['Todas', '0,3–0,8', '0,8–1,3', '1,3–1,8', '1,8–2,3', '2,3–3,0'], 'proc'),
+      rodadas: tudo ? '5.000' : 'N (parte das 5.000, conforme o filtro)',
       janelas: J.map((j) => ({ label: lab(j), on: this.state.j === j, style: base + (this.state.j === j ? 'border: 2px solid #1E6A48; background: #1E6A48; color: #FFFFFF;' : 'border: 1.5px solid #C9C6BC; background: #FFFFFF; color: #1B1F1C;'), pick: () => this.setState({ j: j }) })),
       sel: { perda: fmt(P[i]), bloq: fmt(B[i]), ret: fmt(R[i]) },
       barras: J.map((j, n) => {

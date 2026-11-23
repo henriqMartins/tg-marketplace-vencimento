@@ -61,13 +61,13 @@ class Component extends DCLogic {
     const cod = 'font-size: 22px; font-weight: 800; letter-spacing: 0.08em;';
     const codOff = 'font-size: 15px; font-weight: 600; color: #8A8678;';
     const ativas = [
-      { produto: 'Iogurte natural 170 g', qtd: '2 un.', loja: 'Mercadinho Vila Nova', estado: 'Reservada', badge: b('#FBEFD0', '#6B4A00'), codigo: '482 917', codStyle: cod, info: 'faltam 3 h 42 min', infoStyle: 'font-size: 14px; font-weight: 700; color: #1E6A48;', href: 'Codigo.dc.html' },
-      { produto: 'Presunto fatiado 200 g', qtd: '1 un.', loja: 'Mercadinho Vila Nova', estado: 'Reservada', badge: b('#FBEFD0', '#6B4A00'), codigo: '105 336', codStyle: cod, info: 'faltam 25 min', infoStyle: 'font-size: 14px; font-weight: 700; color: #B42318;', href: 'Codigo.dc.html' }
+      { produto: 'Pedido · 2 itens', qtd: 'Iogurte ×2, Presunto ×1', loja: 'Mercadinho Vila Nova', estado: 'Reservado', badge: b('#FBEFD0', '#6B4A00'), codigo: '482 917', codStyle: cod, info: 'faltam 3 h 42 min', infoStyle: 'font-size: 14px; font-weight: 700; color: #1E6A48;', href: 'Codigo.dc.html' },
+      { produto: 'Pedido · 1 item', qtd: 'Biscoito recheado ×3', loja: 'Empório Santa Rita', estado: 'Reservado', badge: b('#FBEFD0', '#6B4A00'), codigo: '105 336', codStyle: cod, info: 'faltam 25 min', infoStyle: 'font-size: 14px; font-weight: 700; color: #B42318;', href: 'Codigo.dc.html' }
     ];
     const hist = [
-      { produto: 'Molho de tomate 300 g', qtd: '3 un.', loja: 'Mercado Dois Irmãos', estado: 'Retirada', badge: b('#E4F1E4', '#1F5B2A'), codigo: 'Retirada em 20/10', codStyle: codOff, info: 'R$ 5,85', infoStyle: 'font-size: 14px; font-weight: 700;', href: 'CodigoEstados.dc.html' },
-      { produto: 'Biscoito recheado 140 g', qtd: '2 un.', loja: 'Empório Santa Rita', estado: 'Expirada', badge: b('#ECEBE5', '#4A4F4B'), codigo: 'Expirou em 18/10', codStyle: codOff, info: 'não retirada', infoStyle: 'font-size: 14px; color: #5B635D;', href: 'CodigoEstados.dc.html' },
-      { produto: 'Requeijão cremoso 200 g', qtd: '1 un.', loja: 'Mercadinho Vila Nova', estado: 'Cancelada', badge: b('#FDE8E7', '#8A1C13'), codigo: 'Cancelada em 15/10', codStyle: codOff, info: 'por você', infoStyle: 'font-size: 14px; color: #5B635D;', href: 'CodigoEstados.dc.html' }
+      { produto: 'Pedido · 1 item', qtd: 'Molho de tomate ×3', loja: 'Mercado Dois Irmãos', estado: 'Retirada', badge: b('#E4F1E4', '#1F5B2A'), codigo: 'Retirada em 20/10', codStyle: codOff, info: 'R$ 5,85', infoStyle: 'font-size: 14px; font-weight: 700;', href: 'CodigoEstados.dc.html' },
+      { produto: 'Pedido · 1 item', qtd: 'Biscoito recheado ×2', loja: 'Empório Santa Rita', estado: 'Expirada', badge: b('#ECEBE5', '#4A4F4B'), codigo: 'Expirou em 18/10', codStyle: codOff, info: 'não retirada', infoStyle: 'font-size: 14px; color: #5B635D;', href: 'CodigoEstados.dc.html' },
+      { produto: 'Pedido · 1 item', qtd: 'Requeijão cremoso ×1', loja: 'Mercadinho Vila Nova', estado: 'Cancelada', badge: b('#FDE8E7', '#8A1C13'), codigo: 'Cancelada em 15/10', codStyle: codOff, info: 'por você', infoStyle: 'font-size: 14px; color: #5B635D;', href: 'CodigoEstados.dc.html' }
     ];
     return {
       abas: ['Ativas', 'Histórico'].map((a) => ({ label: a === 'Ativas' ? 'Ativas (2)' : a, on: this.state.aba === a, style: this.state.aba === a ? on : off, pick: () => this.setState({ aba: a }) })),
