@@ -76,6 +76,7 @@ function novoCodigoConvite(): string {
 
 const texto = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
 const emAberto = (i: InteresseMock) => i.estado === 'novo' || i.estado === 'em_conversa'
+const TELEFONE_MAXIMO = 20
 
 export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
   interesseDoEu: (usuarioId: number) => InteresseEu | null
@@ -88,6 +89,28 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
     const usuario = d.usuarioLogado()
     if (!usuario.plataforma) throw erro(403, 'http_403', mensagemPadrao(403))
     return usuario
+  }
+
+  /**
+   * Campo de texto como no backend (servico.texto): sem espaços nas pontas; vazio ou longo → 400
+   * com `campo` no corpo, para a tela saber qual campo marcar.
+   */
+  function campoTexto(valor: unknown, campo: string, rotulo: string, maximo: number, obrigatorio = true): string {
+    const v = texto(valor)
+    if (obrigatorio && !v) throw erro(400, 'campo_obrigatorio', `Informe ${rotulo}.`, { campo })
+    if (v.length > maximo) {
+      const inicio = rotulo.charAt(0).toUpperCase() + rotulo.slice(1)
+      throw erro(400, 'campo_longo', `${inicio} pode ter até ${maximo} caracteres.`, { campo })
+    }
+    return v
+  }
+
+  /** Telefone guardado só com dígitos (a máscara é da tela). */
+  function campoTelefone(valor: unknown): string {
+    const numero = soDigitos(texto(valor))
+    if (!numero) throw erro(400, 'campo_obrigatorio', 'Informe o telefone.', { campo: 'telefone' })
+    if (numero.length > TELEFONE_MAXIMO) throw erro(400, 'campo_longo', 'Confira o telefone.', { campo: 'telefone' })
+    return numero
   }
 
   const pessoa = (id: number) => banco().usuarios.find((u) => u.id === id)!
@@ -194,14 +217,12 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
     registrarInteresse: (entrada) =>
       responder(() => {
         const usuario = d.usuarioLogado()
+        // Limites do contrato: nome e cidade 120, mensagem 1000, telefone até 20 dígitos.
         const campos = {
-          nome_mercado: texto(entrada.nome_mercado),
-          cidade: texto(entrada.cidade),
-          telefone: texto(entrada.telefone),
-          mensagem: texto(entrada.mensagem),
-        }
-        if (!campos.nome_mercado || !campos.cidade || !campos.telefone) {
-          throw erro(400, 'campo_obrigatorio', 'Preencha o nome do mercado, a cidade e o telefone.')
+          nome_mercado: campoTexto(entrada.nome_mercado, 'nome_mercado', 'o nome do mercado', 120),
+          cidade: campoTexto(entrada.cidade, 'cidade', 'a cidade', 120),
+          telefone: campoTelefone(entrada.telefone),
+          mensagem: campoTexto(entrada.mensagem, 'mensagem', 'a mensagem', 1000, false),
         }
         if (banco().interesses.some((i) => i.usuarioId === usuario.id && emAberto(i))) {
           throw erro(409, 'interesse_em_aberto', 'Você já tem um pedido de parceria em andamento.')
@@ -240,12 +261,10 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
         const permitida =
           (entrada.estado === 'em_conversa' && i.estado === 'novo') || (entrada.estado === 'descartado' && emAberto(i))
         if (!permitida) throw erro(400, 'estado_invalido', 'Não dá para mudar este pedido para esse estado.')
-        const motivo = texto(entrada.motivo)
-        if (entrada.estado === 'descartado' && !motivo) {
-          throw erro(400, 'campo_obrigatorio', 'Diga o motivo do descarte.')
+        if (entrada.estado === 'descartado') {
+          i.motivo_descarte = campoTexto(entrada.motivo, 'motivo', 'o motivo', 255)
         }
         i.estado = entrada.estado
-        i.motivo_descarte = entrada.estado === 'descartado' ? motivo : null
         return paraInteresse(i)
       }),
 
@@ -264,14 +283,17 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
         equipe()
         const cnpj = soDigitos(texto(entrada.cnpj))
         if (!cnpjValido(cnpj)) throw erro(400, 'cnpj_invalido', 'CNPJ inválido. Confira os números.')
-        const nome = texto(entrada.nome)
-        const endereco = texto(entrada.endereco)
-        if (!nome || !endereco) throw erro(400, 'campo_obrigatorio', 'Preencha o nome e o endereço da loja.')
+        // Mesma ordem do backend: campos → e-mail → interesse → CNPJ repetido → Receita.
+        const nome = campoTexto(entrada.nome, 'nome', 'o nome da loja', 120)
+        const endereco = campoTexto(entrada.endereco, 'endereco', 'o endereço', 255)
+        const telefone = campoTelefone(entrada.telefone)
         const email = texto(entrada.email_responsavel).toLowerCase()
-        if (!EMAIL_VALIDO.test(email)) throw erro(400, 'email_invalido', 'Informe um e-mail válido para o responsável.')
-        const interesse = entrada.interesse_id ? banco().interesses.find((i) => i.id === entrada.interesse_id) : undefined
-        if (entrada.interesse_id && (!interesse || !emAberto(interesse))) {
-          throw erro(400, 'estado_invalido', 'Este pedido não está mais em aberto.')
+        if (!EMAIL_VALIDO.test(email)) throw erro(400, 'email_invalido', 'Confira o e-mail do responsável.')
+        let interesse: InteresseMock | undefined
+        if (entrada.interesse_id !== undefined && entrada.interesse_id !== null) {
+          interesse = banco().interesses.find((i) => i.id === entrada.interesse_id)
+          if (!interesse) throw erro(404, 'nao_encontrado', 'Pedido de parceria não encontrado.')
+          if (!emAberto(interesse)) throw erro(400, 'estado_invalido', 'Esse pedido de parceria não está mais em aberto.')
         }
         if (banco().lojas.some((l) => l.cnpj === cnpj)) {
           throw erro(409, 'cnpj_ja_cadastrado', 'Já existe uma loja com este CNPJ.')
@@ -303,7 +325,7 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
           antecedencia_aviso_dias: 10,
           cnpj,
           cnpj_verificado: consulta !== undefined,
-          telefone: texto(entrada.telefone),
+          telefone,
           criada_em: d.agora(),
         }
         banco().lojas.push(loja)
@@ -328,7 +350,8 @@ export function criarApiParceria(d: DependenciasParceria): ApiParceria & {
         if (!loja) throw erro(404, 'nao_encontrado', 'Loja não encontrada.')
         if (responsavelDa(lojaId)) throw erro(409, 'loja_ja_ativa', 'Esta loja já tem responsável.')
         const anterior = banco().convites.filter((c) => c.lojaId === lojaId).at(-1)
-        if (!anterior) throw erro(404, 'nao_encontrado', 'Esta loja não tem convite anterior.')
+        // Lojas antigas da demonstração (antes da parceria) nunca tiveram convite.
+        if (!anterior) throw erro(409, 'sem_convite', 'Essa loja não foi cadastrada por convite.')
         return paraConvite(gerarConvite(lojaId, anterior.email))
       }),
 

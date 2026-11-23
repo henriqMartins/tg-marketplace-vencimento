@@ -144,19 +144,19 @@ export interface ApiProjecao {
  * fora dela, as rotas /api/plataforma/... dão 403.
  */
 export interface ApiParceria {
-  /** POST /api/interesses · 400 campo_obrigatorio, 409 interesse_em_aberto */
+  /** POST /api/interesses · 400 campo_obrigatorio | campo_longo (com `campo`), 409 interesse_em_aberto */
   registrarInteresse(entrada: EntradaInteresse): Promise<Interesse>
   /** GET /api/plataforma/interesses?estado= */
   listarInteresses(estado?: EstadoInteresse): Promise<Interesse[]>
-  /** PATCH /api/plataforma/interesses/{id} · 400 estado_invalido */
+  /** PATCH /api/plataforma/interesses/{id} · 400 estado_invalido | campo_obrigatorio | campo_longo, 404 */
   atualizarInteresse(id: number, entrada: EntradaEstadoInteresse): Promise<Interesse>
   /** GET /api/plataforma/cnpj/{cnpj} · 400 cnpj_invalido, 404 cnpj_nao_encontrado, 503 consulta_indisponivel */
   consultarCnpj(cnpj: string): Promise<ConsultaCnpj>
-  /** POST /api/plataforma/lojas · 400 cnpj_invalido | cnpj_inativo | email_invalido, 409 cnpj_ja_cadastrado */
+  /** POST /api/plataforma/lojas · 400 cnpj_invalido | cnpj_inativo | email_invalido | campo_*, 404 (interesse), 409 cnpj_ja_cadastrado */
   cadastrarLoja(entrada: EntradaLojaPlataforma): Promise<LojaCadastrada>
   /** GET /api/plataforma/lojas */
   listarLojas(): Promise<LojaPlataforma[]>
-  /** POST /api/plataforma/lojas/{id}/convite · 409 loja_ja_ativa. O anterior deixa de valer. */
+  /** POST /api/plataforma/lojas/{id}/convite · 404, 409 loja_ja_ativa | sem_convite. O anterior deixa de valer. */
   novoConvite(lojaId: number): Promise<Convite>
   /** GET /api/convites/{codigo} · 404, 409 convite_usado, 410 convite_vencido */
   obterConvite(codigo: string): Promise<ConviteAberto>
@@ -190,7 +190,7 @@ export const GRUPOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', '
  * Grupos ✅ no contrato: os que VITE_API=http liga. Grupo novo só entra aqui quando o
  * backend publica (o Henrique avisa) — senão o deploy (VITE_API=http) quebraria.
  */
-export const GRUPOS_PRONTOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+export const GRUPOS_PRONTOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I']
 
 /** Qual parte do ClienteApi atende cada grupo do contrato. */
 export const PARTE_DO_GRUPO = {

@@ -79,13 +79,10 @@ export interface Eu {
   nome: string
   email: string
   vinculos: VinculoEu[]
-  /**
-   * Grupo I (parceria). Opcionais SÓ enquanto o backend não tem o grupo I: ausente = a API
-   * ainda não conhece a parceria, e a A4 esconde os cartões novos. Com o grupo I ✅, sempre vêm.
-   */
-  plataforma?: boolean
-  /** Último interesse em parceria da pessoa (ou null). PEDIDO-API 5: trazer o Interesse inteiro. */
-  interesse?: InteresseEu | null
+  /** Grupo I: a pessoa é da equipe da plataforma (is_staff). */
+  plataforma: boolean
+  /** O interesse em parceria em aberto da pessoa (ou null). PEDIDO-API 5: trazer o Interesse inteiro. */
+  interesse: InteresseEu | null
 }
 
 export interface Sessao {

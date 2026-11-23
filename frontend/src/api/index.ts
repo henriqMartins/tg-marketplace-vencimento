@@ -11,6 +11,7 @@ import { criarConsumidorHttp } from './http/consumidor'
 import { criarGestorHttp } from './http/gestor'
 import { criarLotesHttp } from './http/lotes'
 import { criarOperacaoHttp } from './http/operacao'
+import { criarParceriaHttp } from './http/parceria'
 import { criarProjecaoHttp } from './http/projecao'
 import { criarRequisitar, type Requisitar } from './http/requisitar'
 import { criarClienteMock } from './mock/cliente-mock'
@@ -34,6 +35,7 @@ const FABRICAS_HTTP: { [G in GrupoContrato]?: FabricaHttp<G> } = {
   E: criarConfiguracaoHttp,
   F: criarGestorHttp,
   G: criarProjecaoHttp,
+  I: criarParceriaHttp,
 }
 
 export interface OpcoesCliente {

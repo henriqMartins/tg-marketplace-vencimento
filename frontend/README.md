@@ -28,7 +28,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F8e · G5 lotes e fitas no computador | ✅ |
 | F8f · Endereço → coordenada (Nominatim) na L14/G6 | ✅ |
 | F9 · PWA (manifesto, service worker, instalação) | ✅ |
-| F10 · Parceria: A4 (muda), A6, A7, P1–P3 e mock do grupo I ([`docs/parceria.md`](../docs/parceria.md)) | ✅ no mock · grupo I 🔧 no backend |
+| F10 · Parceria: A4 (muda), A6, A7, P1–P3 e mock do grupo I ([`docs/parceria.md`](../docs/parceria.md)) | ✅ · grupo I na API real (falta conferir com o servidor) |
 
 ## Decisões do frontend
 
@@ -119,6 +119,10 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 18/11/2026 | P3 reaproveita a busca no mapa da L14, extraída para `localizacao/useBuscaNoMapa.ts` + `TextoConfirmacao.tsx`. Nome de exibição padrão = o nome que o dono deu no pedido (vindo da P1); sem pedido, o nome fantasia da Receita. "Copiar" usa `navigator.clipboard`; se o navegador recusar, o texto fica selecionado |
 | 23/11/2026 | Nome **Pé de Preço** e ícones definitivos (`public/icons/` + `favicon.ico`), no lugar dos provisórios. A A1 usa o selo branco `abertura-selo.svg`; o manifesto ganhou o maskable 192 e o fundo verde (`background_color` = primary), para a abertura do Android emendar na A1 |
 | 23/11/2026 | Mock alinhado ao grupo I publicado no contrato (🔧): `Eu.interesse` só com o pedido em aberto; PATCH só `novo → em_conversa` e `novo`/`em_conversa → descartado`, com motivo obrigatório; CNPJ que a Receita não conhece **bloqueia** a criação; `interesse_id` fechado → `estado_invalido`; `403 email_diferente` traz `email_convite` mascarado, que a A7 usa |
+| 23/11/2026 | **Grupo I na API real** (`http/parceria.ts`, rotas do `backend/parceria/urls.py`) e em `GRUPOS_PRONTOS`: `VITE_API=http` liga todos os grupos. O código do convite vai com `encodeURIComponent` (vem de um link). Testado com `fetch` falso; ainda **não conferido contra o servidor** (esta máquina não tem Python) |
+| 23/11/2026 | `Eu.plataforma` e `Eu.interesse` agora **obrigatórios** no tipo (a API sempre manda); a A4 não esconde mais "Tenho um mercado" |
+| 23/11/2026 | Mock com os detalhes do grupo I ✅: erro de campo com `campo` e `campo_longo` (limites e frases do `servico.py`), telefone só com dígitos, `interesse_id` inexistente → 404, loja antiga sem convite → `409 sem_convite`. Na P3, o telefone passou a ser **obrigatório** (o backend exige; antes o mock aceitava vazio) |
+| 23/11/2026 | PEDIDO-API 7 atendido pelo contrato. PEDIDO-API 5 e 6 aguardam decisão do Henrique (o backend recomendou aceitar); até lá, a A6 e a P2 seguem no modo reduzido e o mock continua simulando o 6 |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
@@ -215,10 +219,10 @@ pelos grupos do contrato: `acesso` (A), `consumidor` (B), `operacao` (C), `lotes
 espelham `docs/api/contrato.md` com os mesmos nomes de campo.
 
 - **Quem atende cada grupo:** variável `VITE_API` (ver [`.env.example`](.env.example)):
-  `mock` (padrão), `http` (= os grupos ✅, lista `GRUPOS_PRONTOS`; hoje A–G, com o I no mock)
+  `mock` (padrão), `http` (= os grupos ✅, lista `GRUPOS_PRONTOS`; hoje A–G e I)
   ou letras, ex.: `A,B` = só A e B na API real.
   Grupo marcado como `http` sem implementação real → erro na hora de abrir o app
-  (nunca cai no mock em silêncio). Implementação real pronta para **todos os grupos (A–G)** (`src/api/http/`).
+  (nunca cai no mock em silêncio). Implementação real pronta para **todos os grupos (A–G e I)** (`src/api/http/`).
 - **Login manda na mistura:** o token vem do grupo A. Com A no mock, o backend real responde
   `401` a qualquer rota que exige login (e a sessão é limpa). Ou seja, `VITE_API=G` sozinho
   não serve para a G2: ela também usa A (`eu`), C (resumo no layout da loja) e E (janela

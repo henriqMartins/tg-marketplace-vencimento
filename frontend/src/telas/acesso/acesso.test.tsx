@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { lembrarEscolha } from '../../app/escolha'
 import { abrir, ANA, CARLOS, EQUIPE, JULIANA, MARCOS } from '../../test/abrir'
-import { criarPecas } from '../../test/pecas'
 
 async function entrarPelaTela(email: string, senha = '12345678') {
   const usuario = userEvent.setup()
@@ -179,21 +178,6 @@ describe('A4 · Escolher como entrar', () => {
     const { caminhoAtual } = await abrir('/', { email: EQUIPE, largura: 1280 })
     await waitFor(() => expect(caminhoAtual()).toBe('/escolher'))
     expect(await screen.findByRole('link', { name: /Equipe da plataforma/ })).toHaveAttribute('href', '/plataforma')
-  })
-
-  it('API sem o grupo I (Eu sem "interesse" nem "plataforma"): esconde os cartões da parceria', async () => {
-    const pecas = criarPecas()
-    await pecas.entrarComo(ANA)
-    const original = pecas.mock.acesso.eu
-    pecas.mock.acesso.eu = async () => {
-      const eu = await original()
-      delete eu.interesse
-      delete eu.plataforma
-      return eu
-    }
-    await abrir('/escolher', { pecas })
-    await screen.findByRole('link', { name: /Comprar com desconto/ })
-    expect(screen.queryByRole('link', { name: /Tenho um mercado/ })).toBeNull()
   })
 
   it('"Lembrar minha escolha": na próxima abertura (A1) pula a A4', async () => {

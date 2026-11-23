@@ -256,10 +256,12 @@ function PassoDados({
     const vazios = {
       nome: dados.nome.trim() ? undefined : 'Informe o nome da loja.',
       endereco: dados.endereco.trim() ? undefined : 'Informe o endereço.',
+      // O backend exige o telefone (guardado só com dígitos): sem nenhum dígito, nem envia.
+      telefone: /\d/.test(dados.telefone) ? undefined : 'Informe o telefone da loja.',
       email_responsavel: dados.email_responsavel.trim() ? undefined : 'Informe o e-mail de quem vai aceitar o convite.',
     }
     setFaltando(vazios)
-    if (vazios.nome || vazios.endereco || vazios.email_responsavel) return
+    if (vazios.nome || vazios.endereco || vazios.telefone || vazios.email_responsavel) return
     // Como na L14: primeiro o mapa; a pessoa confirma onde ele achou.
     mapa.buscar(dados.endereco)
   }
@@ -289,7 +291,14 @@ function PassoDados({
           <span aria-hidden="true">✓</span> Localização encontrada
         </p>
       )}
-      <Campo rotulo="Telefone" type="tel" inputMode="tel" value={dados.telefone} onChange={(e) => editar('telefone', e.target.value)} />
+      <Campo
+        rotulo="Telefone"
+        type="tel"
+        inputMode="tel"
+        value={dados.telefone}
+        onChange={(e) => editar('telefone', e.target.value)}
+        erro={faltando.telefone}
+      />
       <Campo
         rotulo="E-mail do responsável"
         type="email"

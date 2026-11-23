@@ -210,3 +210,41 @@ describe('mock · grupo I · decisões ★ do contrato (17/11/2026)', () => {
     expect(e.corpo).toMatchObject({ codigo: 'email_diferente', email_convite: 'm…@example.com' })
   })
 })
+
+describe('mock · grupo I · detalhes do contrato publicado (23/11/2026)', () => {
+  it('erro de campo traz `campo`; campo longo → campo_longo', async () => {
+    await entrarComo('ana@email.com')
+    const vazio = await erroDe(api.parceria.registrarInteresse({ nome_mercado: 'X', cidade: ' ', telefone: '1' }))
+    expect(vazio.corpo).toEqual({ erro: 'Informe a cidade.', codigo: 'campo_obrigatorio', campo: 'cidade' })
+    const longo = await erroDe(api.parceria.registrarInteresse({ nome_mercado: 'x'.repeat(121), cidade: 'Y', telefone: '1' }))
+    expect(longo.corpo).toMatchObject({ codigo: 'campo_longo', campo: 'nome_mercado' })
+    const fone = await erroDe(api.parceria.registrarInteresse({ nome_mercado: 'X', cidade: 'Y', telefone: '1'.repeat(21) }))
+    expect(fone.corpo).toMatchObject({ codigo: 'campo_longo', campo: 'telefone' })
+  })
+
+  it('telefone guardado só com dígitos; e-mail do responsável em minúsculas', async () => {
+    await entrarComo('ana@email.com')
+    const i = await api.parceria.registrarInteresse({ nome_mercado: 'X', cidade: 'Y', telefone: '(17) 98888-7777' })
+    expect(i.telefone).toBe('17988887777')
+    await entrarComo('equipe@example.com')
+    const { loja, convite } = await api.parceria.cadastrarLoja({ ...ENTRADA_LOJA, telefone: '(17) 3222-0000' })
+    expect(loja.telefone).toBe('1732220000')
+    expect(convite.email).toBe('marcos@example.com')
+  })
+
+  it('cadastro: telefone obrigatório; interesse_id inexistente → 404', async () => {
+    await entrarComo('equipe@example.com')
+    const semFone = await erroDe(api.parceria.cadastrarLoja({ ...ENTRADA_LOJA, telefone: ' ' }))
+    expect(semFone.corpo).toMatchObject({ codigo: 'campo_obrigatorio', campo: 'telefone' })
+    const inexistente = await erroDe(api.parceria.cadastrarLoja({ ...ENTRADA_LOJA, interesse_id: 999 }))
+    expect([inexistente.status, inexistente.codigo]).toEqual([404, 'nao_encontrado'])
+  })
+
+  it('novo convite numa loja antiga, que nunca teve convite → 409 sem_convite', async () => {
+    await entrarComo('equipe@example.com')
+    const lojas = await api.parceria.listarLojas()
+    expect(lojas.find((l) => l.id === 2)).toMatchObject({ cnpj: null, convite: null, responsavel: null })
+    const e = await erroDe(api.parceria.novoConvite(2))
+    expect([e.status, e.codigo]).toEqual([409, 'sem_convite'])
+  })
+})

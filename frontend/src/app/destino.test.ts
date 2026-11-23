@@ -2,14 +2,16 @@ import { describe, expect, it } from 'vitest'
 import type { Eu } from '../api'
 import { caminhoInternoSeguro, destinoAposEntrar } from './destino'
 
-const consumidora: Eu = { id: 7, nome: 'Ana Souza', email: 'ana@email.com', vinculos: [] }
+const consumidora: Eu = { id: 7, nome: 'Ana Souza', email: 'ana@email.com', vinculos: [], plataforma: false, interesse: null }
 const responsavel: Eu = {
   id: 1, nome: 'Carlos Lima', email: 'carlos@vilanova.com.br',
   vinculos: [{ loja: { id: 1, nome: 'Mercadinho Vila Nova' }, papel: 'responsavel' }],
+  plataforma: false, interesse: null,
 }
 const funcionaria: Eu = {
   id: 2, nome: 'Juliana Prado', email: 'juliana.prado@email.com',
   vinculos: [{ loja: { id: 1, nome: 'Mercadinho Vila Nova' }, papel: 'funcionario' }],
+  plataforma: false, interesse: null,
 }
 const equipe: Eu = { id: 20, nome: 'Equipe', email: 'equipe@example.com', vinculos: [], plataforma: true, interesse: null }
 

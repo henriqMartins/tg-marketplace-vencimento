@@ -188,6 +188,10 @@ describe('P3 · Cadastrar loja', () => {
     await usuario.type(screen.getByLabelText('Nome de exibição'), 'Armazém Novo')
     await usuario.type(screen.getByLabelText('Endereço'), 'Rua Ipiranga, 500 · Centro')
     await usuario.type(screen.getByLabelText('E-mail do responsável'), 'dono@email.com')
+    // O backend exige o telefone: sem ele, a tela avisa e nem busca no mapa.
+    await usuario.click(screen.getByRole('button', { name: 'Cadastrar loja e gerar convite' }))
+    expect(await screen.findByText('Informe o telefone da loja.')).toBeInTheDocument()
+    await usuario.type(screen.getByLabelText('Telefone'), '(17) 3222-0000')
     await usuario.click(screen.getByRole('button', { name: 'Cadastrar loja e gerar convite' }))
     await usuario.click(await screen.findByRole('button', { name: 'Cadastrar com esta localização' }))
 
@@ -236,6 +240,7 @@ describe('P3 · Cadastrar loja', () => {
     await usuario.click(await screen.findByRole('button', { name: 'Continuar' }))
     await usuario.clear(screen.getByLabelText('Endereço'))
     await usuario.type(screen.getByLabelText('Endereço'), 'Rua inexistente, 1')
+    await usuario.type(screen.getByLabelText('Telefone'), '1732220000')
     await usuario.type(screen.getByLabelText('E-mail do responsável'), 'dono@email.com')
     const cadastrar = vi.spyOn(mock.parceria, 'cadastrarLoja')
     await usuario.click(screen.getByRole('button', { name: 'Cadastrar loja e gerar convite' }))

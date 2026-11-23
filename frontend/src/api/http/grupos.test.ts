@@ -19,7 +19,7 @@ function servidorFalso(resposta: (url: string, init: RequestInit) => { status: n
 
 afterEach(() => vi.unstubAllGlobals())
 
-describe('clientes http (A–G): rotas, métodos e corpos do contrato', () => {
+describe('clientes http (A–G e I): rotas, métodos e corpos do contrato', () => {
   it('A · acesso', async () => {
     const { api, chamadas } = servidorFalso()
     await api.acesso.entrar({ email: 'a@b.c', senha: '12345678' })
@@ -97,6 +97,49 @@ describe('clientes http (A–G): rotas, métodos e corpos do contrato', () => {
       '/api/lojas/1/indicadores?de=2026-10-01&ate=2026-10-31',
       '/api/lojas/1/historico?de=2026-10-01&ate=2026-10-31&estado=recusa&q=leite',
     ])
+  })
+
+  it('I · parceria: dono (interesse, convite) e equipe (/api/plataforma/...)', async () => {
+    const { api, chamadas } = servidorFalso()
+    await api.parceria.registrarInteresse({ nome_mercado: 'Mercearia São Jorge', cidade: 'Rio Preto', telefone: '17999990000' })
+    await api.parceria.listarInteresses('novo')
+    await api.parceria.listarInteresses()
+    await api.parceria.atualizarInteresse(9, { estado: 'descartado', motivo: 'Fora da região' })
+    await api.parceria.consultarCnpj('11222333000181')
+    await api.parceria.listarLojas()
+    await api.parceria.novoConvite(4)
+    await api.parceria.obterConvite('ab-C_9')
+    await api.parceria.aceitarConvite('ab-C_9')
+    expect(chamadas.map((c) => `${c.metodo} ${c.url}`)).toEqual([
+      'POST /api/interesses',
+      'GET /api/plataforma/interesses?estado=novo',
+      'GET /api/plataforma/interesses',
+      'PATCH /api/plataforma/interesses/9',
+      'GET /api/plataforma/cnpj/11222333000181',
+      'GET /api/plataforma/lojas',
+      'POST /api/plataforma/lojas/4/convite',
+      'GET /api/convites/ab-C_9',
+      'POST /api/convites/ab-C_9/aceitar',
+    ])
+    expect(chamadas[0].corpo).toEqual({ nome_mercado: 'Mercearia São Jorge', cidade: 'Rio Preto', telefone: '17999990000' })
+    expect(chamadas[3].corpo).toEqual({ estado: 'descartado', motivo: 'Fora da região' })
+  })
+
+  it('I · cadastro da loja manda o corpo inteiro; o erro de campo chega com `campo` no corpo', async () => {
+    const recusa = { erro: 'Informe a cidade.', codigo: 'campo_obrigatorio', campo: 'cidade' }
+    const { api, chamadas } = servidorFalso((url) =>
+      url.endsWith('/interesses') ? { status: 400, corpo: recusa } : { status: 201, corpo: { loja: {}, convite: {} } },
+    )
+    const entrada = {
+      cnpj: '11222333000181', nome: 'Mercearia São Jorge', endereco: 'Rua Bernardino de Campos, 1500',
+      latitude: null, longitude: null, telefone: '1732220000', email_responsavel: 'marcos@example.com', interesse_id: 9,
+    }
+    await api.parceria.cadastrarLoja(entrada)
+    expect(chamadas[0]).toEqual({ metodo: 'POST', url: '/api/plataforma/lojas', corpo: entrada })
+
+    const erro = await api.parceria.registrarInteresse({ nome_mercado: 'X', cidade: '', telefone: '1' }).catch((e: unknown) => e)
+    expect(erro).toBeInstanceOf(ErroApi)
+    expect(erro).toMatchObject({ status: 400, codigo: 'campo_obrigatorio', message: 'Informe a cidade.', corpo: recusa })
   })
 
   it('/health também vai à API real', async () => {

@@ -28,8 +28,6 @@ export function TelaEscolher() {
   }
   const primeiroNome = eu.nome.split(' ')[0]
   const qtd = eu.vinculos.length
-  // Sem o campo `interesse`, a API ainda não tem o grupo I (parceria): esconde o cartão.
-  const parceriaDisponivel = eu.interesse !== undefined
   const pedidoEmAberto = interesseEmAberto(eu)
 
   return (
@@ -89,8 +87,7 @@ export function TelaEscolher() {
         />
       )}
 
-      {parceriaDisponivel &&
-        (pedidoEmAberto ? (
+      {pedidoEmAberto ? (
           <Cartao
             para="/parceiro"
             aoEscolher={escolher(null)}
@@ -106,7 +103,7 @@ export function TelaEscolher() {
             titulo="Tenho um mercado"
             detalhe={<span className={styles.detalhe}>Quero vender meus produtos perto do vencimento aqui</span>}
           />
-        ))}
+      )}
 
       <div className={styles.rodape}>
         <CaixaSelecao checked={lembrar} onChange={(e) => setLembrar(e.target.checked)}>

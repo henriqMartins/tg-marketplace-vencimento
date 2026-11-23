@@ -8,9 +8,9 @@ describe('lerConfigApi (VITE_API)', () => {
     }
   })
 
-  it('"http" → os grupos ✅ na API real; o I (parceria, ainda 📝) fica no mock', () => {
+  it('"http" → todos os grupos ✅ (A–G e I) na API real', () => {
     expect(lerConfigApi('http')).toEqual({
-      A: 'http', B: 'http', C: 'http', D: 'http', E: 'http', F: 'http', G: 'http', I: 'mock',
+      A: 'http', B: 'http', C: 'http', D: 'http', E: 'http', F: 'http', G: 'http', I: 'http',
     })
   })
 
@@ -18,10 +18,6 @@ describe('lerConfigApi (VITE_API)', () => {
     expect(lerConfigApi('A, b')).toEqual({
       A: 'http', B: 'http', C: 'mock', D: 'mock', E: 'mock', F: 'mock', G: 'mock', I: 'mock',
     })
-  })
-
-  it('"I" pedido à mão, sem implementação http, é recusado ao montar o cliente (não aqui)', () => {
-    expect(lerConfigApi('I').I).toBe('http')
   })
 
   it('letra que não é grupo → erro claro', () => {
