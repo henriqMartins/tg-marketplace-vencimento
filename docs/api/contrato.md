@@ -501,9 +501,10 @@ Pronto em 23/11/2026. Detalhes que valem para o mock:
 **`Eu` ganha dois campos:**
 ```jsonc
 { "...": "...", "plataforma": false,
-  "interesse": { "id": 3, "estado": "novo", "criado_em": "2026-11-18T10:00:00-03:00" } }  // ou null
+  "interesse": { /* Interesse inteiro, formato abaixo */ } }  // ou null
 ```
-`interesse` = o pedido **em aberto** da pessoa (`novo` ou `em_conversa`); `null` se não houver.
+`interesse` = o pedido **em aberto** da pessoa (`novo` ou `em_conversa`), como objeto
+`Interesse` inteiro (pedido 5 do front, aceito em 23/11/2026); `null` se não houver.
 
 | Método e rota | Quem | Entrada | Saída | Erros |
 |---|---|---|---|---|
@@ -560,7 +561,8 @@ Regras e detalhes (decisões de 17/11/2026 marcadas com ★):
 { "id": 4, "nome": "Mercearia São Jorge", "cnpj": "12345678000190", "cnpj_verificado": true,
   "endereco": "...", "telefone": "...", "criada_em": "2026-11-18T10:00:00-03:00",
   "responsavel": null,                                   // ou { "nome", "email" }
-  "convite": { "email": "marcos@example.com", "expira_em": "...", "estado": "pendente" } }  // pendente | vencido | aceito | null
+  "convite": { "email": "marcos@example.com", "expira_em": "...", "estado": "pendente",   // pendente | vencido | aceito
+                "codigo": "q8Zt3..." } }   // só com estado "pendente"; senão null (pedido 6). convite inteiro null nas lojas antigas
 
 // Convite
 { "codigo": "q8Zt3...", "email": "marcos@example.com", "expira_em": "2026-11-25T10:00:00-03:00" }

@@ -14,7 +14,7 @@ Trabalho de Graduação — Fatec Rio Preto, 2026 — Henrique Martins e Yan Hen
 | Parte | Situação |
 |---|---|
 | Domínio (regras da reserva) | ✅ pronto — 53 testes |
-| Backend (API) | ✅ todos os grupos do contrato (A a G e I · Parceria) — 356 testes + 2 pulados |
+| Backend (API) | ✅ todos os grupos do contrato (A a G e I · Parceria) — 357 testes + 2 pulados |
 | Simulação (Monte Carlo) | ✅ pronta, resultados no artigo — 16 testes |
 | Frontend (PWA) | 🔄 todas as telas prontas contra um **mock** do contrato (branch `frontend`); integração com a API real em andamento |
 | Vídeo do sistema | ⏳ para a apresentação final (17/11 a 02/12/2026) |
@@ -362,7 +362,7 @@ Com `DJANGO_DEBUG=false`, o Swagger não existe em produção e o `/admin` abre 
 |---|---|---|---|
 | Domínio | `python -m unittest discover -s tests -v` em `dominio/` | 53 | não |
 | Simulação | `python -m unittest -v` em `simulacao/` | 16 | não |
-| Backend | `python manage.py test` em `backend/` | 356 + 2 pulados | sim (cria e apaga `test_tg`) |
+| Backend | `python manage.py test` em `backend/` | 357 + 2 pulados | sim (cria e apaga `test_tg`) |
 
 Regra da casa: **nenhum teste existente pode quebrar.**
 

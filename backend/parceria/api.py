@@ -48,8 +48,12 @@ def loja_plataforma_json(loja: Loja) -> dict:
         "telefone": loja.telefone, "criada_em": quando(loja.criada_em),
         "responsavel": ({"nome": responsavel.nome, "email": responsavel.email}
                         if responsavel else None),
+        # Pedido 6 do front (aceito 23/11/2026): "Copiar link" de novo na P2. O código é a
+        # chave do convite: só sai enquanto pendente, e esta rota já é só da equipe.
         "convite": ({"email": convite.email, "expira_em": quando(convite.expira_em),
-                     "estado": estado_convite} if convite else None),
+                     "estado": estado_convite,
+                     "codigo": convite.codigo if estado_convite == "pendente" else None}
+                    if convite else None),
     }
 
 

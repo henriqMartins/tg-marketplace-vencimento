@@ -99,9 +99,12 @@ class TestEu(BaseParceria):
 
     def test_interesse_em_aberto_ou_null(self):
         self.assertIsNone(self.eu(self.marcos)["interesse"])
-        id_ = self.pedir().json()["id"]
+        enviado = self.pedir().json()
         interesse = self.eu(self.marcos)["interesse"]
-        self.assertEqual((interesse["id"], interesse["estado"]), (id_, "novo"))
+        # Pedido 5 do front: o Interesse inteiro, igual ao que o POST devolveu (A6 em leitura).
+        self.assertEqual(interesse, enviado)
+        self.assertEqual((interesse["nome_mercado"], interesse["cidade"], interesse["telefone"]),
+                         ("Mercearia São Jorge", "São José do Rio Preto", "17999990000"))
         self.assertTrue(interesse["criado_em"].endswith("-03:00"))
         Interesse.objects.update(estado=EstadoInteresse.DESCARTADO, motivo_descarte="x")
         self.assertIsNone(self.eu(self.marcos)["interesse"])
