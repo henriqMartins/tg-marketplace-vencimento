@@ -34,6 +34,8 @@ urlpatterns = [
     path("lojas/<int:loja_id>/reservas/ativa", l.PreviaDaRetirada.as_view(),
          name="previa-da-retirada"),
     path("lojas/<int:loja_id>/retiradas", l.Retirar.as_view(), name="retirar"),
+    path("lojas/<int:loja_id>/pedidos/ativo", l.PreviaDoPedido.as_view(),
+         name="previa-do-pedido"),                                   # grupo J
 
     # Grupo D do contrato (lote, fita e aviso): exigem vínculo com <loja_id>
     path("lojas/<int:loja_id>/produtos", d.Produtos.as_view(), name="produtos"),

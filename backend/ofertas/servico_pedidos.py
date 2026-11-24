@@ -166,3 +166,48 @@ def cancelar_item(pedido: Pedido, reserva_id: int, agora=None) -> Pedido:
 def pedido_do_cliente(cliente, pedido_id) -> Optional[Pedido]:
     """O pedido, se for DESTA pessoa; senão None (a rota responde 404, não 403)."""
     return Pedido.objects.filter(pk=pedido_id, cliente=cliente).select_related("loja").first()
+
+
+# ---------------------------------------------------------------- balcão (L12, L13)
+
+def ativa_pelo_codigo(loja_id: int, codigo: str) -> Optional[Reserva]:
+    """Um item ativo DESTA loja com esse código (leva ao pedido)."""
+    return (Reserva.objects.select_related("pedido_retirada")
+            .filter(loja_id=loja_id, codigo=codigo, estado=ATIVA).first())
+
+
+# 📖 ESTUDAR: a retirada do pedido. Mesma receita da reserva (trava → reconstitui →
+# regra → grava), repetida para cada oferta do pedido, SEMPRE em ordem de id (como na
+# confirmação). Depois de travar, os itens ativos são RELIDOS: se outro balcão retirou
+# o mesmo código um instante antes, não sobra nada e esta chamada responde "não achei".
+# Item que venceu antes do toque fica de fora, mas a expiração dele é gravada.
+def retirar_pedido(loja_id: int, codigo: str, operador, agora=None):
+    """Retira, tudo ou nada, os itens ainda ativos. Devolve (pedido, ids retirados)."""
+    h = _horas_agora(agora)
+    retiradas, venceu = [], False
+    with transaction.atomic():
+        item = ativa_pelo_codigo(loja_id, codigo)
+        if item is None:
+            raise ErroDominio("nenhum pedido ativo com esse código nesta loja",
+                              codigo="nao_encontrada")
+        pedido = item.pedido_retirada
+        ofertas = sorted(set(pedido.itens.filter(estado=ATIVA).values_list("oferta_id", flat=True)))
+        for oferta_id in ofertas:
+            linha = _travar(oferta_id)
+            oferta = _carregar(linha)
+            for reserva in pedido.itens.filter(oferta_id=oferta_id, estado=ATIVA):
+                try:
+                    oferta.retirar(reserva.numero, codigo, h)
+                    retiradas.append(reserva.pk)
+                except ErroDominio as e:
+                    if e.codigo != "venceu":
+                        raise                  # outro motivo: desfaz tudo
+                    venceu = True              # já expirada pelo domínio: só gravar
+            _salvar(linha, oferta, h, operador=operador)
+    # Fora do "with": as expirações já ficaram gravadas.
+    if not retiradas:
+        if venceu:
+            raise ErroDominio("o pedido venceu antes da retirada", codigo="venceu")
+        raise ErroDominio("nenhum pedido ativo com esse código nesta loja",
+                          codigo="nao_encontrada")
+    return pedido, retiradas

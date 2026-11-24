@@ -162,7 +162,8 @@ documentar(c.PreviaDaRetirada, get=rota(
                409: ERRO + ": venceu", **SEM_VINCULO}))
 documentar(c.Retirar, post=rota(
     "C", "Confirmar a retirada (L13)", corpo={"codigo": "482917"},
-    descricao="Tudo ou nada; grava quem retirou.",
+    descricao="Grupo J: retira, tudo ou nada, os itens ativos do PEDIDO; grava quem retirou. "
+              "A resposta traz `itens`.",
     respostas={200: "RetiradaFeita", 404: ERRO + ": nao_encontrada", 409: ERRO + ": venceu",
                **SEM_VINCULO}))
 
@@ -349,6 +350,12 @@ documentar(j.CancelarItem, post=rota(
     descricao="Devolve só aquele item ao livre; o código continua para o resto.",
     respostas={200: "Pedido", 404: ERRO + ": nao_encontrado", 409: ERRO + ": ja_encerrado",
                **SEM_LOGIN}))
+documentar(c.PreviaDoPedido, get=rota(
+    "J", "Prévia do pedido pelo código (L12 → L13)",
+    descricao="Só lê; não retira. Lista só os itens ativos (os vencidos são expirados agora).",
+    filtros=(filtro("codigo", "Código de 6 dígitos.", obrigatorio=True),),
+    respostas={200: "PedidoNoBalcao", 404: ERRO + ": nao_encontrado", 409: ERRO + ": venceu",
+               **SEM_VINCULO}))
 
 
 def rotas():

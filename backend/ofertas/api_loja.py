@@ -19,7 +19,7 @@ from config.erros import erro
 from contas.permissoes import EhDaLoja, papel_na_loja
 from dominio import ErroDominio
 
-from . import apresentacao, consultas, servico
+from . import apresentacao, consultas, servico, servico_pedidos
 from .models import Grupo, Loja, Oferta, Reserva
 from .servico_lotes import para_conferir
 
@@ -180,8 +180,34 @@ class PreviaDaRetirada(RotaDaLoja):
         return Response(apresentacao.retirada_previa(reserva))
 
 
+class PreviaDoPedido(RotaDaLoja):
+    """GET /api/lojas/{lojaId}/pedidos/ativo?codigo=482917 (grupo J, L12 → L13). Só lê."""
+
+    def get(self, request, loja_id):
+        agora = timezone.now()
+        codigo = _codigo_da_entrada(request.query_params.get("codigo"))
+        item = servico_pedidos.ativa_pelo_codigo(loja_id, codigo) if codigo else None
+        if item is None:
+            if codigo and _venceu_ha_pouco(loja_id, codigo, agora):
+                return erro(409, MSG_VENCEU, "venceu")
+            return erro(404, "Nenhum pedido ativo com esse código nesta loja.", "nao_encontrado")
+        pedido = item.pedido_retirada
+        # Itens ainda "reservada" no banco, mas com o prazo vencido: expira de verdade agora.
+        vencidas = pedido.itens.filter(estado=ATIVA, expira_em__lte=agora)
+        for oferta_id in sorted(set(vencidas.values_list("oferta_id", flat=True))):
+            servico.expirar(oferta_id, agora=agora)
+        ativas = list(pedido.itens.filter(estado=ATIVA).order_by("id")
+                      .select_related("oferta__produto", "consumidor"))
+        if not ativas:
+            return erro(409, MSG_VENCEU, "venceu")
+        return Response(apresentacao.pedido_no_balcao(pedido, ativas))
+
+
 class Retirar(RotaDaLoja):
-    """POST /api/lojas/{lojaId}/retiradas {codigo} (L13). Tudo ou nada; grava quem retirou."""
+    """
+    POST /api/lojas/{lojaId}/retiradas {codigo} (L13). Grupo J: retira, tudo ou nada,
+    os itens ativos do PEDIDO com esse código; grava quem retirou.
+    """
 
     def post(self, request, loja_id):
         agora = timezone.now()
@@ -189,15 +215,18 @@ class Retirar(RotaDaLoja):
         if codigo is None:
             return erro(404, MSG_NAO_ENCONTRADA, "nao_encontrada")
         try:
-            reserva = servico.retirar(loja_id, codigo, request.user, agora=agora)
+            pedido, ids = servico_pedidos.retirar_pedido(loja_id, codigo, request.user,
+                                                         agora=agora)
         except ErroDominio as e:
             if e.codigo == "venceu":
                 return erro(409, MSG_VENCEU, "venceu")
-            # nao_encontrada: não havia reserva ativa. reserva_inexistente: outro
-            # balcão retirou no mesmo instante — esta rota esperou a trava e, ao
-            # remontar a oferta (só com as ativas), a reserva já tinha saído.
+            # nao_encontrada: não havia item ativo — inclusive quando outro balcão
+            # retirou o mesmo código no mesmo instante (esta rota esperou a trava e,
+            # ao reler os itens, não sobrou nenhum ativo).
             return _nao_achou(loja_id, codigo, agora)
-        reserva = (Reserva.objects.select_related("oferta__produto", "consumidor", "retirada_por")
-                   .get(pk=reserva.pk))
-        oferta = _oferta_da_loja(loja_id, reserva.oferta_id)
-        return Response(apresentacao.retirada_feita(reserva, oferta))
+        retiradas = list(Reserva.objects.select_related("oferta__produto", "consumidor",
+                                                        "retirada_por")
+                         .filter(pk__in=ids).order_by("id"))
+        ofertas = {o.id: o for o in _ofertas_da_loja(loja_id)
+                   .filter(pk__in=[r.oferta_id for r in retiradas])}
+        return Response(apresentacao.retirada_do_pedido(pedido, retiradas, ofertas))

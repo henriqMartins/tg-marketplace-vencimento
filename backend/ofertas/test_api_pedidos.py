@@ -172,3 +172,81 @@ class TestVerListarCancelar(BasePedido):
         self.assertEqual([p["id"] for p in encerrados], [outro])
         self.assertEqual(self.get("/api/pedidos", self.ana, estado="x").status_code, 400)
         self.assertEqual(self.get("/api/pedidos", self.bia).json(), [])
+
+
+class TestBalcao(BasePedido):
+    """L12 → L13: a loja digita UM código e retira todos os itens ativos do pedido."""
+
+    def setUp(self):
+        super().setUp()
+        from django.contrib.auth import get_user_model
+
+        from .models import Vinculo
+        self.carlos = get_user_model().objects.create_user(
+            "carlos@email.com", email="carlos@email.com", password="x", nome="Carlos Lima")
+        Vinculo.objects.create(usuario=self.carlos, loja=self.perto, papel="funcionario")
+        p = self.confirmar([self.item(self.iogurte, 2), self.item(self.leite, 1),
+                            self.item(self.pao, 1)]).json()
+        self.codigo, self.itens = p["codigo"], p["itens"]
+        self.url = f"/api/lojas/{self.perto.id}"
+
+    def previa(self, codigo=None, usuario=None):
+        return self.get(f"{self.url}/pedidos/ativo", usuario or self.carlos,
+                        codigo=codigo or self.codigo)
+
+    def retirar(self, codigo=None):
+        return self.post(f"{self.url}/retiradas", {"codigo": codigo or self.codigo}, self.carlos)
+
+    def test_previa_lista_os_itens_ativos(self):
+        r = self.previa()
+        self.assertEqual(r.status_code, 200)
+        b = r.json()
+        self.assertEqual((b["codigo"], b["cliente"], b["total"]), (self.codigo, "Ana S.", "16.28"))
+        self.assertEqual([i["produto"] for i in b["itens"]],
+                         ["Iogurte natural 170 g", "Leite integral 1 L", "Pão de forma 500 g"])
+        self.assertEqual(b["itens"][0]["reserva"]["codigo_final"], self.codigo[-3:])
+        self.assertEqual(Reserva.objects.filter(estado="retirada").count(), 0)   # só leu
+
+    def test_retirada_retira_o_pedido_inteiro(self):
+        r = self.retirar()
+        self.assertEqual(r.status_code, 200)
+        b = r.json()
+        self.assertEqual((b["total"], b["retirada_por"], len(b["itens"])), ("16.28", "Carlos Lima", 3))
+        self.assertEqual(b["itens"][1]["oferta"]["estoque"]["retirado"], 1)
+        self.assertEqual(Reserva.objects.filter(estado="retirada", retirada_por=self.carlos).count(), 3)
+        for oferta in (self.iogurte, self.leite, self.pao):
+            conservacao_fecha(self, oferta)
+        self.assertEqual(self.retirar().status_code, 404)                 # código já usado
+        pedido = self.get(f"/api/pedidos/{Pedido.objects.get().id}", self.ana).json()
+        self.assertEqual((pedido["estado"], pedido["total"]), ("retirado", "16.28"))
+
+    def test_item_vencido_fica_fora_da_retirada(self):
+        Reserva.objects.filter(pk=self.itens[1]["reserva_id"]).update(
+            expira_em=self.agora - timedelta(minutes=1))
+        self.assertEqual(len(self.previa().json()["itens"]), 2)
+        r = self.retirar()
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual([i["produto"] for i in r.json()["itens"]],
+                         ["Iogurte natural 170 g", "Pão de forma 500 g"])
+        self.assertEqual(Reserva.objects.get(pk=self.itens[1]["reserva_id"]).estado, "expirada")
+        conservacao_fecha(self, self.leite)
+
+    def test_tudo_vencido_responde_venceu(self):
+        Reserva.objects.update(expira_em=self.agora - timedelta(minutes=1))
+        r = self.retirar()
+        self.assertEqual((r.status_code, r.json()["codigo"]), (409, "venceu"))
+        self.assertEqual(Reserva.objects.filter(estado="expirada").count(), 3)  # gravado
+        self.assertEqual(self.previa().json()["codigo"], "venceu")
+
+    def test_item_cancelado_nao_aparece(self):
+        pedido_id = Pedido.objects.get().id
+        self.post(f"/api/pedidos/{pedido_id}/itens/{self.itens[0]['reserva_id']}/cancelar",
+                  usuario=self.ana)
+        self.assertEqual(self.previa().json()["total"], "10.00")
+        self.assertEqual(len(self.retirar().json()["itens"]), 2)
+
+    def test_codigo_de_outra_loja_ou_sem_vinculo(self):
+        self.assertEqual(self.get(f"/api/lojas/{self.longe.id}/pedidos/ativo", self.carlos,
+                                  codigo=self.codigo).status_code, 403)
+        self.assertEqual(self.previa("000000").json()["codigo"], "nao_encontrado")
+        self.assertEqual(self.previa(usuario=self.bia).status_code, 403)

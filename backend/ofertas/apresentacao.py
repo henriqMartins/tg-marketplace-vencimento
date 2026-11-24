@@ -312,3 +312,36 @@ def pedido_consumidor(pedido, estado: str, resultados=None, ofertas=None) -> dic
         "total": dinheiro(sum((r.quantidade * r.oferta.preco for r in somar), Decimal("0"))),
         "itens": itens,
     }
+
+
+def _soma(reservas) -> str:
+    return dinheiro(sum((r.quantidade * r.oferta.preco for r in reservas), Decimal("0")))
+
+
+def pedido_no_balcao(pedido, ativas) -> dict:
+    """PedidoNoBalcao (L12 → L13): só os itens ativos; o código vem para a tela conferir."""
+    return {
+        "pedido_id": pedido.id, "codigo": pedido.codigo,
+        "cliente": cliente(ativas[0].consumidor), "total": _soma(ativas),
+        "itens": [{"reserva": reserva_loja(r), "produto": r.oferta.produto.nome,
+                   "fita": fita(r.oferta.validade), "validade": r.oferta.validade.isoformat(),
+                   "total": total(r)} for r in ativas],
+    }
+
+
+def retirada_do_pedido(pedido, retiradas, ofertas) -> dict:
+    """
+    RetiradaFeita do grupo J: `itens` com cada reserva retirada e o estoque da oferta.
+    Os campos antigos (reserva, oferta) continuam, do 1º item, para a tela antiga.
+    `ofertas`: {id: Oferta já com o reservado calculado}.
+    """
+    antigo = retirada_feita(retiradas[0], ofertas[retiradas[0].oferta_id])
+    return {
+        **antigo,
+        "codigo": pedido.codigo, "cliente": cliente(retiradas[0].consumidor),
+        "total": _soma(retiradas),
+        "itens": [{"reserva": reserva_loja(r), "produto": r.oferta.produto.nome,
+                   "total": total(r),
+                   "oferta": {"id": r.oferta_id, "estoque": estoque(ofertas[r.oferta_id])}}
+                  for r in retiradas],
+    }
