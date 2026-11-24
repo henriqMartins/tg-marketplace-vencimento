@@ -65,6 +65,11 @@ def _itens_validos(loja_id, itens) -> list:
     return validos
 
 
+def _ordem_de_trava(oferta_ids: list) -> list:
+    """Sempre em ordem crescente de id (o controle negativo troca por "na ordem enviada")."""
+    return sorted(oferta_ids)
+
+
 def confirmar(cliente, loja_id: int, itens, agora=None):
     """
     POST /api/pedidos. Devolve (pedido, resultados). `pedido` é None quando NENHUM
@@ -90,7 +95,8 @@ def confirmar(cliente, loja_id: int, itens, agora=None):
 def _confirmar(cliente, loja_id, validos, agora):
     h = _horas_agora(agora)
     with transaction.atomic():
-        linhas = {oferta_id: _travar(oferta_id) for oferta_id in sorted(o for o, _ in validos)}
+        linhas = {oferta_id: _travar(oferta_id)
+                  for oferta_id in _ordem_de_trava([o for o, _ in validos])}
         pedido = Pedido.objects.create(cliente=cliente, loja_id=loja_id,
                                        codigo=sortear_codigo(loja_id), criado_em=data(h))
         resultados = []
