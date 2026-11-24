@@ -12,14 +12,14 @@ from io import StringIO
 
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
-from django.db.models import F
+from django.db.models import Count, F
 from django.test import TestCase
 from django.utils import timezone
 
-from . import indicadores, servico
 from parceria.models import Interesse
 
-from .models import Grupo, Loja, Oferta, Produto, Recusa, Reserva
+from . import indicadores, servico
+from .models import Grupo, Loja, Oferta, Pedido, Produto, Recusa, Reserva
 from .servico_lotes import situacao_exibida
 
 
@@ -96,6 +96,15 @@ class TestPopularDemo(TestCase):
         self.assertEqual(leite.lotes.count(), 2)                                 # 2 lotes, 1 grupo
         # Datas de 3 a 150 dias à frente: 3 ou 4 bimestres, conforme o dia em que roda.
         self.assertGreaterEqual(len({g.cor for g in grupos}), 3)
+
+    def test_pedido_da_ana_com_dois_itens_e_um_codigo(self):
+        ana = get_user_model().objects.get(email="ana@example.com")
+        pedido = Pedido.objects.annotate(n=Count("itens")).get(cliente=ana, n=2)
+        itens = pedido.itens.select_related("oferta__produto")
+        self.assertEqual({r.oferta.produto.nome for r in itens},
+                         {"Iogurte natural 170 g", "Leite integral 1 L"})
+        self.assertEqual({r.codigo for r in itens}, {pedido.codigo})
+        self.assertEqual({r.estado for r in itens}, {"reservada"})
 
     def test_painel_dos_ultimos_30_dias_tem_historico(self):
         """O vídeo mostra o G1: as 4 semanas de passado têm de aparecer nele."""
