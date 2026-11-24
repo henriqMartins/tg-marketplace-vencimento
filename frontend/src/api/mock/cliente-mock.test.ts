@@ -42,6 +42,7 @@ describe('mock · reservar devolve os 3 resultados no formato do contrato', () =
     if (r.status === 'recusada') return
     expect(r.reserva).toEqual({
       id: expect.any(Number),
+      pedido_id: expect.any(Number), // grupo J: vira um pedido de 1 item
       estado: 'reservada',
       quantidade: 2,
       pedido: 2,

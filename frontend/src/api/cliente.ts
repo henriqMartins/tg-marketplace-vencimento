@@ -1,10 +1,10 @@
 /*
  * Interface do cliente da API — a "tomada" que as telas usam.
- * Dividida pelos grupos do contrato (A…G, I) para ligar o backend real aos poucos.
+ * Dividida pelos grupos do contrato (A…G, I, J) para ligar o backend real aos poucos.
  * Duas implementações: mock (src/api/mock) e http (src/api/http).
  *
  * Erros: os métodos rejeitam com ErroApi (src/api/erros.ts).
- * Exceção de propósito: reservar() devolve a recusa (409) como resultado.
+ * Exceção de propósito: reservar() e pedidos.confirmar() devolvem a recusa (409) como resultado.
  */
 import type {
   AvisoDetalhe,
@@ -24,7 +24,12 @@ import type {
   EntradaLogin,
   EntradaLote,
   EntradaProduto,
+  EntradaPedido,
   EntradaPublicar,
+  FiltroPedidos,
+  Pedido,
+  PedidoNoBalcao,
+  ResultadoPedido,
   EntradaVinculo,
   EstadoOferta,
   Eu,
@@ -96,7 +101,7 @@ export interface ApiOperacao {
   ajustar(lojaId: number, ofertaId: number, entrada: EntradaAjuste): Promise<ResultadoAjuste>
   /** GET …/reservas/ativa?codigo= · 404 nao_encontrada */
   previaRetirada(lojaId: number, codigo: string): Promise<RetiradaPrevia>
-  /** POST …/retiradas {codigo} · 404 nao_encontrada, 409 venceu */
+  /** POST …/retiradas {codigo} · 404 nao_encontrada, 409 venceu. Grupo J: retira o pedido inteiro. */
   retirar(lojaId: number, codigo: string): Promise<RetiradaFeita>
 }
 
@@ -164,6 +169,25 @@ export interface ApiParceria {
   aceitarConvite(codigo: string): Promise<ConviteAceito>
 }
 
+/**
+ * J · Pedido — C2, C4, C5–C8, C10, L13 (docs/pedido.md). O carrinho fica no aparelho;
+ * só o confirmar chega aqui. Cada pessoa só vê os próprios pedidos (404 para o de outra).
+ */
+export interface ApiPedidos {
+  /** POST /api/pedidos · 400 itens_vazios | item_repetido | pedido_invalido | oferta_de_outra_loja. 409 tudo_esgotado = resultado. */
+  confirmar(entrada: EntradaPedido): Promise<ResultadoPedido>
+  /** GET /api/pedidos?estado= · ativos por expira_em_proximo, depois os outros (encerramento mais recente primeiro) */
+  listar(estado?: FiltroPedidos): Promise<Pedido[]>
+  /** GET /api/pedidos/{id} · 404 nao_encontrado */
+  obter(id: number): Promise<Pedido>
+  /** POST /api/pedidos/{id}/cancelar · 404, 409 nada_ativo */
+  cancelar(id: number): Promise<Pedido>
+  /** POST /api/pedidos/{id}/itens/{reservaId}/cancelar · 404, 409 ja_encerrado */
+  cancelarItem(id: number, reservaId: number): Promise<Pedido>
+  /** GET /api/lojas/{lojaId}/pedidos/ativo?codigo= (L13) · 403 sem vínculo, 404 nao_encontrado, 409 venceu */
+  previaNoBalcao(lojaId: number, codigo: string): Promise<PedidoNoBalcao>
+}
+
 /** Fora dos grupos: GET /health (convenções do contrato) — "o servidor está acordado?". */
 export interface ApiServidor {
   saude(): Promise<void>
@@ -179,18 +203,19 @@ export interface ClienteApi {
   gestor: ApiGestor
   projecao: ApiProjecao
   parceria: ApiParceria
+  pedidos: ApiPedidos
 }
 
 /** Letras dos grupos, como na tabela de status do contrato. H (push) fica fora. */
-export type GrupoContrato = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'I'
+export type GrupoContrato = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'I' | 'J'
 
-export const GRUPOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I']
+export const GRUPOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'J']
 
 /**
  * Grupos ✅ no contrato: os que VITE_API=http liga. Grupo novo só entra aqui quando o
  * backend publica (o Henrique avisa) — senão o deploy (VITE_API=http) quebraria.
  */
-export const GRUPOS_PRONTOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I']
+export const GRUPOS_PRONTOS: readonly GrupoContrato[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'J']
 
 /** Qual parte do ClienteApi atende cada grupo do contrato. */
 export const PARTE_DO_GRUPO = {
@@ -202,4 +227,5 @@ export const PARTE_DO_GRUPO = {
   F: 'gestor',
   G: 'projecao',
   I: 'parceria',
+  J: 'pedidos',
 } as const satisfies Record<GrupoContrato, keyof ClienteApi>

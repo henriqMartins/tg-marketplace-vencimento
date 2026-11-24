@@ -7,7 +7,7 @@ import type { BancoMock } from './semente'
 export type Guarda = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
 /** Mudou o formato da semente? Suba a versão: o estado antigo é descartado. */
-export const CHAVE_MOCK = 'tg.mock.v5'
+export const CHAVE_MOCK = 'tg.mock.v6'
 
 /** JSON não sabe guardar Date nem Map: marca os dois para reconstruir na volta. */
 export function serializar(banco: BancoMock): string {

@@ -19,7 +19,7 @@ function servidorFalso(resposta: (url: string, init: RequestInit) => { status: n
 
 afterEach(() => vi.unstubAllGlobals())
 
-describe('clientes http (A–G e I): rotas, métodos e corpos do contrato', () => {
+describe('clientes http (A–G, I e J): rotas, métodos e corpos do contrato', () => {
   it('A · acesso', async () => {
     const { api, chamadas } = servidorFalso()
     await api.acesso.entrar({ email: 'a@b.c', senha: '12345678' })
@@ -140,6 +140,43 @@ describe('clientes http (A–G e I): rotas, métodos e corpos do contrato', () =
     const erro = await api.parceria.registrarInteresse({ nome_mercado: 'X', cidade: '', telefone: '1' }).catch((e: unknown) => e)
     expect(erro).toBeInstanceOf(ErroApi)
     expect(erro).toMatchObject({ status: 400, codigo: 'campo_obrigatorio', message: 'Informe a cidade.', corpo: recusa })
+  })
+
+  it('J · pedidos: rotas do consumidor e a prévia do balcão', async () => {
+    const { api, chamadas } = servidorFalso(() => ({ status: 201, corpo: { id: 12, itens: [] } }))
+    const entrada = { loja_id: 1, itens: [{ oferta_id: 3, pedido: 2 }, { oferta_id: 9, pedido: 1 }] }
+    expect(await api.pedidos.confirmar(entrada)).toEqual({ status: 'criado', pedido: { id: 12, itens: [] } })
+    await api.pedidos.listar('ativo')
+    await api.pedidos.listar()
+    await api.pedidos.obter(12)
+    await api.pedidos.cancelar(12)
+    await api.pedidos.cancelarItem(12, 40)
+    await api.pedidos.previaNoBalcao(1, '482917')
+    expect(chamadas.map((c) => `${c.metodo} ${c.url}`)).toEqual([
+      'POST /api/pedidos',
+      'GET /api/pedidos?estado=ativo',
+      'GET /api/pedidos',
+      'GET /api/pedidos/12',
+      'POST /api/pedidos/12/cancelar',
+      'POST /api/pedidos/12/itens/40/cancelar',
+      'GET /api/lojas/1/pedidos/ativo?codigo=482917',
+    ])
+    expect(chamadas[0].corpo).toEqual(entrada)
+  })
+
+  it('J · 409 tudo_esgotado vira resultado (com os itens); outro 409 continua erro', async () => {
+    const recusado = { reserva_id: null, oferta_id: 3, status: 'recusada', motivo: 'esgotada' }
+    const { api } = servidorFalso((url) =>
+      url.endsWith('/api/pedidos')
+        ? { status: 409, corpo: { erro: 'Esgotou tudo agora há pouco.', codigo: 'tudo_esgotado', itens: [recusado] } }
+        : { status: 409, corpo: { erro: 'Este pedido não tem itens ativos.', codigo: 'nada_ativo' } },
+    )
+    expect(await api.pedidos.confirmar({ loja_id: 1, itens: [{ oferta_id: 3, pedido: 1 }] })).toEqual({
+      status: 'tudo_esgotado',
+      erro: 'Esgotou tudo agora há pouco.',
+      itens: [recusado],
+    })
+    await expect(api.pedidos.cancelar(12)).rejects.toMatchObject({ status: 409, codigo: 'nada_ativo' })
   })
 
   it('/health também vai à API real', async () => {

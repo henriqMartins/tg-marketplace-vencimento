@@ -15,10 +15,10 @@ describe('criarCliente', () => {
     expect(api).not.toHaveProperty('reiniciar')
   })
 
-  it('os grupos ✅ (A–G e I) têm implementação http: VITE_API=http monta o cliente', () => {
+  it('os grupos ✅ (A–G, I e J) têm implementação http: VITE_API=http monta o cliente', () => {
     const api = criarCliente({ ...base, config: lerConfigApi('http') })
     const mock = criarCliente({ ...base, config: lerConfigApi('mock') })
-    for (const parte of ['acesso', 'consumidor', 'operacao', 'lotes', 'configuracao', 'gestor', 'projecao', 'parceria'] as const) {
+    for (const parte of ['acesso', 'consumidor', 'operacao', 'lotes', 'configuracao', 'gestor', 'projecao', 'parceria', 'pedidos'] as const) {
       expect(api[parte]).not.toBe(mock[parte])
     }
   })

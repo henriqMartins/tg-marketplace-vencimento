@@ -72,6 +72,8 @@ export interface OfertaMock {
 
 export interface ReservaMock {
   id: number
+  /** Grupo J: o pedido deste item. O pedido não tem tabela no mock: é o conjunto das reservas com o mesmo pedidoId (código, loja e dono iguais). */
+  pedidoId: number
   ofertaId: number
   usuarioId: number
   /** Nome curto como a loja vê ("Ana S."). */
@@ -293,7 +295,7 @@ export function criarSemente(agora: Date): BancoMock {
   ): ReservaMock => {
     const expira_em = somarMinutos(agora, expiraEmMin)
     return {
-      id, ofertaId, usuarioId, cliente, quantidade, pedido: quantidade, codigo,
+      id, pedidoId: id, ofertaId, usuarioId, cliente, quantidade, pedido: quantidade, codigo,
       estado: 'reservada', criada_em: somarMinutos(expira_em, -JANELA_HORAS * 60), expira_em, encerrada_em: null,
     }
   }
@@ -306,7 +308,7 @@ export function criarSemente(agora: Date): BancoMock {
     const criada_em = haDias(diasAtras + 1)
     const expira_em = somarMinutos(criada_em, JANELA_HORAS * 60)
     return {
-      id, ofertaId, usuarioId: USUARIO.ana, cliente: 'Ana S.', quantidade, pedido: quantidade, codigo, estado,
+      id, pedidoId: id, ofertaId, usuarioId: USUARIO.ana, cliente: 'Ana S.', quantidade, pedido: quantidade, codigo, estado,
       criada_em, expira_em, encerrada_em: estado === 'expirada' ? expira_em : haDias(diasAtras),
     }
   }

@@ -144,6 +144,8 @@ export interface OfertaPublica extends OfertaVitrine {
 /** Reserva na visão do consumidor (dono). */
 export interface Reserva {
   id: number
+  /** Grupo J: o pedido deste item (toda reserva pertence a um pedido). */
+  pedido_id: number
   estado: EstadoReserva
   quantidade: number
   pedido: number
@@ -241,10 +243,24 @@ export interface RetiradaPrevia {
   validade?: Data
 }
 
+/**
+ * POST …/retiradas. Grupo J: retira o PEDIDO inteiro; `total` é a soma dos itens retirados.
+ * `reserva` e `oferta` continuam, do 1º item, para quem ainda lê o formato antigo.
+ */
 export interface RetiradaFeita {
-  reserva: ReservaLoja
+  codigo: string
+  cliente: string
   total: Dinheiro
   retirada_por: string
+  itens: ItemRetirado[]
+  reserva: ReservaLoja
+  oferta: { id: number; estoque: Estoque }
+}
+
+export interface ItemRetirado {
+  reserva: ReservaLoja
+  produto: string
+  total: Dinheiro
   oferta: { id: number; estoque: Estoque }
 }
 
@@ -560,4 +576,66 @@ export interface ConviteAberto {
 /** Vínculo devolvido no aceite, no formato de `Eu.vinculos` (pedido 7, aceito). */
 export interface ConviteAceito {
   vinculo: VinculoEu
+}
+
+// ---------- J · Pedido (docs/pedido.md) ----------
+
+/** Calculado pelos itens: ativo se algum está reservado; senão retirado se algum foi; senão encerrado. */
+export type EstadoPedido = 'ativo' | 'retirado' | 'encerrado'
+export type FiltroPedidos = 'ativo' | 'encerrado'
+export type StatusItemPedido = 'confirmada' | 'parcial' | 'recusada'
+export type MotivoRecusaItem = 'esgotada' | 'oferta_encerrada'
+
+export interface ItemPedido {
+  /** null no item recusado (não virou reserva; só aparece na resposta do POST). */
+  reserva_id: number | null
+  oferta_id: number
+  produto: string
+  pedido: number
+  quantidade: number
+  status: StatusItemPedido
+  motivo: MotivoRecusaItem | null
+  /** Estado da reserva; null no recusado. */
+  estado: EstadoReserva | null
+  expira_em: DataHora | null
+  encerrada_em: DataHora | null
+  preco: Dinheiro
+  subtotal: Dinheiro
+}
+
+/** Um pedido = uma pessoa + uma loja + um código. */
+export interface Pedido {
+  id: number
+  /** Completo só para o dono. */
+  codigo: string
+  loja: LojaResumo
+  estado: EstadoPedido
+  criado_em: DataHora
+  /** Menor expira_em entre os itens ativos; null sem ativos. */
+  expira_em_proximo: DataHora | null
+  /** ativo: soma dos ativos; retirado: dos retirados; encerrado: '0.00'. */
+  total: Dinheiro
+  itens: ItemPedido[]
+}
+
+export interface EntradaPedido {
+  loja_id: number
+  itens: { oferta_id: number; pedido: number }[]
+}
+
+/**
+ * Resultado de POST /api/pedidos. `criado` = 201 (ao menos um item reservado; cada item diz
+ * o seu `status`). `tudo_esgotado` = 409, sem código: o cliente devolve como resultado, não erro.
+ */
+export type ResultadoPedido =
+  | { status: 'criado'; pedido: Pedido }
+  | { status: 'tudo_esgotado'; erro: string; itens: ItemPedido[] }
+
+/** GET /api/lojas/{lojaId}/pedidos/ativo (L13): só os itens ativos. */
+export interface PedidoNoBalcao {
+  pedido_id: number
+  codigo: string
+  cliente: string
+  total: Dinheiro
+  itens: { reserva: ReservaLoja; produto: string; fita: Fita; validade: Data; total: Dinheiro }[]
 }
