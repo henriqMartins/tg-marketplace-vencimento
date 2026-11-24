@@ -469,3 +469,188 @@
 .linhaInformativa {
   cursor: default;
 }
+
+/* ---------- Pedido (docs/pedido.md): sacola na C2 e C10 ---------- */
+
+.linhaTitulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sacola {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--toque-minimo);
+  height: var(--toque-minimo);
+  border-radius: var(--raio-botao);
+  color: var(--primary);
+}
+
+.contagemSacola {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: var(--raio-pilula);
+  background: var(--primary);
+  color: var(--surface);
+  font: var(--texto-selo);
+  line-height: 20px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.cabecalhoPedido {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cabecalhoPedido > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.cartaoLoja {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+}
+
+.topoLoja {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.itemPedido {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.itemPedido:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.itemEsgotado {
+  opacity: 0.6;
+}
+
+.linhaItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.nomeItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.avisoEsgotou {
+  color: var(--danger-text);
+  font: var(--texto-legenda);
+  font-weight: 700;
+}
+
+.botaoRemover {
+  align-self: flex-start;
+  min-height: var(--toque-minimo);
+  padding: 0 4px;
+  border: none;
+  background: none;
+  color: var(--danger-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.totalLoja {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.totalLoja strong {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- C5/C6 do pedido: resultado por item e lista de itens ---------- */
+
+.listaResultado,
+.listaItens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.listaResultado {
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--raio-card);
+  background: var(--surface);
+}
+
+.linhaResultado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.textoResultado {
+  flex: 1;
+  min-width: 0;
+}
+
+.marcaResultado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.marcaSucesso {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.marcaAtencao {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.marcaErro {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}

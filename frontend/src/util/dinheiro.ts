@@ -3,10 +3,20 @@
  * o valor oficial é o `total` que a API devolve. Conta em centavos inteiros.
  */
 export function previaTotal(preco: string, quantidade: number): string {
-  const [inteiro, frac = '0'] = preco.split('.')
-  const centavos = (Number(inteiro) * 100 + Number(frac.padEnd(2, '0').slice(0, 2))) * quantidade
-  return `${Math.floor(centavos / 100)}.${String(centavos % 100).padStart(2, '0')}`
+  return paraTexto(centavos(preco) * quantidade)
 }
+
+/** PRÉVIA do total por loja na C10 (soma de previaTotal); o oficial vem no Pedido. */
+export function somarDinheiro(valores: readonly string[]): string {
+  return paraTexto(valores.reduce((soma, v) => soma + centavos(v), 0))
+}
+
+function centavos(valor: string): number {
+  const [inteiro, frac = '0'] = valor.split('.')
+  return Number(inteiro) * 100 + Number(frac.padEnd(2, '0').slice(0, 2))
+}
+
+const paraTexto = (c: number) => `${Math.floor(c / 100)}.${String(c % 100).padStart(2, '0')}`
 
 /** Preço digitado ("6,99", "6.99", "R$ 6,99") → "6.99"; vazio, zero ou mais de 2 casas → null. */
 export function lerPrecoDigitado(texto: string): string | null {

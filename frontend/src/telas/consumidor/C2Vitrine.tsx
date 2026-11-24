@@ -4,6 +4,7 @@ import { Link, useLocation, useSearchParams } from 'react-router'
 import { CATEGORIAS, type Categoria, type FaixaDesconto, type FiltrosVitrine } from '../../api'
 import { RECARGA_30S } from '../../app/consultas'
 import { useApi } from '../../app/contextos'
+import { useCarrinho } from '../../carrinho/contexto'
 import { Botao } from '../../componentes/Botao'
 import { CartaoOferta } from '../../componentes/CartaoOferta'
 import { Chip } from '../../componentes/Chip'
@@ -30,6 +31,7 @@ export function C2Vitrine() {
   const { local } = useLocal()
   const rota = useLocation()
   const [parametros, setParametros] = useSearchParams()
+  const { itens: noCarrinho } = useCarrinho()
   const [avisosAberta, setAvisosAberta] = useState(() => Boolean((rota.state as { oferecerAvisos?: boolean } | null)?.oferecerAvisos))
 
   const categoria = ehCategoria(parametros.get('categoria')) ? (parametros.get('categoria') as Categoria) : undefined
@@ -84,7 +86,21 @@ export function C2Vitrine() {
   return (
     <div className={styles.vitrine}>
       <header className={styles.cabecalhoVitrine}>
-        <h1 className={styles.tituloTela}>Ofertas perto de você</h1>
+        <div className={styles.linhaTitulo}>
+          <h1 className={styles.tituloTela}>Ofertas perto de você</h1>
+          <Link
+            to="/pedido"
+            className={styles.sacola}
+            aria-label={noCarrinho.length ? `Meu pedido, ${noCarrinho.length} ${noCarrinho.length === 1 ? 'item' : 'itens'}` : 'Meu pedido, vazio'}
+          >
+            <IconeSacola tamanho={24} />
+            {noCarrinho.length > 0 && (
+              <span className={styles.contagemSacola} aria-hidden="true">
+                {noCarrinho.length}
+              </span>
+            )}
+          </Link>
+        </div>
         <Link to={`/boas-vindas?voltar=${voltarParaCa}`} className={styles.botaoLocal}>
           <IconePino tamanho={18} />
           <span>{local?.rotulo ?? 'Escolher local'}</span>
