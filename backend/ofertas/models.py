@@ -11,6 +11,8 @@ Regra de negócio NÃO mora aqui (ela é do pacote dominio). Aqui ficam só:
 from datetime import timedelta
 
 from django.conf import settings
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import RangeOperators
 from django.db import models
 from django.db.models import F, Q
 from django.utils import timezone
@@ -249,8 +251,36 @@ class Oferta(models.Model):
         return f"{self.produto} (val. {self.validade:%d/%m/%Y})"
 
 
+class Pedido(models.Model):
+    """
+    Grupo J (etapa 15, regra em docs/pedido.md): as reservas de UMA pessoa em UMA loja
+    confirmadas juntas, com UM código de retirada. Cada item continua sendo uma Reserva
+    (mesma regra do domínio, mesma janela, mesmo expira_em).
+
+    O estado (ativo / retirado / encerrado) NÃO é gravado: sai dos itens, como o "livre"
+    da vitrine sai das reservas. Gravar duplicaria a informação e poderia divergir.
+    """
+    cliente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                                related_name="pedidos")
+    loja = models.ForeignKey(Loja, on_delete=models.PROTECT, related_name="pedidos")
+    codigo = models.CharField(max_length=6)       # 6 dígitos, o lojista digita
+    criado_em = models.DateTimeField()
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(codigo__regex=r"^[0-9]{6}$"),
+                                   name="pedido_codigo_6_digitos"),
+        ]
+
+    def __str__(self):
+        return f"Pedido {self.id} da loja {self.loja_id}"
+
+
 class Reserva(models.Model):
     oferta = models.ForeignKey(Oferta, on_delete=models.PROTECT, related_name="reservas")
+    # O pedido a que este item pertence (grupo J). Não se chama "pedido" porque esse
+    # nome já é a QUANTIDADE pedida (do domínio): parcial = quantidade < pedido.
+    pedido_retirada = models.ForeignKey(Pedido, on_delete=models.PROTECT, related_name="itens")
     numero = models.PositiveIntegerField()        # id DENTRO da oferta (o do domínio)
     # Repetida de propósito (dá para chegar nela pela oferta): uma trava do banco
     # só enxerga colunas da própria tabela, e o código é único POR LOJA.
@@ -259,7 +289,9 @@ class Reserva(models.Model):
                                    related_name="reservas")
     quantidade = models.PositiveIntegerField()    # quanto foi reservado
     pedido = models.PositiveIntegerField()        # quanto foi pedido (parcial: maior)
-    codigo = models.CharField(max_length=6)       # 6 dígitos, o lojista digita
+    # Cópia do código do PEDIDO (grupo J). Fica aqui porque o domínio confere o código
+    # por reserva na retirada, e a trava abaixo só enxerga colunas desta tabela.
+    codigo = models.CharField(max_length=6)
     criada_em = models.DateTimeField()
     expira_em = models.DateTimeField(db_index=True)   # fonte oficial da expiração
     estado = models.CharField(max_length=10, choices=ESTADOS_RESERVA,
@@ -294,13 +326,19 @@ class Reserva(models.Model):
                                    name="reserva_codigo_6_digitos"),
             models.CheckConstraint(condition=Q(estado__in=[v for v, _ in ESTADOS_RESERVA]),
                                    name="reserva_estado_valido"),
-            # O lojista digita o código e o backend acha a reserva ATIVA daquela
-            # loja: não pode haver duas ativas com o mesmo código na mesma loja.
-            # Só entre as ativas: códigos de reservas encerradas podem voltar a sair.
-            models.UniqueConstraint(
-                fields=["loja", "codigo"],
+            # 📖 ESTUDAR: restrição de EXCLUSÃO (PostgreSQL). Uma "única" comum diria
+            # "nunca duas linhas com loja e código iguais"; aqui os itens do MESMO pedido
+            # dividem o código. A exclusão compara cada par de reservas ATIVAS e recusa
+            # quando loja = loja E código = código E pedido <> pedido. Ou seja: o código
+            # é único entre os PEDIDOS ativos da loja. Só entre as ativas: códigos de
+            # pedidos encerrados podem voltar a sair. Precisa da extensão btree_gist
+            # (ligada na migração 0006), que ensina o índice GiST a comparar com = e <>.
+            ExclusionConstraint(
+                name="reserva_codigo_unico_por_loja_entre_pedidos_ativos",
+                expressions=[("loja", RangeOperators.EQUAL),
+                             ("codigo", RangeOperators.EQUAL),
+                             ("pedido_retirada", RangeOperators.NOT_EQUAL)],
                 condition=Q(estado=dominio.EstadoReserva.RESERVADA.value),
-                name="reserva_codigo_unico_por_loja_entre_ativas",
             ),
         ]
 

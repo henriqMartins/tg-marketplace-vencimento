@@ -17,7 +17,7 @@ from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
 from . import servico
-from .models import Loja, Oferta, Produto, Recusa, Reserva
+from .models import Loja, Oferta, Pedido, Produto, Recusa, Reserva
 
 # Rio Preto: loja perto do consumidor, loja longe; consumidor no meio do bairro.
 PERTO = (Decimal("-20.811300"), Decimal("-49.375800"))
@@ -114,8 +114,10 @@ class TestVitrine(Base):
         # Reserva de 3 que venceu há 1 h e ninguém processou ainda: o banco diz livre 7,
         # mas a vitrine já mostra 10 (regra 6). Só leitura: o banco continua 7.
         Oferta.objects.filter(pk=self.iogurte.pk).update(livre=7)
+        pedido = Pedido.objects.create(cliente=self.ana, loja=self.perto, codigo="123456",
+                                       criado_em=self.agora - timedelta(hours=5))
         Reserva.objects.create(oferta=self.iogurte, numero=1, loja=self.perto, consumidor=self.ana,
-                               quantidade=3, pedido=3, codigo="123456",
+                               pedido_retirada=pedido, quantidade=3, pedido=3, codigo="123456",
                                criada_em=self.agora - timedelta(hours=5),
                                expira_em=self.agora - timedelta(hours=1))
         self.assertEqual(self.get("/api/ofertas").json()[0]["livre"], 10)
