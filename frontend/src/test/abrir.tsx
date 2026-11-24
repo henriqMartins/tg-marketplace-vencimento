@@ -8,6 +8,8 @@ import { definirLarguraTela } from './tela'
 export const ANA = 'ana@email.com' // consumidora
 export const CARLOS = 'carlos@vilanova.com.br' // responsável da loja 1
 export const JULIANA = 'juliana.prado@email.com' // funcionária da loja 1
+export const EQUIPE = 'equipe@example.com' // equipe da plataforma
+export const MARCOS = 'marcos@example.com' // consumidor com pedido de parceria "novo"
 
 export interface OpcoesAbrir extends OpcoesPecas {
   /** Já entra logado com este e-mail. */

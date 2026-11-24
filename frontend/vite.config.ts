@@ -14,7 +14,7 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: false, // o registro é feito em src/app/servico.ts
       manifest: MANIFESTO,
-      includeAssets: ['icone.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'icons/favicon.svg', 'icons/apple-touch-icon.png'],
       workbox: {
         globPatterns: ARQUIVOS_DO_APP,
         navigateFallbackDenylist: FORA_DO_APP,

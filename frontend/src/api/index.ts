@@ -1,6 +1,6 @@
 /*
  * Ponto de entrada do cliente da API. Monta o ClienteApi grupo a grupo:
- * cada grupo do contrato (A…G) vem do mock ou da API real, conforme VITE_API.
+ * cada grupo do contrato (A…G, I, J) vem do mock ou da API real, conforme VITE_API.
  * É o ÚNICO arquivo fora de src/api/mock que pode importar o mock.
  */
 import { GRUPOS, PARTE_DO_GRUPO, type ClienteApi, type GrupoContrato } from './cliente'
@@ -11,6 +11,8 @@ import { criarConsumidorHttp } from './http/consumidor'
 import { criarGestorHttp } from './http/gestor'
 import { criarLotesHttp } from './http/lotes'
 import { criarOperacaoHttp } from './http/operacao'
+import { criarParceriaHttp } from './http/parceria'
+import { criarPedidosHttp } from './http/pedidos'
 import { criarProjecaoHttp } from './http/projecao'
 import { criarRequisitar, type Requisitar } from './http/requisitar'
 import { criarClienteMock } from './mock/cliente-mock'
@@ -34,6 +36,8 @@ const FABRICAS_HTTP: { [G in GrupoContrato]?: FabricaHttp<G> } = {
   E: criarConfiguracaoHttp,
   F: criarGestorHttp,
   G: criarProjecaoHttp,
+  I: criarParceriaHttp,
+  J: criarPedidosHttp,
 }
 
 export interface OpcoesCliente {
@@ -60,6 +64,8 @@ export function criarCliente({ config, obterToken, baseUrl, atrasoMockMs, agora,
     configuracao: mock.configuracao,
     gestor: mock.gestor,
     projecao: mock.projecao,
+    parceria: mock.parceria,
+    pedidos: mock.pedidos,
   }
   let requisitar: Requisitar | undefined
 

@@ -1,18 +1,20 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
-import type { OfertaVitrine, ResultadoReserva } from '../../api'
+import type { MotivoRecusaItem, OfertaVitrine } from '../../api'
 import { RECARGA_30S } from '../../app/consultas'
 import { useApi, useSessao } from '../../app/contextos'
+import { useCarrinho } from '../../carrinho/contexto'
 import { Botao, BotaoIcone } from '../../componentes/Botao'
 import { Preco, SeloDesconto } from '../../componentes/CartaoOferta'
 import { Contador } from '../../componentes/Contador'
 import { EsqueletoLista } from '../../componentes/Esqueleto'
 import { IconeSacola, IconeVoltar } from '../../componentes/icones'
 import { Mensagem, MensagemErro } from '../../componentes/Mensagem'
+import { useToast } from '../../componentes/toast/contexto'
 import { previaTotal } from '../../util/dinheiro'
 import { formatarData, formatarDinheiro, formatarDistancia, formatarHorario } from '../../util/formatar'
-import { ResultadoRecusada } from './C5Resultado'
+import { ReservaRecusada } from './C5Pedido'
 import styles from './Consumidor.module.css'
 
 /** A distância vem da vitrine (a rota da oferta não recebe lat/lng no contrato). */
@@ -24,9 +26,10 @@ function procurarNaVitrine(consultas: QueryClient, id: number): OfertaVitrine | 
   return undefined
 }
 
-type Recusa = Extract<ResultadoReserva, { status: 'recusada' }>
-
-/** C4 · Reserva da quantidade. O máximo do contador é o `livre` que a API devolve. */
+/**
+ * C4 · Quantidade e o que fazer com ela (docs/pedido.md): "Adicionar ao pedido" (carrinho, nada
+ * reservado ainda) ou "Reservar só este agora" (reserva na hora). O máximo do contador é o `livre`.
+ */
 export function C4Oferta() {
   const id = Number(useParams().ofertaId)
   const api = useApi()
@@ -34,29 +37,36 @@ export function C4Oferta() {
   const consultas = useQueryClient()
   const navegar = useNavigate()
   const rota = useLocation()
-  const [quantidade, setQuantidade] = useState(1)
-  const [recusa, setRecusa] = useState<Recusa | null>(null)
+  const carrinho = useCarrinho()
+  const mostrarToast = useToast()
+  const noCarrinho = carrinho.itemDa(id)
+  // Já está no carrinho: o contador começa na quantidade escolhida antes.
+  const [quantidade, setQuantidade] = useState(() => noCarrinho?.pedido ?? 1)
+  const [recusa, setRecusa] = useState<MotivoRecusaItem | null>(null)
 
   const oferta = useQuery({ queryKey: ['oferta', id], queryFn: () => api.consumidor.obterOferta(id), ...RECARGA_30S })
 
+  // "Reservar só este agora" = um pedido de 1 item (POST /api/pedidos), com o mesmo C5/C6.
   const reservar = useMutation({
-    mutationFn: (pedido: number) => api.consumidor.reservar(id, pedido),
+    mutationFn: ({ lojaId, pedido }: { lojaId: number; pedido: number }) =>
+      api.pedidos.confirmar({ loja_id: lojaId, itens: [{ oferta_id: id, pedido }] }),
     onSuccess: (resultado) => {
       void consultas.invalidateQueries({ queryKey: ['vitrine'] })
       void consultas.invalidateQueries({ queryKey: ['oferta', id] })
-      void consultas.invalidateQueries({ queryKey: ['minhas-reservas'] })
-      if (resultado.status === 'recusada') {
-        setRecusa(resultado) // C5, estado recusada
+      void consultas.invalidateQueries({ queryKey: ['pedidos'] })
+      if (resultado.status === 'tudo_esgotado') {
+        setRecusa(resultado.itens[0]?.motivo ?? 'esgotada') // C5, nada sobrou
         return
       }
-      consultas.setQueryData(['reserva', resultado.reserva.id], resultado.reserva)
-      navegar(`/reserva/${resultado.reserva.id}/resultado`, { state: resultado })
+      carrinho.tirar(id) // já reservado: não fica também no carrinho
+      consultas.setQueryData(['pedido', resultado.pedido.id], resultado.pedido)
+      navegar(`/pedidos/${resultado.pedido.id}/resultado`, { state: resultado.pedido })
     },
   })
 
   const voltar = () => (rota.key === 'default' ? navegar('/vitrine') : navegar(-1))
 
-  if (recusa) return <ResultadoRecusada recusa={recusa} />
+  if (recusa) return <ReservaRecusada motivo={recusa} />
   if (oferta.isPending) return <EsqueletoLista quantidade={1} rotulo="Carregando oferta…" />
   if (oferta.isError) {
     return (
@@ -80,7 +90,24 @@ export function C4Oferta() {
       navegar(`/entrar?voltar=${encodeURIComponent(rota.pathname)}`)
       return
     }
-    reservar.mutate(qtd)
+    reservar.mutate({ lojaId: o.loja.id, pedido: qtd })
+  }
+
+  function aoAdicionar() {
+    carrinho.colocar({
+      ofertaId: o.id,
+      lojaId: o.loja.id,
+      lojaNome: o.loja.nome,
+      produto: o.produto.nome,
+      preco: o.preco,
+      pedido: qtd,
+    })
+    const nome = o.produto.nome.split(' ')[0]
+    mostrarToast({
+      mensagem: `${nome} ×${qtd} ${noCarrinho ? 'atualizado' : 'adicionado'}`,
+      acao: { rotulo: 'Ver pedido', aoClicar: () => navegar('/pedido') },
+    })
+    voltar()
   }
 
   return (
@@ -145,9 +172,18 @@ export function C4Oferta() {
 
       {reservar.isError && <MensagemErro erro={reservar.error} />}
 
-      <Botao disabled={!disponivel} carregando={reservar.isPending} textoCarregando="Reservando…" onClick={aoReservar}>
-        {disponivel ? `Reservar ${qtd} · ${formatarDinheiro(previaTotal(o.preco, qtd))}` : 'Indisponível'}
-      </Botao>
+      {disponivel ? (
+        <>
+          <Botao onClick={aoAdicionar} disabled={reservar.isPending}>
+            {noCarrinho ? 'Atualizar no pedido' : 'Adicionar ao pedido'} · {formatarDinheiro(previaTotal(o.preco, qtd))}
+          </Botao>
+          <Botao variante="secundario" carregando={reservar.isPending} textoCarregando="Reservando…" onClick={aoReservar}>
+            Reservar só este agora
+          </Botao>
+        </>
+      ) : (
+        <Botao disabled>Indisponível</Botao>
+      )}
     </div>
   )
 }

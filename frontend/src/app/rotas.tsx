@@ -2,25 +2,33 @@
  * Mapa de rotas (especificação, "Mapa de rotas sugerido"). Todas as telas da
  * especificação estão aqui desde a F8.
  */
-import type { RouteObject } from 'react-router'
+import { Navigate, type RouteObject } from 'react-router'
 import { Galeria } from '../galeria/Galeria'
 import { LayoutConsumidor } from './layouts/LayoutConsumidor'
 import type { HandleRota } from './layouts/LayoutGestor'
 import { LayoutLoja } from './layouts/LayoutLoja'
+import { LayoutPlataforma } from './layouts/LayoutPlataforma'
 import { LayoutRaiz } from './layouts/LayoutRaiz'
-import { ExigeLogin, ExigeVinculo, SoVisitante } from './protecao'
+import { ExigeLogin, ExigePlataforma, ExigeVinculo, SoVisitante } from './protecao'
 import { A1Abertura } from './telas/A1Abertura'
 import { NaoEncontrada } from './telas/NaoEncontrada'
 import { TelaCriarConta } from '../telas/acesso/TelaCriarConta'
 import { TelaEntrar } from '../telas/acesso/TelaEntrar'
 import { TelaEscolher } from '../telas/acesso/TelaEscolher'
+import { A6Parceiro } from '../telas/parceria/A6Parceiro'
+import { A7Convite } from '../telas/parceria/A7Convite'
+import { P1Interessados } from '../telas/plataforma/P1Interessados'
+import { P2Lojas } from '../telas/plataforma/P2Lojas'
+import { P3CadastrarLoja } from '../telas/plataforma/P3CadastrarLoja'
 import { C1Local } from '../telas/consumidor/C1Local'
 import { C2Vitrine } from '../telas/consumidor/C2Vitrine'
 import { C4Oferta } from '../telas/consumidor/C4Oferta'
-import { C5Resultado } from '../telas/consumidor/C5Resultado'
-import { C6Reserva } from '../telas/consumidor/C6Reserva'
+import { C5Pedido } from '../telas/consumidor/C5Pedido'
+import { C6Pedido } from '../telas/consumidor/C6Pedido'
 import { C8MinhasReservas } from '../telas/consumidor/C8MinhasReservas'
 import { C9Perfil } from '../telas/consumidor/C9Perfil'
+import { C10Pedido } from '../telas/consumidor/C10Pedido'
+import { ReservaAntiga } from '../telas/consumidor/ReservaAntiga'
 import { L1Inicio } from '../telas/loja/L1Inicio'
 import { L2Produto } from '../telas/loja/L2Produto'
 import { L3Lote } from '../telas/loja/L3Lote'
@@ -61,7 +69,15 @@ export const rotas: RouteObject[] = [
       // Quem já está logado (inclusive logo após entrar) é levado ao destino pelo SoVisitante.
       { element: <SoVisitante />, children: [{ path: 'entrar', element: <TelaEntrar /> }] },
       { element: <SoVisitante destino="boas-vindas" />, children: [{ path: 'criar-conta', element: <TelaCriarConta /> }] },
-      { element: <ExigeLogin />, children: [{ path: 'escolher', element: <TelaEscolher /> }] },
+      {
+        element: <ExigeLogin />,
+        children: [
+          { path: 'escolher', element: <TelaEscolher /> },
+          // Parceria (docs/parceria.md): A6 e A7.
+          { path: 'parceiro', element: <A6Parceiro /> },
+          { path: 'convite/:codigo', element: <A7Convite /> },
+        ],
+      },
       // C1 é pública (o visitante também escolhe o local) e ocupa a tela toda.
       { path: 'boas-vindas', element: <C1Local /> },
 
@@ -71,12 +87,17 @@ export const rotas: RouteObject[] = [
         children: [
           { path: 'vitrine', element: <C2Vitrine /> },
           { path: 'oferta/:ofertaId', element: <C4Oferta /> },
+          // C10: o visitante também monta o carrinho; confirmar pede login e volta para cá.
+          { path: 'pedido', element: <C10Pedido /> },
           {
             element: <ExigeLogin />,
             children: [
-              { path: 'reserva/:id/resultado', element: <C5Resultado /> },
+              { path: 'pedidos/:id/resultado', element: <C5Pedido /> },
+              { path: 'pedidos/:id', element: <C6Pedido /> },
               { path: 'reservas', element: <C8MinhasReservas /> },
-              { path: 'reservas/:id', element: <C6Reserva /> },
+              // Antes do grupo J: a reserva vira o pedido dela.
+              { path: 'reserva/:id/resultado', element: <ReservaAntiga resultado /> },
+              { path: 'reservas/:id', element: <ReservaAntiga /> },
               { path: 'perfil', element: <C9Perfil /> },
             ],
           },
@@ -116,6 +137,28 @@ export const rotas: RouteObject[] = [
                       { path: 'reservas', element: <G3Historico />, handle: LARGA },
                     ],
                   },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+
+      // ---------- Plataforma (equipe; docs/parceria.md, P1–P3) ----------
+      {
+        path: 'plataforma',
+        element: <ExigeLogin />,
+        children: [
+          {
+            element: <ExigePlataforma />,
+            children: [
+              {
+                element: <LayoutPlataforma />,
+                children: [
+                  { index: true, element: <Navigate to="interessados" replace /> },
+                  { path: 'interessados', element: <P1Interessados /> },
+                  { path: 'lojas', element: <P2Lojas /> },
+                  { path: 'lojas/nova', element: <P3CadastrarLoja /> },
                 ],
               },
             ],

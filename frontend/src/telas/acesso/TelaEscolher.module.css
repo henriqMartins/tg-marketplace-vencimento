@@ -103,3 +103,8 @@
 .rodape {
   margin-top: auto;
 }
+
+/* Computador: coluna central de 560 px (docs/parceria.md, A4). */
+.telaComputador {
+  max-width: 560px;
+}

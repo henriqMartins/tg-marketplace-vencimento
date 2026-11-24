@@ -252,10 +252,6 @@
 }
 
 /* Crédito do OpenStreetMap (licença ODbL) na barra, junto do resultado da busca. */
-.credito {
-  font-size: 12px;
-  opacity: 0.8;
-}
 
 /* Papel na equipe (G6): select para os outros, com o erro da API logo abaixo. */
 .papel {

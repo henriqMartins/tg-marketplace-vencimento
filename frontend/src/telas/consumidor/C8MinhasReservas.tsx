@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearchParams } from 'react-router'
-import type { Reserva } from '../../api'
+import type { Pedido } from '../../api'
 import { RECARGA_30S } from '../../app/consultas'
 import { useApi } from '../../app/contextos'
 import { useAgora } from '../../app/tempo'
@@ -10,16 +10,19 @@ import { EsqueletoLista } from '../../componentes/Esqueleto'
 import { EstadoVazio } from '../../componentes/EstadoVazio'
 import { IconeReservas } from '../../componentes/icones'
 import { MensagemErro } from '../../componentes/Mensagem'
-import { SeloReserva } from '../../componentes/Selo'
+import { Selo, type VarianteSelo } from '../../componentes/Selo'
 import { classes } from '../../util/classes'
-import { comEm, formatarHorario, formatarTempoRestante } from '../../util/formatar'
+import { comEm, formatarDinheiro, formatarHorario, formatarTempoRestante } from '../../util/formatar'
 import styles from './Consumidor.module.css'
 
 const URGENTE_MS = 30 * 60_000
 
 type IdAba = 'ativas' | 'historico'
 
-/** C8 · Minhas reservas: abas Ativas (n) e Histórico (?aba=historico, para o voltar funcionar). */
+/**
+ * C8 · Minhas reservas: um cartão por PEDIDO (loja, código, itens, prazo mais próximo).
+ * Abas Ativas (n) e Histórico (?aba=historico, para o voltar funcionar).
+ */
 export function C8MinhasReservas() {
   const api = useApi()
   const navegar = useNavigate()
@@ -27,13 +30,13 @@ export function C8MinhasReservas() {
   const aba: IdAba = parametros.get('aba') === 'historico' ? 'historico' : 'ativas'
 
   const ativas = useQuery({
-    queryKey: ['minhas-reservas', 'ativa'],
-    queryFn: () => api.consumidor.minhasReservas('ativa'),
+    queryKey: ['pedidos', 'ativo'],
+    queryFn: () => api.pedidos.listar('ativo'),
     ...RECARGA_30S,
   })
   const historico = useQuery({
-    queryKey: ['minhas-reservas', 'encerrada'],
-    queryFn: () => api.consumidor.minhasReservas('encerrada'),
+    queryKey: ['pedidos', 'encerrado'],
+    queryFn: () => api.pedidos.listar('encerrado'),
     enabled: aba === 'historico',
   })
 
@@ -66,43 +69,54 @@ export function C8MinhasReservas() {
             acao={{ rotulo: 'Ver ofertas', aoClicar: () => navegar('/vitrine') }}
           />
         ) : (
-          <ListaReservas reservas={consulta.data} />
+          <ListaPedidos pedidos={consulta.data} />
         )}
       </div>
     </div>
   )
 }
 
-function ListaReservas({ reservas }: { reservas: Reserva[] }) {
+function ListaPedidos({ pedidos }: { pedidos: Pedido[] }) {
   const agora = useAgora(10_000)
   return (
     <ul className={styles.lista}>
-      {reservas.map((r) => (
-        <li key={r.id}>
-          <Link to={`/reservas/${r.id}`} className={styles.cartaoReserva}>
-            <span className={styles.linhaTopo}>
-              <span className={styles.nomeProduto}>{r.oferta.produto.nome}</span>
-              <SeloReserva estado={r.estado} />
-            </span>
-            <span className={styles.texto}>
-              {r.quantidade} {r.quantidade === 1 ? 'unidade' : 'unidades'} · {r.oferta.loja.nome}
-            </span>
-            <span className={styles.separador} aria-hidden="true" />
-            {r.estado === 'reservada' ? <RodapeAtiva reserva={r} agora={agora} /> : <RodapeEncerrada reserva={r} agora={agora} />}
-          </Link>
-        </li>
-      ))}
+      {pedidos.map((p) => {
+        // Ativo: só os itens ainda reservados. Encerrado: todos (o que foi o pedido).
+        const itens = p.estado === 'ativo' ? p.itens.filter((i) => i.estado === 'reservada') : p.itens
+        const [rotulo, variante] = seloDo(p)
+        return (
+          <li key={p.id}>
+            <Link to={`/pedidos/${p.id}`} className={styles.cartaoReserva}>
+              <span className={styles.linhaTopo}>
+                <span className={styles.nomeProduto}>Pedido · {itens.length === 1 ? '1 item' : `${itens.length} itens`}</span>
+                <Selo variante={variante}>{rotulo}</Selo>
+              </span>
+              <span className={styles.texto}>{itens.map((i) => `${i.produto} ×${i.quantidade}`).join(', ')}</span>
+              <span className={styles.texto}>{p.loja.nome}</span>
+              <span className={styles.separador} aria-hidden="true" />
+              {p.estado === 'ativo' ? <RodapeAtivo pedido={p} agora={agora} /> : <RodapeEncerrado pedido={p} rotulo={rotulo} agora={agora} />}
+            </Link>
+          </li>
+        )
+      })}
     </ul>
   )
 }
 
-function RodapeAtiva({ reserva: r, agora }: { reserva: Reserva; agora: Date }) {
-  const restante = new Date(r.expira_em).getTime() - agora.getTime()
+/** Encerrado: "Expirado" se algum item venceu; senão a pessoa cancelou. */
+function seloDo(p: Pedido): [string, VarianteSelo] {
+  if (p.estado === 'ativo') return ['Reservado', 'pending']
+  if (p.estado === 'retirado') return ['Retirado', 'success']
+  return p.itens.some((i) => i.estado === 'expirada') ? ['Expirado', 'neutral'] : ['Cancelado', 'danger']
+}
+
+function RodapeAtivo({ pedido: p, agora }: { pedido: Pedido; agora: Date }) {
+  const restante = p.expira_em_proximo ? new Date(p.expira_em_proximo).getTime() - agora.getTime() : 0
   return (
     <span className={styles.linhaTopo}>
       <span className={styles.codigoCartao}>
         <span className="so-leitor">Código </span>
-        {r.codigo.slice(0, 3)} {r.codigo.slice(3)}
+        {p.codigo.slice(0, 3)} {p.codigo.slice(3)}
       </span>
       <span className={classes(styles.tempoCartao, restante < URGENTE_MS && styles.urgente)}>
         {restante > 0 ? `faltam ${formatarTempoRestante(restante)}` : 'conferindo…'}
@@ -111,13 +125,19 @@ function RodapeAtiva({ reserva: r, agora }: { reserva: Reserva; agora: Date }) {
   )
 }
 
-const VERBO = { retirada: 'Retirada', expirada: 'Expirou', cancelada: 'Cancelada' } as const
-
-function RodapeEncerrada({ reserva: r, agora }: { reserva: Reserva; agora: Date }) {
-  if (r.estado === 'reservada' || !r.encerrada_em) return null
+function RodapeEncerrado({ pedido: p, rotulo, agora }: { pedido: Pedido; rotulo: string; agora: Date }) {
+  const fim = p.itens
+    .map((i) => i.encerrada_em)
+    .filter((x): x is string => Boolean(x))
+    .sort()
+    .at(-1)
+  if (!fim) return null
   return (
-    <span className={styles.texto}>
-      {VERBO[r.estado]} {comEm(formatarHorario(r.encerrada_em, agora))}
+    <span className={styles.linhaTopo}>
+      <span className={styles.texto}>
+        {rotulo} {comEm(formatarHorario(fim, agora))}
+      </span>
+      {p.estado === 'retirado' && <strong>{formatarDinheiro(p.total)}</strong>}
     </span>
   )
 }

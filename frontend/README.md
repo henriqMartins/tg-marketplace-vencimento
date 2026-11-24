@@ -28,6 +28,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F8e · G5 lotes e fitas no computador | ✅ |
 | F8f · Endereço → coordenada (Nominatim) na L14/G6 | ✅ |
 | F9 · PWA (manifesto, service worker, instalação) | ✅ |
+| F10 · Parceria: A4 (muda), A6, A7, P1–P3 e mock do grupo I ([`docs/parceria.md`](../docs/parceria.md)) | ✅ · grupo I na API real |
+| F11 · Pedido: carrinho, C2, C4, C5, C6, C8, C10, L13 e grupo J (mock e API real) ([`docs/pedido.md`](../docs/pedido.md)) | ✅ |
 
 ## Decisões do frontend
 
@@ -108,6 +110,28 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 14/11/2026 | **L14/G6: a funcionária consulta as configurações, sem editar** (decisão do Henrique: em mercadinho pequeno, quem atende o balcão costuma ser quem gerencia). A rota `config` saiu do bloco "só responsável"; para quem não é responsável, a tela mostra os valores em texto (nome, endereço, janela, margem, antecedência), a equipe só com selos e o aviso "Só o responsável da loja muda estas configurações" — sem campos, contadores, `select`, Remover, Adicionar nem "Ver projeção". A L1 mostra o atalho para os dois papéis. A API já permitia ler com qualquer vínculo e recusa salvar (403). **Diverge da especificação** ("L14 só o responsável"): atualizar lá e no Contexto mestre |
 | 14/11/2026 | **Deploy na Vercel** preparado: `vercel.json` (rewrite das rotas do app, agendamento diário da varredura, `maxDuration` 120 s), função `api/varrer.ts` (confere `CRON_SECRET`, chama o backend com `CRON_TOKEN`, até 90 s, uma nova tentativa se o Render estiver acordando), `engines` Node 22.12+ e `.env.example` com a parte de produção. Ver "Deploy na Vercel" |
 | 14/11/2026 | **Roteiro de testes em tela** (`docs/roteiro-de-testes-em-tela.md`) executado contra a API real, automatizado no Chrome (Playwright, scripts fora do repositório): **50 de 50 itens executados passaram** (A 5, B 10, C 8, D 11, E 6, F 5, G 4, X-1). Fora: A-1 (desligar o servidor no meio), E-6 (último responsável só é alcançável por concorrência; provado no teste automático do backend) e X-2 (esperar 1 h). Adaptações: D-2 com o feijão (o grupo aberto de leite já virou oferta), D-9 com um lote novo de iogurte (os avisos da semente nunca tiveram oferta). A loja de demonstração foi restaurada (margem, antecedência, endereço, coordenada, equipe); as reservas, ajustes, lotes e a oferta do presunto criados ficam no banco até o próximo `flush` + `popular_demo` |
+| 18/11/2026 | **A4 sempre depois de entrar** (`docs/parceria.md`): saíram as regras "sem vínculo → vitrine" e "computador com um vínculo → loja" do `destino.ts`. Só `?voltar=` e a escolha lembrada pulam a A4. A escolha lembrada ganhou `plataforma` ("Tenho um mercado" não é lembrado: é ação de uma vez). O C9 mostra "Ao abrir o app · Escolher de novo" também para quem não tem loja |
+| 18/11/2026 | Grupo I no mock (`mock/grupo-i.ts`), com a Receita fingida por uma tabela de CNPJs (ver "Mock"). `VITE_API=http` passou a ligar só os grupos ✅ (`GRUPOS_PRONTOS` em `cliente.ts`): o I fica no mock até o backend publicar, senão o deploy quebraria |
+| 18/11/2026 | `Eu.plataforma` e `Eu.interesse` **opcionais no tipo** enquanto o backend não tiver o grupo I: sem `interesse` no `Eu`, a A4 esconde "Tenho um mercado" (não adianta mostrar uma ação que a API ainda não atende) |
+| 18/11/2026 | **PEDIDO-API 5, 6 e 7** (abertos): `Eu.interesse` com o interesse inteiro (A6 em leitura mostra os dados enviados); `codigo` do convite pendente em `LojaPlataforma` (P2 "Copiar link"); formato `{vinculo: {loja: {id, nome}, papel}}` no aceite. Simulados no mock; sem eles, a A6 mostra só estado e data e a P2 só "Gerar novo convite" |
+| 18/11/2026 | Conta criada pelo link do convite (`/criar-conta?voltar=/convite/…`) volta **direto** para a A7, sem passar pela C1 (localização) |
+| 18/11/2026 | A7: depois do aceite, espera o `Eu` novo (`invalidateQueries(['eu'])`) antes de abrir a L14; senão a loja abriria em "Sem acesso" |
+| 18/11/2026 | Área da plataforma: menu lateral no computador (o mesmo CSS do gestor) e **navegação inferior** no celular (Interessados · Lojas · Nova loja), com as listas empilhadas em cartões |
+| 18/11/2026 | P3 reaproveita a busca no mapa da L14, extraída para `localizacao/useBuscaNoMapa.ts` + `TextoConfirmacao.tsx`. Nome de exibição padrão = o nome que o dono deu no pedido (vindo da P1); sem pedido, o nome fantasia da Receita. "Copiar" usa `navigator.clipboard`; se o navegador recusar, o texto fica selecionado |
+| 23/11/2026 | Nome **Pé de Preço** e ícones definitivos (`public/icons/` + `favicon.ico`), no lugar dos provisórios. A A1 usa o selo branco `abertura-selo.svg`; o manifesto ganhou o maskable 192 e o fundo verde (`background_color` = primary), para a abertura do Android emendar na A1 |
+| 23/11/2026 | Mock alinhado ao grupo I publicado no contrato (🔧): `Eu.interesse` só com o pedido em aberto; PATCH só `novo → em_conversa` e `novo`/`em_conversa → descartado`, com motivo obrigatório; CNPJ que a Receita não conhece **bloqueia** a criação; `interesse_id` fechado → `estado_invalido`; `403 email_diferente` traz `email_convite` mascarado, que a A7 usa |
+| 23/11/2026 | **Grupo I na API real** (`http/parceria.ts`, rotas do `backend/parceria/urls.py`) e em `GRUPOS_PRONTOS`: `VITE_API=http` liga todos os grupos. O código do convite vai com `encodeURIComponent` (vem de um link). Testado com `fetch` falso; ainda **não conferido contra o servidor** (esta máquina não tem Python) |
+| 23/11/2026 | `Eu.plataforma` e `Eu.interesse` agora **obrigatórios** no tipo (a API sempre manda); a A4 não esconde mais "Tenho um mercado" |
+| 23/11/2026 | Mock com os detalhes do grupo I ✅: erro de campo com `campo` e `campo_longo` (limites e frases do `servico.py`), telefone só com dígitos, `interesse_id` inexistente → 404, loja antiga sem convite → `409 sem_convite`. Na P3, o telefone passou a ser **obrigatório** (o backend exige; antes o mock aceitava vazio) |
+| 23/11/2026 | PEDIDO-API 7 atendido pelo contrato. PEDIDO-API 5 e 6 aguardam decisão do Henrique (o backend recomendou aceitar); até lá, a A6 e a P2 seguem no modo reduzido e o mock continua simulando o 6 |
+| 23/11/2026 | **PEDIDO-API 5, 6 e 7 aceitos** (main `d5540b6`). `Eu.interesse` é o `Interesse` inteiro: a A6 em modo leitura mostra também mercado, cidade, telefone e mensagem. `LojaPlataforma.convite.codigo` é `string | null` (só pendente tem código): a P2 copia o link de novo. O tipo `InteresseEu` saiu; no mock, os comentários `PEDIDO-API` saíram |
+| 24/11/2026 | **Grupo J (pedido) ✅** no mock e na API real (`http/pedidos.ts`, em `GRUPOS_PRONTOS`). No mock o pedido não tem tabela: é o conjunto das reservas com o mesmo `pedidoId` (a semente vira pedidos de 1 item, como a migração do backend). `409 tudo_esgotado` volta como **resultado** (como a recusa do `reservar`). A retirada (`POST …/retiradas`) leva o pedido inteiro |
+| 24/11/2026 | Carrinho só no aparelho (`src/carrinho/`, `localStorage`): um por conta (`tg.carrinho.<id>`) e um do visitante. Ao entrar, o do visitante passa para a conta; a mesma oferta nos dois fica com a quantidade **maior**. Ao sair, o da conta some da tela e volta no próximo login. Enquanto o `/api/eu` carrega, o carrinho fica vazio (nunca mostra o de outra conta) |
+| 24/11/2026 | Endereços: C10 `/pedido` (pública: o visitante monta; confirmar pede login e volta), C5 `/pedidos/:id/resultado`, C6/C7 `/pedidos/:id`, C8 continua `/reservas`. `/reservas/:id` e `/reserva/:id/resultado` (antigos) levam ao pedido da reserva (`pedido_id`) |
+| 24/11/2026 | "Reservar só este agora" (C4) usa o mesmo `POST /api/pedidos` com 1 item: C5, C6 e C8 só lidam com `Pedido`. O `reservar` antigo e as telas C5/C6 de reserva saíram do app (a rota da API continua) |
+| 24/11/2026 | C10 confere o `livre` de cada item ao abrir e a cada 30 s (mesma consulta da C4); item esgotado fica apagado, fora da confirmação e do total. O total por loja é **prévia** (`somarDinheiro`); o oficial vem no `Pedido` |
+| 24/11/2026 | C6: "(o primeiro item vence às HH:MM)" e "Cancelar um item" só com 2+ itens ativos. Item expirado ou cancelado sai da lista com uma nota. C7 "Expirado" se algum item venceu; senão "Cancelado". O `Pedido` não traz `economia`: a C7 de retirado mostra só o valor pago |
+| 24/11/2026 | Testes no Windows: rodar o Vitest com o caminho em `C:` maiúsculo (PowerShell). Pelo Git Bash (`/c/...` vira `c:`) o Vitest carrega duas cópias de si e todo arquivo falha com "failed to find the current suite" |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
@@ -123,6 +147,10 @@ Requer Node 22.12+ (`engines` no `package.json`; o Vitest 5 e o Vite 8 pedem iss
 | `npm run build` | confere os tipos (`tsc -b`) e gera `dist/` |
 | `npm run preview` | serve o `dist/` gerado |
 | `npm run lint` | lint com oxlint (vem no modelo do Vite) |
+
+**Windows:** rode os testes num terminal aberto em `C:\…` (letra do drive **maiúscula**). Aberto
+em `c:\…` (comum no terminal do VS Code), o Vitest carrega o `src/test/setup.ts` duas vezes e
+todo arquivo falha com "Vitest failed to find the current suite".
 
 ## Deploy na Vercel
 
@@ -196,13 +224,14 @@ são relativas a hoje); abrir o site uma vez antes de gravar para acordar o Rend
 
 As telas falam só com a interface `ClienteApi` ([`cliente.ts`](src/api/cliente.ts)), dividida
 pelos grupos do contrato: `acesso` (A), `consumidor` (B), `operacao` (C), `lotes` (D),
-`configuracao` (E), `gestor` (F), `projecao` (G). Os tipos em [`tipos.ts`](src/api/tipos.ts)
+`configuracao` (E), `gestor` (F), `projecao` (G), `parceria` (I). Os tipos em [`tipos.ts`](src/api/tipos.ts)
 espelham `docs/api/contrato.md` com os mesmos nomes de campo.
 
 - **Quem atende cada grupo:** variável `VITE_API` (ver [`.env.example`](.env.example)):
-  `mock` (padrão), `http` ou letras, ex.: `A,B` = só A e B na API real.
+  `mock` (padrão), `http` (= os grupos ✅, lista `GRUPOS_PRONTOS`; hoje A–G, I e J)
+  ou letras, ex.: `A,B` = só A e B na API real.
   Grupo marcado como `http` sem implementação real → erro na hora de abrir o app
-  (nunca cai no mock em silêncio). Implementação real pronta para **todos os grupos (A–G)** (`src/api/http/`).
+  (nunca cai no mock em silêncio). Implementação real pronta para **todos os grupos (A–G, I e J)** (`src/api/http/`).
 - **Login manda na mistura:** o token vem do grupo A. Com A no mock, o backend real responde
   `401` a qualquer rota que exige login (e a sessão é limpa). Ou seja, `VITE_API=G` sozinho
   não serve para a G2: ela também usa A (`eu`), C (resumo no layout da loja) e E (janela
@@ -221,13 +250,21 @@ espelham `docs/api/contrato.md` com os mesmos nomes de campo.
 - O que só o backend calcula (parcial, `expira_em`, expiração, fim, fita, código) é **fingido**
   em [`mock/regras-fingidas.ts`](src/api/mock/regras-fingidas.ts), isolado.
 - **Nenhuma tela importa o mock:** o oxlint barra (`no-restricted-imports`); só `src/api/index.ts` pode.
-- Grupos C–G ainda sem mock: qualquer chamada rejeita dizendo em que etapa entra.
+- **Receita fingida** (grupo I, `mock/grupo-i.ts`): `11.222.333/0001-81` ativa (minimercado),
+  `CNPJ_NAO_ALIMENTAR` ativa fora do varejo (papelaria, só alerta), `CNPJ_INATIVA` baixada
+  (bloqueia), `CNPJ_FORA_DO_AR` → 503; qualquer outro CNPJ válido → 404 (e bloqueia a criação).
+  Os números estão no topo do arquivo.
 
 | Usuário do mock | E-mail | Senha | Papel |
 |---|---|---|---|
 | Ana Souza | `ana@email.com` | `12345678` | consumidora (tem a reserva ativa 31, código 482917) |
 | Carlos Lima | `carlos@vilanova.com.br` | `12345678` | responsável do Mercadinho Vila Nova |
 | Juliana Prado | `juliana.prado@email.com` | `12345678` | funcionária do Mercadinho Vila Nova |
+| Equipe da Plataforma | `equipe@example.com` | `12345678` | equipe da plataforma (`plataforma: true`; P1–P3) |
+| Marcos Lima | `marcos@example.com` | `12345678` | consumidor com pedido de parceria "novo" (Mercearia São Jorge) |
+
+Cena do vídeo no mock: o Marcos vê "Pedido de parceria recebido" na A4 → a equipe abre a P1,
+"Cadastrar loja", CNPJ `11.222.333/0001-81`, cadastra e copia o link → o Marcos abre o link (A7) e aceita.
 
 ## Casca (`src/app/`)
 
@@ -238,20 +275,39 @@ espelham `docs/api/contrato.md` com os mesmos nomes de campo.
 | `sessao/` | token em `localStorage` (ou `sessionStorage` sem "manter conectado"); `/api/eu`; `entrar`, `criarConta`, `sair`, `papelNaLoja` |
 | `FaixaServidor` | observa todas as chamadas: "Conectando…" após 2 s; "O servidor não respondeu" + Tentar de novo aos 90 s; "Sem internet" |
 | `rotas.tsx` | mapa de rotas da especificação; telas não feitas aparecem como "em construção (etapa)"; galeria em `/dev/componentes` só no `npm run dev` |
-| `protecao.tsx` | `ExigeLogin` (→ `/entrar?voltar=…`) e `ExigeVinculo` (loja e papel). Conforto, não segurança: quem barra é o backend (401/403) |
-| `layouts/` | consumidor e loja com navegação inferior; gestor (responsável, ≥ 1024 px) com menu lateral — mesma rota, troca o layout |
+| `protecao.tsx` | `ExigeLogin` (→ `/entrar?voltar=…`), `ExigeVinculo` (loja e papel) e `ExigePlataforma` (`eu.plataforma`). Conforto, não segurança: quem barra é o backend (401/403) |
+| `layouts/` | consumidor e loja com navegação inferior; gestor (responsável, ≥ 1024 px) com menu lateral — mesma rota, troca o layout; plataforma (P1–P3) com menu lateral no computador e navegação inferior no celular |
+| `parceria.ts` | regras de exibição da parceria: interesse em aberto, link do convite (`${origem}/convite/${codigo}`) e a mensagem do WhatsApp |
 | `telas/A1Abertura` | `/health` → `/entrar`, `/escolher` ou `/vitrine`; 90 s → Tentar de novo |
 
 ### Para onde cada um vai depois de entrar (`app/destino.ts`)
 
-Uma regra só, usada na A1 e depois do login (o guarda `SoVisitante` leva):
+Uma regra só, usada na A1 e depois do login (o guarda `SoVisitante` leva). Desde 18/11/2026
+a A4 aparece **para todo mundo**, inclusive sem vínculo e no computador:
 1. `?voltar=` (só caminho interno: começa com `/`, não com `//` — evita *open redirect*);
-2. escolha lembrada na A4, se o vínculo ainda existe;
-3. sem vínculo → `/vitrine`;
-4. computador com um vínculo só → responsável `/loja/:id/painel` (G1), funcionário `/loja/:id` (L1);
-5. celular ou vários vínculos → `/escolher` (A4).
+2. escolha lembrada na A4, se ainda vale (o vínculo existe; `plataforma` só para a equipe);
+   a loja abre no painel (G1) para o responsável no computador e na L1 nos outros casos;
+3. senão → `/escolher` (A4).
 
-Depois de criar conta → `/boas-vindas` (C1), levando o `?voltar`.
+A4: Comprar com desconto · Minhas lojas (com vínculo) · Equipe da plataforma (`eu.plataforma`) ·
+Tenho um mercado (vira "Pedido de parceria recebido" com pedido em aberto). Celular: tela cheia;
+computador: coluna de 560 px.
+
+Depois de criar conta → `/boas-vindas` (C1), levando o `?voltar`; vindo de um convite
+(`?voltar=/convite/…`), volta direto para a A7.
+
+### Parceria (`src/telas/parceria/` e `src/telas/plataforma/`)
+
+| Rota | Tela | Quem |
+|---|---|---|
+| `/parceiro` | A6 · formulário, "Recebemos seu pedido", ou leitura com pedido em aberto | logado |
+| `/convite/:codigo` | A7 · aceitar → L14 da loja; erros 403, 404, 409 e 410 com o que fazer | logado (sem login → entrar e volta) |
+| `/plataforma/interessados` | P1 · abas por estado (`?estado=`), marcar em conversa, descartar com motivo, cadastrar loja | equipe |
+| `/plataforma/lojas` | P2 · CNPJ, responsável ou situação do convite, copiar link, gerar novo convite | equipe |
+| `/plataforma/lojas/nova?interesse=` | P3 · CNPJ → dados → convite (link, Copiar, mensagem do WhatsApp) | equipe |
+
+O link do convite é montado no front com a origem do app. O sistema não envia e-mail
+(`docs/parceria.md`, seção 1): a equipe copia e manda pelo WhatsApp.
 
 ### Usando o mock no navegador
 
@@ -266,6 +322,8 @@ zerar sem fechar a aba: `/dev/componentes` → "Reiniciar dados do mock".
 - `posicao.ts`: `navigator.geolocation` em Promise (`negada` / `indisponivel`).
 - `ProvedorLocal`: guarda o local na memória (recarregar = sem local, vitrine sem ordem de distância).
   Os dois serviços entram por injeção: nos testes são falsos (nenhum teste chama a internet).
+- `endereco.ts` + `useBuscaNoMapa.ts` + `TextoConfirmacao.tsx`: endereço → coordenada (Nominatim),
+  uma busca por clique, e a confirmação "Localização encontrada: …. É aqui?". Usados na L14/G6 e na P3.
 
 ## Componentes (`src/componentes/`)
 
@@ -285,7 +343,7 @@ Para ver todos no navegador: `npm run dev` e abra `/dev/componentes`.
 | `CodigoRetirada` | 6 caixas (3 + 3); leitor de tela ouve os dígitos de uma vez; variante riscada (expirada) |
 | `Abas` | `tablist` com setas ← →; o painel usa `idAba`/`idPainel` (`abasIds.ts`) |
 | `Interruptor` | `role="switch"` com rótulo clicável |
-| `Campo`, `CampoSenha`, `CaixaSelecao` | rótulo + caixa de 52 px + dica + erro ligado por `aria-describedby`; mostrar senha |
+| `Campo`, `CampoSenha`, `CampoTexto`, `CaixaSelecao` | rótulo + caixa de 52 px + dica + erro ligado por `aria-describedby`; mostrar senha |
 | `AmostraFita` | quadrado de cor (decorativo) **sempre** com nome da cor e data exata — `data` é obrigatória no tipo |
 
 Diferença consciente do protótipo: a ação do toast é **branca sublinhada**, não laranja —
@@ -309,4 +367,4 @@ frontend/
     └── test/setup.ts     # comparadores do jest-dom + limpeza entre testes
 ```
 
-O nome do app ainda está em aberto: aparece como "[Nome do app]" (`NOME_DO_APP` em `App.tsx`).
+O nome do app é **Pé de Preço** (`NOME_DO_APP` em `src/app/marca.ts`). Os ícones (toldo + broto + sorriso) estão em `public/icons/`, com o `favicon.ico` na raiz de `public/`.

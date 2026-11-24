@@ -14,9 +14,9 @@ describe('A1 · Abertura decide o destino depois do /health', () => {
     expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument()
   })
 
-  it('consumidora → /vitrine', async () => {
+  it('consumidora → /escolher (A4 vale para todos)', async () => {
     const { caminhoAtual } = await abrir('/', { email: ANA })
-    await waitFor(() => expect(caminhoAtual()).toBe('/vitrine'))
+    await waitFor(() => expect(caminhoAtual()).toBe('/escolher'))
   })
 
   it('quem tem vínculo → /escolher (A4)', async () => {

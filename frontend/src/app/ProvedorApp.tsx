@@ -1,6 +1,7 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { criarClienteDoAmbiente, type ClienteApi } from '../api'
+import { ProvedorCarrinho } from '../carrinho/ProvedorCarrinho'
 import { ProvedorToast } from '../componentes/toast/ProvedorToast'
 import type { BuscarCep } from '../localizacao/cep'
 import type { GeocodificarEndereco } from '../localizacao/endereco'
@@ -23,7 +24,7 @@ export interface ProvedorAppProps {
   geocodificarEndereco?: GeocodificarEndereco
 }
 
-/** Tudo que as telas precisam por perto: API, consultas, sessão, local escolhido e toast. */
+/** Tudo que as telas precisam por perto: API, consultas, sessão, carrinho, local escolhido e toast. */
 export function ProvedorApp({ children, ...pecas }: ProvedorAppProps) {
   const [armazem] = useState(() => pecas.armazem ?? criarArmazemSessao())
   const [cliente] = useState(() => pecas.cliente ?? criarClienteDoAmbiente(armazem.obterToken))
@@ -33,12 +34,14 @@ export function ProvedorApp({ children, ...pecas }: ProvedorAppProps) {
     <QueryClientProvider client={consultas}>
       <ContextoApi.Provider value={cliente}>
         <ProvedorSessao armazem={armazem}>
-          <ProvedorLocal buscarCep={pecas.buscarCep} obterPosicao={pecas.obterPosicao} geocodificarEndereco={pecas.geocodificarEndereco}>
-            <ProvedorToast>
-              <AvisoVersaoNova />
-              {children}
-            </ProvedorToast>
-          </ProvedorLocal>
+          <ProvedorCarrinho>
+            <ProvedorLocal buscarCep={pecas.buscarCep} obterPosicao={pecas.obterPosicao} geocodificarEndereco={pecas.geocodificarEndereco}>
+              <ProvedorToast>
+                <AvisoVersaoNova />
+                {children}
+              </ProvedorToast>
+            </ProvedorLocal>
+          </ProvedorCarrinho>
         </ProvedorSessao>
       </ContextoApi.Provider>
     </QueryClientProvider>

@@ -8,13 +8,15 @@ describe('lerConfigApi (VITE_API)', () => {
     }
   })
 
-  it('"http" → tudo na API real', () => {
-    expect(Object.values(lerConfigApi('http')).every((v) => v === 'http')).toBe(true)
+  it('"http" → todos os grupos ✅ (A–G, I e J) na API real', () => {
+    expect(lerConfigApi('http')).toEqual({
+      A: 'http', B: 'http', C: 'http', D: 'http', E: 'http', F: 'http', G: 'http', I: 'http', J: 'http',
+    })
   })
 
   it('"A,b" → só A e B na API real', () => {
     expect(lerConfigApi('A, b')).toEqual({
-      A: 'http', B: 'http', C: 'mock', D: 'mock', E: 'mock', F: 'mock', G: 'mock',
+      A: 'http', B: 'http', C: 'mock', D: 'mock', E: 'mock', F: 'mock', G: 'mock', I: 'mock', J: 'mock',
     })
   })
 

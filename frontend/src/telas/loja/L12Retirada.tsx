@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import type { RetiradaFeita, RetiradaPrevia } from '../../api'
+import type { PedidoNoBalcao, RetiradaFeita } from '../../api'
 import { useApi } from '../../app/contextos'
 import { useLojaAtual } from '../../app/loja'
 import { useAgora } from '../../app/tempo'
@@ -19,13 +19,17 @@ const TAMANHO = 6
 
 type Fase =
   | { tipo: 'digitando' }
-  | { tipo: 'encontrada'; previa: RetiradaPrevia }
+  | { tipo: 'encontrada'; previa: PedidoNoBalcao }
   | { tipo: 'nao_encontrada' }
-  | { tipo: 'confirmada'; previa: RetiradaPrevia; feita: RetiradaFeita }
+  | { tipo: 'confirmada'; feita: RetiradaFeita }
+
+/** A prévia (grupo J) diz "nao_encontrado"; a retirada, "nao_encontrada". Para a tela, é o mesmo. */
+const naoAchou = (erro: unknown) => ['nao_encontrado', 'nao_encontrada'].includes(codigoDoErro(erro) ?? '')
 
 /**
  * L12 · Validar retirada e L13 · resultado (mesma rota). Retirada é por LOJA + CÓDIGO:
  * o funcionário digita o que o cliente mostra; não escolhe a reserva numa lista.
+ * Grupo J: o código é do PEDIDO; a L13 lista os itens ativos e a retirada leva todos.
  */
 export function L12Retirada() {
   const api = useApi()
@@ -37,23 +41,25 @@ export function L12Retirada() {
   const resumo = useQuery({ queryKey: ['resumo', lojaId], queryFn: () => api.operacao.resumoDoDia(lojaId) })
 
   const buscar = useMutation({
-    mutationFn: (codigo: string) => api.operacao.previaRetirada(lojaId, codigo),
+    mutationFn: (codigo: string) => api.pedidos.previaNoBalcao(lojaId, codigo),
     onSuccess: (previa) => setFase({ tipo: 'encontrada', previa }),
     onError: (erro) => {
-      if (codigoDoErro(erro) === 'nao_encontrada') setFase({ tipo: 'nao_encontrada' })
+      if (naoAchou(erro)) setFase({ tipo: 'nao_encontrada' })
     },
   })
 
   const confirmar = useMutation({
-    mutationFn: (previa: RetiradaPrevia) => api.operacao.retirar(lojaId, previa.codigo),
-    onSuccess: (feita, previa) => {
+    mutationFn: (previa: PedidoNoBalcao) => api.operacao.retirar(lojaId, previa.codigo),
+    onSuccess: (feita) => {
       void consultas.invalidateQueries({ queryKey: ['resumo', lojaId] })
       void consultas.invalidateQueries({ queryKey: ['loja-ofertas', lojaId] })
-      void consultas.invalidateQueries({ queryKey: ['loja-oferta', lojaId, feita.oferta.id] })
-      setFase({ tipo: 'confirmada', previa, feita })
+      for (const item of feita.itens) {
+        void consultas.invalidateQueries({ queryKey: ['loja-oferta', lojaId, item.oferta.id] })
+      }
+      setFase({ tipo: 'confirmada', feita })
     },
     onError: (erro) => {
-      if (codigoDoErro(erro) === 'nao_encontrada') setFase({ tipo: 'nao_encontrada' })
+      if (naoAchou(erro)) setFase({ tipo: 'nao_encontrada' })
     },
   })
 
@@ -68,7 +74,7 @@ export function L12Retirada() {
     return <Encontrada previa={fase.previa} confirmar={confirmar} aoVoltar={recomecar} />
   }
   if (fase.tipo === 'nao_encontrada') return <NaoEncontrada aoDigitarDeNovo={recomecar} />
-  if (fase.tipo === 'confirmada') return <Confirmada previa={fase.previa} feita={fase.feita} aoValidarOutro={recomecar} />
+  if (fase.tipo === 'confirmada') return <Confirmada feita={fase.feita} aoValidarOutro={recomecar} />
 
   return (
     <Digitacao
@@ -76,7 +82,7 @@ export function L12Retirada() {
       setDigitos={setDigitos}
       aguardando={resumo.data?.aguardando_retirada}
       buscando={buscar.isPending}
-      erro={buscar.isError && codigoDoErro(buscar.error) !== 'nao_encontrada' ? buscar.error : null}
+      erro={buscar.isError && !naoAchou(buscar.error) ? buscar.error : null}
       aoBuscar={() => buscar.mutate(digitos)}
     />
   )
@@ -167,55 +173,65 @@ function Digitacao(props: {
 
 // ---------- L13 ----------
 
+const contarItens = (n: number) => (n === 1 ? '1 item' : `${n} itens`)
+
 function Encontrada({
   previa: p,
   confirmar,
   aoVoltar,
 }: {
-  previa: RetiradaPrevia
-  confirmar: { mutate: (p: RetiradaPrevia) => void; isPending: boolean; isError: boolean; error: unknown }
+  previa: PedidoNoBalcao
+  confirmar: { mutate: (p: PedidoNoBalcao) => void; isPending: boolean; isError: boolean; error: unknown }
   aoVoltar: () => void
 }) {
   const agora = useAgora(30_000)
-  const r = p.reserva
-  const restante = new Date(r.expira_em).getTime() - agora.getTime()
-  const unidades = r.quantidade === 1 ? 'a unidade' : `as ${r.quantidade} unidades`
+  // O primeiro item a vencer manda no aviso: depois dele, a retirada já não leva tudo.
+  const prazo = Math.min(...p.itens.map((i) => new Date(i.reserva.expira_em).getTime()))
+  const restante = prazo - agora.getTime()
+  const umItem = p.itens.length === 1
+  const quantidade = p.itens[0].reserva.quantidade
 
   return (
     <div className={styles.tela}>
-      <h1 className={styles.titulo}>Reserva encontrada</h1>
+      <h1 className={styles.titulo}>Pedido encontrado</h1>
       <section className={styles.cartao}>
         <p className={styles.codigo}>
           Código {p.codigo.slice(0, 3)} {p.codigo.slice(3)}
         </p>
         <p>
-          Cliente: <strong>{r.cliente}</strong>
+          Cliente: <strong>{p.cliente}</strong> · Pedido · {contarItens(p.itens.length)}
         </p>
-        <Selo variante="pending">Reservada · expira em {restante > 0 ? formatarTempoRestante(restante) : 'instantes'}</Selo>
+        <Selo variante="pending">Reservado · expira em {restante > 0 ? formatarTempoRestante(restante) : 'instantes'}</Selo>
       </section>
 
-      <section className={styles.cartao} aria-label="Item a entregar">
-        <p>
-          <strong>
-            {r.quantidade} × {p.produto}
-          </strong>
-        </p>
-        {p.validade ? (
-          <AmostraFita fita={p.fita} data={p.validade} />
-        ) : (
-          <p className={styles.texto}>
-            Fita <strong>{nomeDaCor(p.fita.cor)}</strong> · {p.fita.bimestre} {p.fita.ano}
-          </p>
-        )}
-        <p className={styles.texto}>Zona {nomeDaCor(p.fita.cor)} · área de reservas</p>
-      </section>
+      <ul className={styles.itens} aria-label="Itens a entregar">
+        {p.itens.map((item) => (
+          <li key={item.reserva.id} className={styles.cartao}>
+            <p>
+              <strong>
+                {item.reserva.quantidade} × {item.produto}
+              </strong>
+            </p>
+            <AmostraFita fita={item.fita} data={item.validade} />
+            <p className={styles.texto}>Zona {nomeDaCor(item.fita.cor)} · área de reservas</p>
+          </li>
+        ))}
+      </ul>
 
       <p className={styles.cobrar}>
         Cobrar no caixa: <strong>{formatarDinheiro(p.total)}</strong>
       </p>
-      <Mensagem tipo="atencao" titulo="Retirada tudo ou nada:">
-        entregue {unidades}. Se o cliente quiser menos, ele cancela no app e reserva de novo.
-      </Mensagem>
+      {umItem ? (
+        <Mensagem tipo="atencao" titulo="Retirada tudo ou nada:">
+          entregue {quantidade === 1 ? 'a unidade' : `as ${quantidade} unidades`}. Se o cliente quiser menos, ele cancela
+          no app e reserva de novo.
+        </Mensagem>
+      ) : (
+        <Mensagem tipo="atencao" titulo="Retirada do pedido inteiro:">
+          entregue os {p.itens.length} itens. Se o cliente desistir de um, ele cancela o item no app e você digita o
+          código de novo.
+        </Mensagem>
+      )}
 
       {confirmar.isError && <MensagemErro erro={confirmar.error} />}
 
@@ -233,24 +249,32 @@ function NaoEncontrada({ aoDigitarDeNovo }: { aoDigitarDeNovo: () => void }) {
   return (
     <div className={styles.tela}>
       <h1 className={styles.titulo}>Código não encontrado</h1>
-      <Mensagem tipo="erro" titulo="Nenhuma reserva ativa com esse código nesta loja.">
-        Pode ser que:
+      <Mensagem tipo="erro" titulo="Nenhum pedido ativo com esse código nesta loja.">
+        Pode ter sido:
         <ul className={styles.causas}>
-          <li>o código foi digitado errado;</li>
-          <li>a reserva expirou ou foi cancelada;</li>
-          <li>a reserva é de outra loja.</li>
+          <li>digitado errado;</li>
+          <li>pedido que já expirou ou foi cancelado;</li>
+          <li>pedido de outra loja.</li>
         </ul>
       </Mensagem>
+      <p className={styles.texto}>Peça para o cliente abrir “Minhas reservas” e conferir o código e a loja.</p>
       <p className={styles.aviso}>Não entregue o produto sem validar.</p>
       <Botao onClick={aoDigitarDeNovo}>Digitar de novo</Botao>
     </div>
   )
 }
 
-function Confirmada({ previa, feita, aoValidarOutro }: { previa: RetiradaPrevia; feita: RetiradaFeita; aoValidarOutro: () => void }) {
+function Confirmada({ feita, aoValidarOutro }: { feita: RetiradaFeita; aoValidarOutro: () => void }) {
   const navegar = useNavigate()
   const { lojaId } = useLojaAtual()
-  const { estoque } = feita.oferta
+  const [primeiro] = feita.itens
+  const umItem = feita.itens.length === 1
+  const quando = primeiro.reserva.encerrada_em
+  const { estoque } = primeiro.oferta
+  const oQue = umItem
+    ? `${primeiro.reserva.quantidade} × ${primeiro.produto}`
+    : `${contarItens(feita.itens.length)} (${feita.itens.map((i) => `${i.produto} ×${i.reserva.quantidade}`).join(', ')})`
+
   return (
     <div className={classes(styles.tela, styles.centro)}>
       <span className={styles.circulo} aria-hidden="true">
@@ -259,18 +283,19 @@ function Confirmada({ previa, feita, aoValidarOutro }: { previa: RetiradaPrevia;
       <h1 className={styles.titulo}>Retirada registrada</h1>
       <section className={styles.cartao}>
         <p>
-          <strong>
-            {feita.reserva.quantidade} × {previa.produto}
-          </strong>{' '}
-          · {formatarDinheiro(feita.total)}
+          <strong>{oQue}</strong> · {formatarDinheiro(feita.total)}
         </p>
         <p className={styles.texto}>
-          {feita.reserva.encerrada_em && `${formatarHorario(feita.reserva.encerrada_em)} · `}Registrada por {feita.retirada_por}
+          {quando && `${formatarHorario(quando)} · `}Registrada por {feita.retirada_por}
         </p>
-        <p>
-          A oferta agora tem {estoque.livre} {estoque.livre === 1 ? 'livre' : 'livres'} e {estoque.reservado}{' '}
-          {estoque.reservado === 1 ? 'reservada' : 'reservadas'}.
-        </p>
+        {umItem ? (
+          <p>
+            A oferta agora tem {estoque.livre} {estoque.livre === 1 ? 'livre' : 'livres'} e {estoque.reservado}{' '}
+            {estoque.reservado === 1 ? 'reservada' : 'reservadas'}.
+          </p>
+        ) : (
+          <p>Os estoques das {feita.itens.length} ofertas já foram atualizados.</p>
+        )}
       </section>
       <Botao onClick={aoValidarOutro}>Validar outro código</Botao>
       <Botao variante="secundario" onClick={() => navegar(`/loja/${lojaId}`)}>

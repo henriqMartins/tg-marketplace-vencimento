@@ -3,8 +3,8 @@
  * Segue o contrato (formatos, códigos de erro); as regras que só o backend tem
  * ficam fingidas em regras-fingidas.ts. Só src/api/index.ts importa este arquivo.
  *
- * Todos os grupos do contrato (A–G) estão no mock. Os grupos D (grupo-d.ts) e E
- * (config-loja.ts) ficam em arquivos próprios.
+ * Todos os grupos do contrato (A–G, I, J) estão no mock. Os grupos D (grupo-d.ts), E
+ * (config-loja.ts), I (grupo-i.ts) e J (grupo-j.ts) ficam em arquivos próprios.
  */
 import type {
   ApiAcesso,
@@ -47,6 +47,8 @@ import {
 import { carregar, salvar, type Guarda } from './persistencia'
 import { conferirParFinal, ErroDeCampo, mudancasDaLoja, paraLojaConfig } from './config-loja'
 import { criarApiLotes } from './grupo-d'
+import { criarApiParceria } from './grupo-i'
+import { criarApiPedidos } from './grupo-j'
 import { calcularProjecao } from './projecao'
 import { criarSemente, type BancoMock, type OfertaMock, type ReservaMock, type UsuarioMock } from './semente'
 
@@ -110,11 +112,13 @@ export function criarClienteMock({
   // ---------- Conversões: modelo interno → formato do contrato ----------
 
   // Vínculo do contrato: sem o id interno e com o nome ATUAL da loja (o PATCH pode renomear).
-  const paraEu = ({ id, nome, email, vinculos }: UsuarioMock): Eu => ({
+  const paraEu = ({ id, nome, email, vinculos, plataforma }: UsuarioMock): Eu => ({
     id,
     nome,
     email,
     vinculos: vinculos.map((v) => ({ loja: { id: v.loja.id, nome: lojaPorId(v.loja.id).nome }, papel: v.papel })),
+    plataforma: plataforma === true,
+    interesse: parceria.interesseDoEu(id),
   })
   const lojaPorId = (lojaId: number) => banco.lojas.find((l) => l.id === lojaId)!
 
@@ -150,6 +154,7 @@ export function criarClienteMock({
     const o = banco.ofertas.find((x) => x.id === r.ofertaId)!
     return {
       id: r.id,
+      pedido_id: r.pedidoId,
       estado: r.estado,
       quantidade: r.quantidade,
       pedido: r.pedido,
@@ -177,6 +182,17 @@ export function criarClienteMock({
     if (!r) throw erro(404, 'nao_encontrada', 'Reserva não encontrada.')
     return r
   }
+
+  // ---------- I · Parceria (grupo-i.ts) ----------
+
+  const { interesseDoEu, ...apiParceria } = criarApiParceria({
+    banco: () => banco,
+    agora,
+    responder,
+    erro,
+    usuarioLogado,
+  })
+  const parceria = { interesseDoEu }
 
   // ---------- /health ----------
 
@@ -295,8 +311,10 @@ export function criarClienteMock({
             .filter((r) => banco.ofertas.find((x) => x.id === r.ofertaId)?.lojaId === o.lojaId)
             .map((r) => r.codigo),
         )
+        const pedidoId = banco.proximoId++ // grupo J: reservar 1 oferta = pedido de 1 item
         const reserva: ReservaMock = {
           id: banco.proximoId++,
+          pedidoId,
           ofertaId,
           usuarioId: usuario.id,
           cliente: abreviar(usuario.nome),
@@ -428,6 +446,21 @@ export function criarClienteMock({
   /** Só 6 dígitos em texto; outro formato nem é procurado (404). */
   const codigoValido = (codigo: unknown): codigo is string => typeof codigo === 'string' && /^\d{6}$/.test(codigo)
 
+  // ---------- J · Pedido (grupo-j.ts) ----------
+
+  const { retirarPedido, ...pedidos } = criarApiPedidos({
+    banco: () => banco,
+    agora,
+    responder,
+    erro,
+    usuarioLogado,
+    vinculoCom,
+    lojaResumo,
+    paraReservaLoja,
+    naoAchou,
+    abreviar,
+  })
+
   const operacao: ApiOperacao = {
     resumoDoDia: (lojaId) =>
       responder(() => {
@@ -509,23 +542,8 @@ export function criarClienteMock({
         }
       }),
 
-    retirar: (lojaId, codigo) =>
-      responder(() => {
-        const { usuario } = vinculoCom(lojaId)
-        const r = codigoValido(codigo) ? reservaAtivaPorCodigo(lojaId, codigo) : undefined
-        if (!r) throw naoAchou(lojaId, codigo)
-        const o = ofertaDe(r)
-        r.estado = 'retirada'
-        r.encerrada_em = agora()
-        o.estoque.reservado -= r.quantidade
-        o.estoque.retirado += r.quantidade
-        return {
-          reserva: paraReservaLoja(r),
-          total: multiplicar(o.preco, r.quantidade),
-          retirada_por: usuario.nome,
-          oferta: { id: o.id, estoque: { ...o.estoque } },
-        }
-      }),
+    // Grupo J: o código é do pedido; retira, tudo ou nada, os itens ativos dele.
+    retirar: (lojaId, codigo) => responder(() => retirarPedido(lojaId, codigo)),
   }
 
   // ---------- F · Gestor ----------
@@ -749,6 +767,8 @@ export function criarClienteMock({
     configuracao,
     gestor,
     projecao,
+    parceria: apiParceria,
+    pedidos,
 
     reiniciar() {
       banco = criarSemente(agora())

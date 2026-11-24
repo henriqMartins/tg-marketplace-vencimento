@@ -3,23 +3,33 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { lembrarEscolha, lerEscolha } from '../../app/escolha'
 import { abrir, ANA, CARLOS } from '../../test/abrir'
-import { AGORA_TESTE } from '../../test/pecas'
+import { AGORA_TESTE, criarPecas } from '../../test/pecas'
 
 afterEach(() => {
   vi.useRealTimers()
 })
 
 describe('C8 · Minhas reservas', () => {
-  it('Ativas (1): código e tempo restante; o card leva ao código (C6)', async () => {
+  it('Ativas (1): um cartão por pedido, com código e prazo mais próximo; leva ao código (C6)', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(AGORA_TESTE)
     await abrir('/reservas', { email: ANA })
     expect(await screen.findByRole('tab', { name: 'Ativas (1)' })).toHaveAttribute('aria-selected', 'true')
-    const cartao = await screen.findByRole('link', { name: /Iogurte natural 170 g/ })
-    expect(cartao).toHaveAttribute('href', '/reservas/31')
+    const cartao = await screen.findByRole('link', { name: /Pedido · 1 item/ })
+    expect(cartao).toHaveAttribute('href', '/pedidos/31')
     expect(cartao).toHaveTextContent('Código 482 917')
     expect(cartao).toHaveTextContent('faltam 3 h 42 min')
-    expect(cartao).toHaveTextContent('2 unidades · Mercadinho Vila Nova')
+    expect(cartao).toHaveTextContent('Iogurte natural 170 g ×2')
+    expect(cartao).toHaveTextContent('Mercadinho Vila Nova')
+  })
+
+  it('pedido de 2 itens: um cartão só, com os dois produtos', async () => {
+    const pecas = criarPecas()
+    await pecas.entrarComo(ANA)
+    await pecas.mock.pedidos.confirmar({ loja_id: 1, itens: [{ oferta_id: 1, pedido: 1 }, { oferta_id: 2, pedido: 1 }] })
+    await abrir('/reservas', { pecas })
+    expect(await screen.findByRole('tab', { name: 'Ativas (2)' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Pedido · 2 itens/ })).toHaveTextContent('Iogurte natural 170 g ×1, Presunto fatiado 200 g ×1')
   })
 
   it('menos de 30 min: tempo em destaque (urgent)', async () => {
@@ -39,9 +49,9 @@ describe('C8 · Minhas reservas', () => {
     const painel = await screen.findByRole('tabpanel', { name: 'Histórico' })
     await waitFor(() => expect(within(painel).getAllByRole('link')).toHaveLength(3))
     const textos = within(painel).getAllByRole('link').map((l) => l.textContent)
-    expect(textos[0]).toMatch(/Requeijão cremoso 200 g.*Retirada.*Retirada em/)
-    expect(textos[1]).toMatch(/Biscoito recheado 140 g.*Expirada.*Expirou em/)
-    expect(textos[2]).toMatch(/Queijo minas frescal 250 g.*Cancelada.*Cancelada em/)
+    expect(textos[0]).toMatch(/Retirado.*Requeijão cremoso 200 g ×1.*Retirado em.*R\$ 4,19/)
+    expect(textos[1]).toMatch(/Expirado.*Biscoito recheado 140 g ×2.*Expirado em/)
+    expect(textos[2]).toMatch(/Cancelado.*Queijo minas frescal 250 g ×1.*Cancelado em/)
   })
 
   it('setas do teclado trocam de aba', async () => {
@@ -92,6 +102,17 @@ describe('C9 · Perfil', () => {
     expect(within(secao).getByText('Responsável')).toBeInTheDocument()
     expect(within(secao).getByRole('link', { name: 'Entrar como loja' })).toHaveAttribute('href', '/loja/1')
     expect(secao).toHaveTextContent('Ao abrir o app: Perguntar sempre')
+  })
+
+  it('consumidora também troca a escolha lembrada (a A4 vale para todos)', async () => {
+    const usuario = userEvent.setup()
+    lembrarEscolha(7, { tipo: 'comprar' })
+    const { caminhoAtual } = await abrir('/perfil', { email: ANA })
+    const preferencias = await screen.findByRole('region', { name: 'Preferências' })
+    expect(preferencias).toHaveTextContent('Ao abrir o app: Comprar com desconto')
+    await usuario.click(within(preferencias).getByRole('button', { name: 'Escolher de novo' }))
+    await waitFor(() => expect(caminhoAtual()).toBe('/escolher'))
+    expect(lerEscolha(7)).toBeNull()
   })
 
   it('"Escolher de novo" desfaz a escolha lembrada (A4) e abre a A4', async () => {

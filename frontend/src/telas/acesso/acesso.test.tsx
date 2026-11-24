@@ -1,7 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { abrir, ANA, CARLOS, JULIANA } from '../../test/abrir'
+import { lembrarEscolha } from '../../app/escolha'
+import { abrir, ANA, CARLOS, EQUIPE, JULIANA, MARCOS } from '../../test/abrir'
 
 async function entrarPelaTela(email: string, senha = '12345678') {
   const usuario = userEvent.setup()
@@ -11,11 +12,11 @@ async function entrarPelaTela(email: string, senha = '12345678') {
   return usuario
 }
 
-describe('A2 · Entrar (celular) — redirecionamento por papel', () => {
-  it('consumidora → vitrine', async () => {
+describe('A2 · Entrar (celular) — depois de entrar, sempre a A4', () => {
+  it('consumidora (sem vínculo) → escolher (A4)', async () => {
     const { caminhoAtual } = await abrir('/entrar')
     await entrarPelaTela(ANA)
-    await waitFor(() => expect(caminhoAtual()).toBe('/vitrine'))
+    await waitFor(() => expect(caminhoAtual()).toBe('/escolher'))
   })
 
   it('responsável no celular → escolher (A4)', async () => {
@@ -47,7 +48,7 @@ describe('A2 · Entrar (celular) — redirecionamento por papel', () => {
   it('?voltar=//site-falso.com é ignorado', async () => {
     const { caminhoAtual } = await abrir('/entrar?voltar=%2F%2Fsite-falso.com')
     await entrarPelaTela(ANA)
-    await waitFor(() => expect(caminhoAtual()).toBe('/vitrine'))
+    await waitFor(() => expect(caminhoAtual()).toBe('/escolher'))
   })
 
   it('mostrar senha troca o campo entre senha e texto', async () => {
@@ -68,27 +69,36 @@ describe('A2 · Entrar (celular) — redirecionamento por papel', () => {
 
   it('quem já está logado e abre /entrar vai direto para o destino', async () => {
     const { caminhoAtual } = await abrir('/entrar', { email: ANA })
-    await waitFor(() => expect(caminhoAtual()).toBe('/vitrine'))
+    await waitFor(() => expect(caminhoAtual()).toBe('/escolher'))
   })
 })
 
 describe('A5 · Entrar no computador', () => {
-  it('responsável → painel (G1); funcionária → L1', async () => {
+  it('também passa pela A4; o cartão da loja leva ao painel (responsável) ou à L1 (funcionária)', async () => {
     const carlos = await abrir('/entrar', { largura: 1280 })
     await entrarPelaTela(CARLOS)
-    await waitFor(() => expect(carlos.caminhoAtual()).toBe('/loja/1/painel'))
+    await waitFor(() => expect(carlos.caminhoAtual()).toBe('/escolher'))
+    expect(await screen.findByRole('link', { name: /Mercadinho Vila Nova/ })).toHaveAttribute('href', '/loja/1/painel')
     carlos.tela.unmount()
 
     const juliana = await abrir('/entrar', { largura: 1280 })
     await entrarPelaTela(JULIANA)
-    await waitFor(() => expect(juliana.caminhoAtual()).toBe('/loja/1'))
+    await waitFor(() => expect(juliana.caminhoAtual()).toBe('/escolher'))
+    expect(await screen.findByRole('link', { name: /Mercadinho Vila Nova/ })).toHaveAttribute('href', '/loja/1')
+  })
+
+  it('escolha lembrada pula a A4 também no computador', async () => {
+    lembrarEscolha(1, { tipo: 'loja', lojaId: 1 })
+    const { caminhoAtual } = await abrir('/entrar', { largura: 1280 })
+    await entrarPelaTela(CARLOS)
+    await waitFor(() => expect(caminhoAtual()).toBe('/loja/1/painel'))
   })
 
   it('sem "Manter conectado": token só no sessionStorage', async () => {
     const { local, sessao, caminhoAtual } = await abrir('/entrar', { largura: 1280 })
     await userEvent.click(await screen.findByRole('checkbox', { name: 'Manter conectado neste computador' }))
     await entrarPelaTela(ANA)
-    await waitFor(() => expect(caminhoAtual()).toBe('/vitrine'))
+    await waitFor(() => expect(caminhoAtual()).toBe('/escolher'))
     expect(sessao.getItem('tg.token')).not.toBeNull()
     expect(local.getItem('tg.token')).toBeNull()
   })
@@ -148,9 +158,26 @@ describe('A4 · Escolher como entrar', () => {
     expect(screen.getByRole('link', { name: /Comprar com desconto/ })).toHaveAttribute('href', '/vitrine')
   })
 
-  it('consumidora sem vínculo não fica na A4', async () => {
-    const { caminhoAtual } = await abrir('/escolher', { email: ANA })
-    await waitFor(() => expect(caminhoAtual()).toBe('/vitrine'))
+  it('consumidora sem vínculo também vê a A4: comprar e "Tenho um mercado", sem "Minhas lojas"', async () => {
+    await abrir('/escolher', { email: ANA })
+    expect(await screen.findByRole('link', { name: /Comprar com desconto/ })).toHaveAttribute('href', '/vitrine')
+    expect(screen.getByRole('link', { name: /Tenho um mercado/ })).toHaveAttribute('href', '/parceiro')
+    expect(screen.queryByText('Minhas lojas')).toBeNull()
+    expect(screen.queryByRole('link', { name: /Equipe da plataforma/ })).toBeNull()
+  })
+
+  it('pedido em aberto: o cartão vira "Pedido de parceria recebido" e leva à A6', async () => {
+    await abrir('/escolher', { email: MARCOS })
+    const cartao = await screen.findByRole('link', { name: /Pedido de parceria recebido/ })
+    expect(within(cartao).getByText('Entraremos em contato')).toBeInTheDocument()
+    expect(cartao).toHaveAttribute('href', '/parceiro')
+    expect(screen.queryByRole('link', { name: /Tenho um mercado/ })).toBeNull()
+  })
+
+  it('equipe da plataforma: cartão "Equipe da plataforma" → /plataforma (também no computador)', async () => {
+    const { caminhoAtual } = await abrir('/', { email: EQUIPE, largura: 1280 })
+    await waitFor(() => expect(caminhoAtual()).toBe('/escolher'))
+    expect(await screen.findByRole('link', { name: /Equipe da plataforma/ })).toHaveAttribute('href', '/plataforma')
   })
 
   it('"Lembrar minha escolha": na próxima abertura (A1) pula a A4', async () => {

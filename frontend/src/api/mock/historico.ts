@@ -95,8 +95,10 @@ export function gerarHistorico(agora: Date): HistoricoMock {
         estoque.livre -= quantidade
         estoque.retirado += quantidade
       }
+      const id = proximaReserva++
       reservas.push({
-        id: proximaReserva++,
+        id,
+        pedidoId: id, // grupo J: cada reserva antiga é um pedido de 1 item
         ofertaId: 50 + i,
         usuarioId: 20 + cliente,
         cliente: CLIENTES[cliente],

@@ -1,7 +1,8 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { abrir, JULIANA } from '../../test/abrir'
+import { abrir, ANA, JULIANA } from '../../test/abrir'
+import { criarPecas } from '../../test/pecas'
 
 
 const tecla = (nome: string) => screen.getByRole('button', { name: nome })
@@ -45,7 +46,7 @@ describe('L12 · Validar retirada (teclado próprio)', () => {
     await usuario.keyboard('482917')
     expect(digitado()).toHaveTextContent('Código digitado: 4 8 2 9 1 7')
     await usuario.keyboard('{Enter}')
-    expect(await screen.findByRole('heading', { name: 'Reserva encontrada' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Pedido encontrado' })).toBeInTheDocument()
   })
 })
 
@@ -57,11 +58,11 @@ describe('L13 · Retirada — os 3 estados', () => {
     await digitar(usuario, '482917')
     await usuario.click(screen.getByRole('button', { name: 'Buscar reserva' }))
 
-    expect(await screen.findByRole('heading', { name: 'Reserva encontrada' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Pedido encontrado' })).toBeInTheDocument()
     expect(screen.getByText('Código 482 917')).toBeInTheDocument()
     expect(screen.getByText(/Cliente:/)).toHaveTextContent('Ana S.')
     expect(screen.getByText(/Cobrar no caixa/)).toHaveTextContent('R$ 6,28')
-    expect(screen.getByRole('region', { name: 'Item a entregar' })).toHaveTextContent('Fita Branco · vence 28/10/2026')
+    expect(screen.getByRole('list', { name: 'Itens a entregar' })).toHaveTextContent('Fita Branco · vence 28/10/2026')
     expect(screen.getByText('Zona Branco · área de reservas')).toBeInTheDocument()
     expect(screen.getByText(/entregue as 2 unidades/)).toBeInTheDocument()
 
@@ -74,6 +75,31 @@ describe('L13 · Retirada — os 3 estados', () => {
     expect(await screen.findByRole('button', { name: 'Faltam 6 dígitos' })).toBeInTheDocument()
   })
 
+  it('pedido de 2 itens: lista os dois, cobra a soma e retira o pedido inteiro', async () => {
+    const usuario = userEvent.setup()
+    const pecas = criarPecas()
+    await pecas.entrarComo(ANA)
+    const r = await pecas.mock.pedidos.confirmar({ loja_id: 1, itens: [{ oferta_id: 1, pedido: 2 }, { oferta_id: 2, pedido: 1 }] })
+    if (r.status !== 'criado') throw new Error('esperava pedido')
+    await pecas.entrarComo(JULIANA)
+    await abrir('/loja/1/retirada', { pecas })
+    await screen.findByRole('group', { name: 'Teclado numérico' })
+    await digitar(usuario, r.pedido.codigo)
+    await usuario.click(screen.getByRole('button', { name: 'Buscar reserva' }))
+
+    expect(await screen.findByRole('heading', { name: 'Pedido encontrado' })).toBeInTheDocument()
+    expect(screen.getByText(/Cliente:/)).toHaveTextContent('Ana S. · Pedido · 2 itens')
+    const itens = within(screen.getByRole('list', { name: 'Itens a entregar' })).getAllByRole('listitem')
+    expect(itens.map((i) => i.querySelector('strong')?.textContent)).toEqual(['2 × Iogurte natural 170 g', '1 × Presunto fatiado 200 g'])
+    expect(screen.getByText(/Cobrar no caixa/)).toHaveTextContent('R$ 11,02')
+    expect(screen.getByText(/entregue os 2 itens/)).toBeInTheDocument()
+
+    await usuario.click(screen.getByRole('button', { name: 'Entreguei e cobrei · confirmar' }))
+    expect(await screen.findByRole('heading', { name: 'Retirada registrada' })).toBeInTheDocument()
+    expect(screen.getByText('2 itens (Iogurte natural 170 g ×2, Presunto fatiado 200 g ×1)')).toBeInTheDocument()
+    expect(screen.getByText('Os estoques das 2 ofertas já foram atualizados.')).toBeInTheDocument()
+  })
+
   it('não encontrada → causas, aviso e "Digitar de novo"', async () => {
     const usuario = userEvent.setup()
     await abrir('/loja/1/retirada', { email: JULIANA })
@@ -81,8 +107,8 @@ describe('L13 · Retirada — os 3 estados', () => {
     await digitar(usuario, '000000')
     await usuario.click(screen.getByRole('button', { name: 'Buscar reserva' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Nenhuma reserva ativa com esse código nesta loja.')
-    expect(screen.getByText('a reserva é de outra loja.')).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toHaveTextContent('Nenhum pedido ativo com esse código nesta loja.')
+    expect(screen.getByText('pedido de outra loja.')).toBeInTheDocument()
     expect(screen.getByText('Não entregue o produto sem validar.')).toBeInTheDocument()
     await usuario.click(screen.getByRole('button', { name: 'Digitar de novo' }))
     expect(digitado()).toHaveTextContent('Nenhum dígito digitado')
@@ -105,7 +131,7 @@ describe('L13 · Retirada — os 3 estados', () => {
     await screen.findByRole('group', { name: 'Teclado numérico' })
     await digitar(usuario, '482917')
     await usuario.click(screen.getByRole('button', { name: 'Buscar reserva' }))
-    await screen.findByRole('heading', { name: 'Reserva encontrada' })
+    await screen.findByRole('heading', { name: 'Pedido encontrado' })
 
     relogio = new Date('2026-10-22T19:45:00-03:00')
     await usuario.click(screen.getByRole('button', { name: 'Entreguei e cobrei · confirmar' }))
