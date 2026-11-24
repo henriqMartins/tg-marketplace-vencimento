@@ -23,7 +23,7 @@ Status de cada grupo:
 | G · Projeção | G2 | ✅ | 13 |
 | H · Push | C1, C9 | fora até 09/11 | — |
 | I · Parceria | A4, A6, A7, P1–P3 | ✅ | 14 |
-| J · Pedido | C4–C8, C10, L12, L13 | 📝 | 15 |
+| J · Pedido | C4–C8, C10, L12, L13 | ✅ | 15 |
 
 ---
 
@@ -577,7 +577,10 @@ Regras e detalhes (decisões de 17/11/2026 marcadas com ★):
 { "codigo": "q8Zt3...", "email": "marcos@example.com", "expira_em": "2026-11-25T10:00:00-03:00" }
 ```
 
-## J · Pedido 📝
+## J · Pedido ✅
+Pronto em 24/11/2026: todas as rotas abaixo existem e estão testadas, inclusive a concorrência
+(pedidos em ordem inversa sem deadlock; 5 balcões com o mesmo código → uma retirada).
+`GET /api/lojas/{lojaId}/pedidos/ativo` exige vínculo com a loja (`403` sem ele), como o grupo C.
 Várias reservas de **uma pessoa em uma loja** com **um código só** (decidido 18/11/2026;
 regra, telas e o porquê em [`../pedido.md`](../pedido.md)). O carrinho fica **só no aparelho**:
 nada é reservado antes de confirmar. Cada item continua sendo uma `Reserva` (mesma regra,

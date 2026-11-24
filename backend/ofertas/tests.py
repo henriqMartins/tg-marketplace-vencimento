@@ -14,7 +14,7 @@ from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 
-from .models import Ajuste, Loja, Oferta, Produto, Recusa, Reserva, Vinculo
+from .models import Ajuste, Loja, Oferta, Pedido, Produto, Recusa, Reserva, Vinculo
 
 AGORA = datetime(2026, 11, 2, 10, 0, tzinfo=timezone.utc)
 
@@ -43,6 +43,10 @@ class Base(TestCase):
                      consumidor=self.ana, quantidade=3, pedido=3, codigo="123456",
                      criada_em=AGORA, expira_em=AGORA + timedelta(hours=4))
         dados.update(mudancas)
+        if "pedido_retirada" not in dados:      # grupo J: toda reserva é item de um pedido
+            dados["pedido_retirada"] = Pedido.objects.create(
+                cliente=dados["consumidor"], loja=dados["loja"], codigo=dados["codigo"],
+                criado_em=AGORA)
         return Reserva.objects.create(**dados)
 
     def assertBancoRecusa(self, gravar):
@@ -146,12 +150,18 @@ class TestTravasReserva(Base):
 
 
 class TestCodigoDeRetirada(Base):
-    """O código é único entre as reservas ATIVAS da MESMA loja."""
+    """O código é único entre os PEDIDOS ativos da MESMA loja (grupo J, exclusão no banco)."""
 
-    def test_mesmo_codigo_mesma_loja_duas_ativas_recusado(self):
+    def test_mesmo_codigo_mesma_loja_dois_pedidos_ativos_recusado(self):
         self.nova_reserva()
         outra = self.nova_oferta()
-        self.assertBancoRecusa(lambda: self.nova_reserva(oferta=outra))
+        self.assertBancoRecusa(lambda: self.nova_reserva(oferta=outra))     # outro pedido
+
+    def test_itens_do_mesmo_pedido_dividem_o_codigo(self):
+        item = self.nova_reserva()
+        outra = self.nova_oferta()
+        self.nova_reserva(oferta=outra, pedido_retirada=item.pedido_retirada)
+        self.assertEqual(Reserva.objects.filter(codigo="123456", estado="reservada").count(), 2)
 
     def test_mesmo_codigo_em_lojas_diferentes_aceito(self):
         self.nova_reserva()

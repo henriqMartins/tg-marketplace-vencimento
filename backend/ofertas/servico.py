@@ -24,7 +24,7 @@ from django.db.models import Max
 import dominio
 from dominio import ErroDominio
 
-from .models import Ajuste, Oferta, Recusa, Reserva
+from .models import Ajuste, Oferta, Pedido, Recusa, Reserva
 
 ATIVA = dominio.EstadoReserva.RESERVADA.value
 TENTATIVAS_CODIGO = 20       # sorteios até achar um código livre na loja
@@ -51,28 +51,37 @@ def _horas_agora(agora: Optional[datetime]) -> float:
 
 # ---------------------------------------------------------------- código de retirada
 
-def _gerador_de_codigo(loja_id: int):
+def sortear_codigo(loja_id: int) -> str:
     """
-    Devolve a função que o domínio chama para criar o código da reserva.
-    Sorteia 6 dígitos com secrets (sorteio seguro, imprevisível) e sorteia de
-    novo se o código já estiver numa reserva ATIVA desta loja.
-    A garantia final é a trava do banco (reserva_codigo_unico_por_loja_entre_ativas).
+    Código de um PEDIDO novo (grupo J): 6 dígitos com secrets (sorteio seguro,
+    imprevisível); sorteia de novo se já estiver num pedido ATIVO desta loja.
+    A garantia final é a trava do banco (reserva_codigo_unico_por_loja_entre_pedidos_ativos).
+    """
+    for _ in range(TENTATIVAS_CODIGO):
+        codigo = f"{secrets.randbelow(10**6):06d}"
+        if not Reserva.objects.filter(loja_id=loja_id, codigo=codigo, estado=ATIVA).exists():
+            return codigo
+    raise ErroDominio("não foi possível sortear um código livre; tente de novo")
+
+
+def _gerador_do_pedido(codigo: Optional[str]):
+    """
+    A função que o domínio chama ao criar uma reserva. O domínio NÃO muda (grupo J):
+    em vez de sortear um código por reserva, entregamos sempre o código do pedido.
+    Sem pedido (cancelar, retirar, expirar...), nenhuma reserva é criada: chamar é bug.
     """
     def gerar(_numero: int) -> str:
-        for _ in range(TENTATIVAS_CODIGO):
-            codigo = f"{secrets.randbelow(10**6):06d}"
-            em_uso = Reserva.objects.filter(
-                loja_id=loja_id, codigo=codigo, estado=ATIVA).exists()
-            if not em_uso:
-                return codigo
-        raise ErroDominio("não foi possível sortear um código livre; tente de novo")
+        if codigo is None:
+            raise RuntimeError("reserva criada fora de um pedido")
+        return codigo
     return gerar
 
 
 # ---------------------------------------------------------------- banco <-> domínio
 
-def _carregar(linha: Oferta) -> dominio.Oferta:
-    """Passo 3: monta a oferta do domínio com os números do banco."""
+def _carregar(linha: Oferta, codigo: Optional[str] = None) -> dominio.Oferta:
+    """Passo 3: monta a oferta do domínio com os números do banco.
+    `codigo`: o do pedido, quando a operação vai CRIAR reserva (reservar)."""
     ativas = [
         dominio.Reserva(id=r.numero, quantidade=r.quantidade, pedido=r.pedido,
                         codigo=r.codigo, criada_em=horas(r.criada_em),
@@ -87,7 +96,7 @@ def _carregar(linha: Oferta) -> dominio.Oferta:
         janela_reserva=linha.janela.total_seconds() / 3600,
         estado=dominio.EstadoOferta(linha.estado),
         reservas_ativas=ativas, proximo_id=ultimo + 1,
-        gerador_codigo=_gerador_de_codigo(linha.produto.loja_id),
+        gerador_codigo=_gerador_do_pedido(codigo),
     )
 
 
@@ -109,13 +118,14 @@ def _encerrada_em(r: dominio.Reserva, h: float) -> Optional[datetime]:
 
 
 def _salvar(linha: Oferta, oferta: dominio.Oferta, h: float,
-            consumidor=None, operador=None) -> None:
+            consumidor=None, operador=None, pedido: Optional[Pedido] = None) -> None:
     """
     Passo 5: copia o resultado do domínio para o banco.
     `h` é o "agora" da operação (para o encerrada_em).
     `consumidor` só é usado se a operação CRIOU uma reserva (o domínio não
     sabe quem é o cliente; o banco precisa saber).
     `operador` é quem digitou o código, gravado na reserva retirada.
+    `pedido` (grupo J): o pedido a que a reserva NOVA pertence.
     """
     linha.livre = oferta.livre
     linha.retirado = oferta.retirado
@@ -135,7 +145,8 @@ def _salvar(linha: Oferta, oferta: dominio.Oferta, h: float,
             },
             create_defaults={                                  # é nova: grava tudo
                 "estado": r.estado.value, "loja_id": linha.produto.loja_id,
-                "consumidor": consumidor, "quantidade": r.quantidade,
+                "consumidor": consumidor, "pedido_retirada": pedido,
+                "quantidade": r.quantidade,
                 "pedido": r.pedido, "codigo": r.codigo,
                 "criada_em": data(r.criada_em), "expira_em": data(r.expira_em),
                 "encerrada_em": _encerrada_em(r, h),
@@ -179,12 +190,17 @@ def _reservar(oferta_id, consumidor, pedido, agora):
     h = _horas_agora(agora)     # o "agora" em horas, como o domínio quer
     with transaction.atomic():
         linha = _travar(oferta_id)
-        oferta = _carregar(linha)
+        # Grupo J: "reservar só este agora" = um pedido de 1 item, com o código do pedido.
+        loja_id = linha.produto.loja_id
+        ped = Pedido.objects.create(cliente=consumidor, loja_id=loja_id,
+                                    codigo=sortear_codigo(loja_id), criado_em=data(h))
+        oferta = _carregar(linha, codigo=ped.codigo)
         reserva = oferta.reservar(pedido, h)
-        _salvar(linha, oferta, h, consumidor=consumidor)
-        if reserva is None:                     # recusa total (livre = 0)
+        _salvar(linha, oferta, h, consumidor=consumidor, pedido=ped)
+        if reserva is None:                     # recusa total (livre = 0): pedido não fica
             Recusa.objects.create(oferta=linha, consumidor=consumidor,
                                   pedido=pedido, criada_em=data(h))
+            ped.delete()
             return None
         return Reserva.objects.get(oferta=linha, numero=reserva.id)
 

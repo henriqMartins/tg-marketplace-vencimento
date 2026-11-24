@@ -23,7 +23,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from ofertas import servico, servico_lotes
+from ofertas import servico, servico_lotes, servico_pedidos
 from ofertas.calendario import BRASILIA
 from ofertas.fita import fita
 from ofertas.models import Loja, Papel, Produto, Vinculo
@@ -169,15 +169,14 @@ class Command(BaseCommand):
                                 juliana, [ana, bruno])
         servico.varrer(agora=agora)          # a "ronda": expira o que venceu, encerra o passado
 
-        # 1. Iogurte: em oferta, com uma reserva ativa, uma retirada e uma cancelada.
+        # 1. Iogurte: em oferta, com uma retirada, uma cancelada (e o item do pedido da Ana, no 2).
         g = self.lote(iogurte, dia(4), 24, juliana, anteontem)
-        oferta = self.publicar(g, 12, "4.49", 30, 4, ontem)
+        oferta_iogurte = oferta = self.publicar(g, 12, "4.49", 30, 4, ontem)
         # (os eventos de uma oferta vão sempre na ordem do tempo, como na vida real)
         r = servico.reservar(oferta.id, bruno, 3, agora=horas_atras(3))
         servico.retirar(vila.id, r.codigo, juliana, agora=horas_atras(2))
         r = servico.reservar(oferta.id, bruno, 1, agora=horas_atras(2))
         servico.cancelar(r.id, agora=horas_atras(1))
-        servico.reservar(oferta.id, ana, 2, agora=horas_atras(1))
 
         # 2. Leite: DOIS lotes na mesma fita viram UM grupo (referência = data mais próxima).
         primeira = dia(6)
@@ -186,6 +185,11 @@ class Command(BaseCommand):
         g = self.lote(leite, primeira, 30, carlos, anteontem)
         oferta = self.publicar(g, 20, "5.29", 40, 8, ontem)
         servico.reservar(oferta.id, bruno, 4, agora=horas_atras(1))
+
+        # Grupo J: o PEDIDO da Ana — iogurte + leite, UM código só (cena do balcão no vídeo).
+        servico_pedidos.confirmar(ana, vila.id, [{"oferta_id": oferta_iogurte.id, "pedido": 2},
+                                                 {"oferta_id": oferta.id, "pedido": 2}],
+                                  agora=horas_atras(1))
 
         # 3. Requeijão: reserva PARCIAL (pediu 3, só havia 2) e uma reserva que VENCEU
         #    (a janela de 4 h passou; expira sozinha na próxima leitura — sem worker).

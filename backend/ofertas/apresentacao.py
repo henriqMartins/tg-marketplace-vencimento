@@ -67,6 +67,7 @@ def reserva_consumidor(reserva) -> dict:
     oferta = reserva.oferta
     return {
         "id": reserva.id,
+        "pedido_id": reserva.pedido_retirada_id,          # grupo J: o pedido deste item
         "estado": reserva.estado,
         "quantidade": reserva.quantidade,
         "pedido": reserva.pedido,
@@ -259,3 +260,88 @@ def item_recusa(r) -> dict:
     return {"tipo": "recusa", "criada_em": quando(r.criada_em), "codigo_final": None,
             "produto": r.oferta.produto.nome, "quantidade": 0, "pedido": r.pedido,
             "cliente": cliente(r.consumidor), "estado": "recusa", "encerrada_em": None}
+
+
+# ---------------------------------------------------------------- pedido (grupo J)
+
+def item_do_pedido(reserva) -> dict:
+    """Um item do Pedido: a reserva, com o status de quando foi confirmada."""
+    preco = reserva.oferta.preco
+    return {
+        "reserva_id": reserva.id, "oferta_id": reserva.oferta_id,
+        "produto": reserva.oferta.produto.nome,
+        "pedido": reserva.pedido, "quantidade": reserva.quantidade,
+        "status": "parcial" if reserva.quantidade < reserva.pedido else "confirmada",
+        "motivo": None, "estado": reserva.estado,
+        "expira_em": quando(reserva.expira_em), "encerrada_em": quando(reserva.encerrada_em),
+        "preco": dinheiro(preco), "subtotal": dinheiro(reserva.quantidade * preco),
+    }
+
+
+def item_recusado(oferta, pedido: int, motivo: str) -> dict:
+    """Item que não virou reserva (só aparece na resposta do POST /api/pedidos)."""
+    return {
+        "reserva_id": None, "oferta_id": oferta.id, "produto": oferta.produto.nome,
+        "pedido": pedido, "quantidade": 0, "status": "recusada", "motivo": motivo,
+        "estado": None, "expira_em": None, "encerrada_em": None,
+        "preco": dinheiro(oferta.preco), "subtotal": "0.00",
+    }
+
+
+def pedido_consumidor(pedido, estado: str, resultados=None, ofertas=None) -> dict:
+    """
+    Pedido do contrato (grupo J). `estado` vem do serviço (calculado pelos itens).
+    `resultados` (só no POST): [(oferta_id, pedido, Reserva|None, motivo)] na ordem enviada.
+    """
+    reservas = list(pedido.itens.select_related("oferta__produto").order_by("id")) if pedido else []
+    if resultados is None:
+        itens = [item_do_pedido(r) for r in reservas]
+    else:
+        itens = [item_do_pedido(r) if r is not None else item_recusado(ofertas[o], q, motivo)
+                 for o, q, r, motivo in resultados]
+    conta = {"ativo": "reservada", "retirado": "retirada"}.get(estado)
+    somar = [r for r in reservas if r.estado == conta]
+    ativos = [r for r in reservas if r.estado == "reservada"]
+    return {
+        "id": pedido.id if pedido else None,
+        "codigo": pedido.codigo if pedido else None,
+        "loja": loja_resumo(pedido.loja) if pedido else None,
+        "estado": estado,
+        "criado_em": quando(pedido.criado_em) if pedido else None,
+        "expira_em_proximo": quando(min((r.expira_em for r in ativos), default=None)),
+        "total": dinheiro(sum((r.quantidade * r.oferta.preco for r in somar), Decimal("0"))),
+        "itens": itens,
+    }
+
+
+def _soma(reservas) -> str:
+    return dinheiro(sum((r.quantidade * r.oferta.preco for r in reservas), Decimal("0")))
+
+
+def pedido_no_balcao(pedido, ativas) -> dict:
+    """PedidoNoBalcao (L12 → L13): só os itens ativos; o código vem para a tela conferir."""
+    return {
+        "pedido_id": pedido.id, "codigo": pedido.codigo,
+        "cliente": cliente(ativas[0].consumidor), "total": _soma(ativas),
+        "itens": [{"reserva": reserva_loja(r), "produto": r.oferta.produto.nome,
+                   "fita": fita(r.oferta.validade), "validade": r.oferta.validade.isoformat(),
+                   "total": total(r)} for r in ativas],
+    }
+
+
+def retirada_do_pedido(pedido, retiradas, ofertas) -> dict:
+    """
+    RetiradaFeita do grupo J: `itens` com cada reserva retirada e o estoque da oferta.
+    Os campos antigos (reserva, oferta) continuam, do 1º item, para a tela antiga.
+    `ofertas`: {id: Oferta já com o reservado calculado}.
+    """
+    antigo = retirada_feita(retiradas[0], ofertas[retiradas[0].oferta_id])
+    return {
+        **antigo,
+        "codigo": pedido.codigo, "cliente": cliente(retiradas[0].consumidor),
+        "total": _soma(retiradas),
+        "itens": [{"reserva": reserva_loja(r), "produto": r.oferta.produto.nome,
+                   "total": total(r),
+                   "oferta": {"id": r.oferta_id, "estoque": estoque(ofertas[r.oferta_id])}}
+                  for r in retiradas],
+    }
