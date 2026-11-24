@@ -31,6 +31,7 @@ from ofertas import api_consumidor as b
 from ofertas import api_gestor as f
 from ofertas import api_loja as c
 from ofertas import api_lotes as d
+from ofertas import api_pedidos as j
 from ofertas import indicadores, projecao
 from ofertas.fita import CORES
 from ofertas.models import Categoria
@@ -320,6 +321,34 @@ documentar(i.AceitarConvite, post=rota(
                403: ERRO + ": email_diferente (traz email_convite mascarado)",
                404: ERRO + ": nao_encontrado", 409: ERRO + ": convite_usado, ja_vinculado",
                410: ERRO + ": convite_vencido", **SEM_LOGIN}))
+
+# ------------------------------------------------------------------ J · Pedido
+documentar(j.Pedidos,
+           post=rota("J", "Confirmar pedido nesta loja (C10 → C5)",
+                     descricao="Uma transação; cada item pelo mesmo `reservar` do domínio "
+                               "(parcial/recusa como sempre). Ofertas travadas em ordem de id.",
+                     corpo={"loja_id": 1, "itens": [{"oferta_id": 1, "pedido": 2},
+                                                    {"oferta_id": 3, "pedido": 1}]},
+                     respostas={201: "Pedido (status por item)",
+                                400: ERRO + ": itens_vazios, item_repetido, pedido_invalido, "
+                                            "oferta_de_outra_loja",
+                                409: ERRO + ": tudo_esgotado (com itens)", **SEM_LOGIN}),
+           get=rota("J", "Meus pedidos (C8)",
+                    filtros=(filtro("estado", "Sem filtro: os dois.", ("ativo", "encerrado")),),
+                    respostas={200: "[Pedido]", 400: ERRO + ": parametro_invalido",
+                               **SEM_LOGIN}))
+documentar(j.VerPedido, get=rota(
+    "J", "Ver um pedido (C6, só o próprio)",
+    respostas={200: "Pedido", 404: ERRO + ": nao_encontrado", **SEM_LOGIN}))
+documentar(j.CancelarPedido, post=rota(
+    "J", "Cancelar o pedido inteiro",
+    respostas={200: "Pedido", 404: ERRO + ": nao_encontrado", 409: ERRO + ": nada_ativo",
+               **SEM_LOGIN}))
+documentar(j.CancelarItem, post=rota(
+    "J", "Cancelar um item do pedido",
+    descricao="Devolve só aquele item ao livre; o código continua para o resto.",
+    respostas={200: "Pedido", 404: ERRO + ": nao_encontrado", 409: ERRO + ": ja_encerrado",
+               **SEM_LOGIN}))
 
 
 def rotas():

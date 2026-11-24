@@ -5,6 +5,7 @@ from . import api_consumidor as c
 from . import api_gestor as f
 from . import api_loja as l
 from . import api_lotes as d
+from . import api_pedidos as j
 
 # Prefixo /api/ vem do config/urls.py.
 urlpatterns = [
@@ -15,6 +16,13 @@ urlpatterns = [
     path("minhas-reservas", c.MinhasReservas.as_view(), name="minhas-reservas"),
     path("reservas/<int:reserva_id>", c.VerReserva.as_view(), name="reserva"),
     path("reservas/<int:reserva_id>/cancelar", c.CancelarReserva.as_view(), name="cancelar"),
+
+    # Grupo J do contrato (pedido): o consumidor, só os próprios
+    path("pedidos", j.Pedidos.as_view(), name="pedidos"),
+    path("pedidos/<int:pedido_id>", j.VerPedido.as_view(), name="pedido"),
+    path("pedidos/<int:pedido_id>/cancelar", j.CancelarPedido.as_view(), name="cancelar-pedido"),
+    path("pedidos/<int:pedido_id>/itens/<int:reserva_id>/cancelar", j.CancelarItem.as_view(),
+         name="cancelar-item"),
 
     # Grupo C do contrato (operação da loja): exigem vínculo com <loja_id>
     path("lojas/<int:loja_id>/resumo-do-dia", l.ResumoDoDia.as_view(), name="resumo-do-dia"),

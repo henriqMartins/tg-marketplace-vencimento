@@ -130,6 +130,9 @@ SPECTACULAR_SETTINGS = {
         {"name": "I · Parceria",
          "description": "Interesse e convite (qualquer conta); /plataforma: só a equipe "
                         "(is_staff). Telas A4, A6, A7, P1–P3."},
+        {"name": "J · Pedido",
+         "description": "Várias reservas de uma loja com um código só. Consumidor: só os "
+                        "próprios pedidos. Balcão: prévia pelo código. C4–C8, C10, L12, L13."},
     ],
 }
 
