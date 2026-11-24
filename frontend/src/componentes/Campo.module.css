@@ -46,6 +46,13 @@
   font-size: 16px; /* 16 px evita o zoom automático do iPhone ao focar */
 }
 
+/* O foco do campo é a borda da .caixa. Sem isto, o contorno global (:focus-visible, base.css)
+   desenha um retângulo dentro da caixa: os dois seletores pesam igual e, no build, a ordem
+   dos arquivos CSS decide quem vence. */
+.entrada:focus-visible {
+  outline: none;
+}
+
 .caixaTexto {
   height: auto;
   padding: 10px 14px;
