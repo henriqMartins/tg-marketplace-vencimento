@@ -28,7 +28,8 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | F8e · G5 lotes e fitas no computador | ✅ |
 | F8f · Endereço → coordenada (Nominatim) na L14/G6 | ✅ |
 | F9 · PWA (manifesto, service worker, instalação) | ✅ |
-| F10 · Parceria: A4 (muda), A6, A7, P1–P3 e mock do grupo I ([`docs/parceria.md`](../docs/parceria.md)) | ✅ · grupo I na API real (falta conferir com o servidor) |
+| F10 · Parceria: A4 (muda), A6, A7, P1–P3 e mock do grupo I ([`docs/parceria.md`](../docs/parceria.md)) | ✅ · grupo I na API real |
+| F11 · Pedido: carrinho, C2, C4, C5, C6, C8, C10, L13 e grupo J (mock e API real) ([`docs/pedido.md`](../docs/pedido.md)) | ✅ |
 
 ## Decisões do frontend
 
@@ -124,6 +125,13 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 23/11/2026 | Mock com os detalhes do grupo I ✅: erro de campo com `campo` e `campo_longo` (limites e frases do `servico.py`), telefone só com dígitos, `interesse_id` inexistente → 404, loja antiga sem convite → `409 sem_convite`. Na P3, o telefone passou a ser **obrigatório** (o backend exige; antes o mock aceitava vazio) |
 | 23/11/2026 | PEDIDO-API 7 atendido pelo contrato. PEDIDO-API 5 e 6 aguardam decisão do Henrique (o backend recomendou aceitar); até lá, a A6 e a P2 seguem no modo reduzido e o mock continua simulando o 6 |
 | 23/11/2026 | **PEDIDO-API 5, 6 e 7 aceitos** (main `d5540b6`). `Eu.interesse` é o `Interesse` inteiro: a A6 em modo leitura mostra também mercado, cidade, telefone e mensagem. `LojaPlataforma.convite.codigo` é `string | null` (só pendente tem código): a P2 copia o link de novo. O tipo `InteresseEu` saiu; no mock, os comentários `PEDIDO-API` saíram |
+| 24/11/2026 | **Grupo J (pedido) ✅** no mock e na API real (`http/pedidos.ts`, em `GRUPOS_PRONTOS`). No mock o pedido não tem tabela: é o conjunto das reservas com o mesmo `pedidoId` (a semente vira pedidos de 1 item, como a migração do backend). `409 tudo_esgotado` volta como **resultado** (como a recusa do `reservar`). A retirada (`POST …/retiradas`) leva o pedido inteiro |
+| 24/11/2026 | Carrinho só no aparelho (`src/carrinho/`, `localStorage`): um por conta (`tg.carrinho.<id>`) e um do visitante. Ao entrar, o do visitante passa para a conta; a mesma oferta nos dois fica com a quantidade **maior**. Ao sair, o da conta some da tela e volta no próximo login. Enquanto o `/api/eu` carrega, o carrinho fica vazio (nunca mostra o de outra conta) |
+| 24/11/2026 | Endereços: C10 `/pedido` (pública: o visitante monta; confirmar pede login e volta), C5 `/pedidos/:id/resultado`, C6/C7 `/pedidos/:id`, C8 continua `/reservas`. `/reservas/:id` e `/reserva/:id/resultado` (antigos) levam ao pedido da reserva (`pedido_id`) |
+| 24/11/2026 | "Reservar só este agora" (C4) usa o mesmo `POST /api/pedidos` com 1 item: C5, C6 e C8 só lidam com `Pedido`. O `reservar` antigo e as telas C5/C6 de reserva saíram do app (a rota da API continua) |
+| 24/11/2026 | C10 confere o `livre` de cada item ao abrir e a cada 30 s (mesma consulta da C4); item esgotado fica apagado, fora da confirmação e do total. O total por loja é **prévia** (`somarDinheiro`); o oficial vem no `Pedido` |
+| 24/11/2026 | C6: "(o primeiro item vence às HH:MM)" e "Cancelar um item" só com 2+ itens ativos. Item expirado ou cancelado sai da lista com uma nota. C7 "Expirado" se algum item venceu; senão "Cancelado". O `Pedido` não traz `economia`: a C7 de retirado mostra só o valor pago |
+| 24/11/2026 | Testes no Windows: rodar o Vitest com o caminho em `C:` maiúsculo (PowerShell). Pelo Git Bash (`/c/...` vira `c:`) o Vitest carrega duas cópias de si e todo arquivo falha com "failed to find the current suite" |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
@@ -220,10 +228,10 @@ pelos grupos do contrato: `acesso` (A), `consumidor` (B), `operacao` (C), `lotes
 espelham `docs/api/contrato.md` com os mesmos nomes de campo.
 
 - **Quem atende cada grupo:** variável `VITE_API` (ver [`.env.example`](.env.example)):
-  `mock` (padrão), `http` (= os grupos ✅, lista `GRUPOS_PRONTOS`; hoje A–G e I)
+  `mock` (padrão), `http` (= os grupos ✅, lista `GRUPOS_PRONTOS`; hoje A–G, I e J)
   ou letras, ex.: `A,B` = só A e B na API real.
   Grupo marcado como `http` sem implementação real → erro na hora de abrir o app
-  (nunca cai no mock em silêncio). Implementação real pronta para **todos os grupos (A–G e I)** (`src/api/http/`).
+  (nunca cai no mock em silêncio). Implementação real pronta para **todos os grupos (A–G, I e J)** (`src/api/http/`).
 - **Login manda na mistura:** o token vem do grupo A. Com A no mock, o backend real responde
   `401` a qualquer rota que exige login (e a sessão é limpa). Ou seja, `VITE_API=G` sozinho
   não serve para a G2: ela também usa A (`eu`), C (resumo no layout da loja) e E (janela
