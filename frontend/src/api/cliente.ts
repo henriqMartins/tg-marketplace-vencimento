@@ -188,7 +188,7 @@ export interface ApiPedidos {
   previaNoBalcao(lojaId: number, codigo: string): Promise<PedidoNoBalcao>
 }
 
-/** Fora dos grupos: GET /health (convenções do contrato) — "o servidor está acordado?". */
+/** Fora dos grupos: GET /api/saude (convenções do contrato) — "o servidor está acordado?". */
 export interface ApiServidor {
   saude(): Promise<void>
 }

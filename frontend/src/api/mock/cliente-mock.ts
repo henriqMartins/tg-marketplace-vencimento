@@ -194,7 +194,7 @@ export function criarClienteMock({
   })
   const parceria = { interesseDoEu }
 
-  // ---------- /health ----------
+  // ---------- /api/saude ----------
 
   const servidor: ApiServidor = {
     saude: () => responder(() => undefined),

@@ -278,7 +278,7 @@ Cena do vídeo no mock: o Marcos vê "Pedido de parceria recebido" na A4 → a e
 | `protecao.tsx` | `ExigeLogin` (→ `/entrar?voltar=…`), `ExigeVinculo` (loja e papel) e `ExigePlataforma` (`eu.plataforma`). Conforto, não segurança: quem barra é o backend (401/403) |
 | `layouts/` | consumidor e loja com navegação inferior; gestor (responsável, ≥ 1024 px) com menu lateral — mesma rota, troca o layout; plataforma (P1–P3) com menu lateral no computador e navegação inferior no celular |
 | `parceria.ts` | regras de exibição da parceria: interesse em aberto, link do convite (`${origem}/convite/${codigo}`) e a mensagem do WhatsApp |
-| `telas/A1Abertura` | `/health` → `/entrar`, `/escolher` ou `/vitrine`; 90 s → Tentar de novo |
+| `telas/A1Abertura` | `/api/saude` → `/entrar`, `/escolher` ou `/vitrine`; 90 s → Tentar de novo (não usa `/health`: bloqueadores de anúncio barram esse endereço) |
 
 ### Para onde cada um vai depois de entrar (`app/destino.ts`)
 

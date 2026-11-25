@@ -14,7 +14,7 @@ Trabalho de Graduação — Fatec Rio Preto, 2026 — Henrique Martins e Yan Hen
 | Parte | Situação |
 |---|---|
 | Domínio (regras da reserva) | ✅ pronto — 53 testes |
-| Backend (API) | ✅ todos os grupos do contrato (A a G, I · Parceria e J · Pedido) — 381 testes + 3 pulados |
+| Backend (API) | ✅ todos os grupos do contrato (A a G, I · Parceria e J · Pedido) — 382 testes + 3 pulados |
 | Simulação (Monte Carlo) | ✅ pronta, resultados no artigo — 16 testes |
 | Frontend (PWA) | 🔄 todas as telas prontas contra um **mock** do contrato (branch `frontend`); integração com a API real em andamento |
 | Vídeo do sistema | ⏳ para a apresentação final (17/11 a 02/12/2026) |
@@ -187,7 +187,7 @@ previsão; os parâmetros entram como faixas, com procedência em
 │   ├── src/dominio/            Oferta, Reserva, estados, invariante, prazo de retirada
 │   └── tests/                  regras, reconstituição, códigos de erro, prazo
 ├── backend/                  API Django + DRF
-│   ├── config/                 configuração (só por ambiente), /health, formato dos erros
+│   ├── config/                 configuração (só por ambiente), /health e /api/saude, formato dos erros
 │   ├── Dockerfile              imagem de produção (Render), multi-stage, usuário sem privilégio
 │   ├── contas/                 usuário (login por e-mail), token, porteiros por papel
 │   ├── parceria/               entrada por parceria: interesse, CNPJ (BrasilAPI), convite
@@ -264,6 +264,7 @@ cd backend
 python manage.py migrate
 python manage.py popular_demo       # dados fictícios; rodar de novo não duplica
 python manage.py runserver          # http://localhost:8000/health → {"status": "ok", "banco": "ok"}
+                                    # (o app usa /api/saude, igual: bloqueador de anúncio barra /health)
 ```
 
 **Testar as rotas no navegador (Swagger):** com `DJANGO_DEBUG=true` no `.env`, abra
@@ -368,7 +369,7 @@ Com `DJANGO_DEBUG=false`, o Swagger não existe em produção e o `/admin` abre 
 |---|---|---|---|
 | Domínio | `python -m unittest discover -s tests -v` em `dominio/` | 53 | não |
 | Simulação | `python -m unittest -v` em `simulacao/` | 16 | não |
-| Backend | `python manage.py test` em `backend/` | 381 + 3 pulados | sim (cria e apaga `test_tg`) |
+| Backend | `python manage.py test` em `backend/` | 382 + 3 pulados | sim (cria e apaga `test_tg`) |
 
 Regra da casa: **nenhum teste existente pode quebrar.**
 
@@ -511,6 +512,7 @@ Um item só entra como ✅ depois de existir **e** ter sido verificado (a coluna
 | 14/11/2026 | Backend pronto para o deploy (Neon + Render): `backend/Dockerfile` multi-stage (Python 3.13.7, domínio instalado como pacote, código do root com o `app` só lendo), `.dockerignore` por **lista de permitidos**, versões fixas no `requirements.txt`; settings com `RENDER_EXTERNAL_HOSTNAME`, HTTPS atrás do proxy e conexão reaproveitada (`CONN_MAX_AGE=60` + checagem); seção Deploy no README | 7 testes (host do Render aceito; HTTPS pelo `X-Forwarded-Proto`; conexão reaproveitada) · imagem testada no Docker do WSL contra o banco local: `migrate` + gunicorn ao ligar, `/health` 200, varredura com token → resumo (2× igual), sem token 401, token errado 403, host estranho 400, Swagger 404; dentro da imagem: usuário `app`, `projecao_resumo.json` presente, 0 testes, 0 `.env`/`.md`, código sem escrita · 313 MB · backend: 292 ok + 1 pulado |
 | 23/11/2026 | Backend (etapa 14): entrada de mercados por parceria (grupo I) — app `parceria`: pedido de parceria (um em aberto por pessoa), interessados para a equipe, **CNPJ com dígito verificador + Receita pela BrasilAPI** (5 s; fora do ar → "não verificado"), cadastro de loja + convite + interesse numa transação, convite de uso único (7 dias, renovar invalida o anterior), **aceite com trava e e-mail igual**; `Eu` com `plataforma` e `interesse`; porteiro `EhEquipe` (`is_staff`); `popular_demo` com `equipe@` e `marcos@` | 63 testes, BrasilAPI simulada (ativa, inativa, não encontrada, fora do ar; CNPJ repetido; cadastro tudo ou nada; aceite certo, e-mail diferente, vencido, usado, renovado; não-equipe → 403) + **5 aceites simultâneos → 1 vínculo e 4 `convite_usado`** (5 rodadas) · controle negativo: sem a trava, 4 de 4 toques passaram da conferência em todas as rodadas (o banco segurou) · migração aplicada, desfeita e reaplicada · `popular_demo` rodado 2× no banco local (acrescenta só a parceria) · backend: 356 ok + 2 pulados |
 | 24/11/2026 | Backend (etapa 15): **pedido** (grupo J) — várias reservas de uma loja com **um código só**; tabela `Pedido`, reservas antigas viram pedidos de 1 item (migração sem perda), código único entre pedidos ativos por **restrição de exclusão** (`btree_gist`); confirmar numa transação com as ofertas **travadas em ordem de id**, cada item pelo mesmo `reservar` do domínio (o domínio não mudou: o código entra pelo `gerador_codigo`); ver, listar, cancelar o pedido ou um item; prévia e retirada do pedido inteiro no balcão; `popular_demo` com o pedido de 2 itens da Ana | 24 testes novos (3 itens com um código; parcial + recusado → 201 com status por item; tudo esgotado → 409 sem código e com recusas; oferta de outra loja, item repetido; cancelar um item; item vencido fora da retirada; código único entre pedidos ativos) + **2 pedidos em ordem inversa → sem deadlock nem venda a mais** e **5 balcões → 1 retirada** (5 rodadas) · controle negativo: sem ordenar as travas, deadlock em 5 de 5 rodadas · migração aplicada, desfeita e reaplicada no banco local (68 reservas → 68 pedidos) · backend: 381 ok + 3 pulados |
+| 25/11/2026 | Correção no ar: bloqueadores de anúncio (uBlock Origin) barram endereços terminados em `/health`, e o app mostrava "O servidor não respondeu" com a API de pé. Rota nova `GET /api/saude` (mesma checagem do banco, sem login); o front passou a usá-la na A1; `/health` fica só para o Health Check do Render | `/health` e `/api/saude`: 200 com banco, 503 sem banco; `/api/saude` responde mesmo com token inválido · backend: 382 ok + 3 pulados · front: 400 testes, lint e build ok |
 
 ### Próximos passos
 

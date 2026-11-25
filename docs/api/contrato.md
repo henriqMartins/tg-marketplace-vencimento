@@ -30,7 +30,11 @@ Status de cada grupo:
 ## Convenções (valem para todos os grupos)
 
 - **Prefixo:** todas as rotas de tela começam com `/api/`. Fora dele só ficam `/health`
-  (servidor acordado?) e `/tarefas/varrer` (agendamento diário).
+  (Health Check do Render) e `/tarefas/varrer` (agendamento diário).
+- **Servidor acordado?** `GET /api/saude`, sem login: `200 {"status": "ok", "banco": "ok"}`
+  ou `503` se o banco não responde. Mesma checagem do `/health`, que o **frontend não usa**:
+  bloqueadores de anúncio (uBlock Origin) barram endereços terminados em `/health`, e o app
+  ficava esperando o servidor (decidido 25/11/2026).
 - **Autenticação:** cabeçalho `Authorization: Token <chave>` (token do DRF, confirmado
   em 06/11/2026; não expira sozinho — `POST /api/auth/sair` o invalida).
   Sem token numa rota protegida → `401`. Com token, mas sem papel → `403`.

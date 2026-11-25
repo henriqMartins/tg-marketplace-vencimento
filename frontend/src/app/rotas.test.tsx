@@ -7,7 +7,7 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('A1 · Abertura decide o destino depois do /health', () => {
+describe('A1 · Abertura decide o destino depois da checagem do servidor (/api/saude)', () => {
   it('sem token → /entrar', async () => {
     const { caminhoAtual } = await abrir('/')
     await waitFor(() => expect(caminhoAtual()).toBe('/entrar'))

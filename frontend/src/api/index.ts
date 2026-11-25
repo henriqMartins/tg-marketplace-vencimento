@@ -80,10 +80,11 @@ export function criarCliente({ config, obterToken, baseUrl, atrasoMockMs, agora,
     requisitar ??= criarRequisitar({ baseUrl, obterToken })
     Object.assign(cliente, { [PARTE_DO_GRUPO[grupo]]: fabrica(requisitar) })
   }
-  // /health vai para a API real assim que algum grupo for real.
+  // A checagem do servidor vai para a API real assim que algum grupo for real.
+  // /api/saude, não /health: bloqueadores de anúncio (uBlock Origin) barram /health.
   if (requisitar) {
     const req = requisitar
-    cliente.servidor = { saude: () => req<void>('GET', '/health') }
+    cliente.servidor = { saude: () => req<void>('GET', '/api/saude') }
   }
   return cliente
 }
