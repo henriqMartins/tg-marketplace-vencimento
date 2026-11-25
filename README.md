@@ -18,7 +18,7 @@ Trabalho de Graduação — Fatec Rio Preto, 2026 — Henrique Martins e Yan Hen
 | Simulação (Monte Carlo) | ✅ pronta, resultados no artigo — 16 testes |
 | Frontend (PWA) | 🔄 todas as telas prontas contra um **mock** do contrato (branch `frontend`); integração com a API real em andamento |
 | Vídeo do sistema | ⏳ para a apresentação final (17/11 a 02/12/2026) |
-| Deploy | 🔄 backend pronto para o Render (imagem Docker testada); frontend em preparação para a Vercel |
+| Deploy | 🔄 frontend no ar na Vercel (publica a cada push na `main`); backend pela imagem Docker no Render; dados de demonstração no Neon a carregar |
 
 | Data | Marco |
 |---|---|
