@@ -56,7 +56,7 @@ describe('requisitar (base do cliente http)', () => {
 
   it('sem resposta (rede) → ErroApi status 0, semConexao', async () => {
     const fetch = fetchFalso(new TypeError('Failed to fetch'))
-    const e = await criarRequisitar({ baseUrl: 'http://api', obterToken: () => null, fetch })('GET', '/health')
+    const e = await criarRequisitar({ baseUrl: 'http://api', obterToken: () => null, fetch })('GET', '/api/saude')
       .catch((e: unknown) => e)
     expect(e).toBeInstanceOf(ErroApi)
     expect((e as ErroApi).semConexao).toBe(true)

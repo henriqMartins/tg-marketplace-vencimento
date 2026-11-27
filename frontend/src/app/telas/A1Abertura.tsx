@@ -10,7 +10,7 @@ import { useEhDesktop } from '../tela'
 import styles from './A1Abertura.module.css'
 
 /**
- * A1 · Abertura: espera o servidor acordar (GET /health) e decide o destino.
+ * A1 · Abertura: espera o servidor acordar (GET /api/saude) e decide o destino.
  *   sem token            → A2 (/entrar)
  *   com token            → destinoAposEntrar (escolha lembrada, A4, loja ou vitrine)
  *   90 s sem resposta    → "O servidor não respondeu. Tentar de novo"

@@ -26,6 +26,7 @@ describe('PWA · manifesto', () => {
     expect(fora('/api/ofertas')).toBe(true)
     expect(fora('/api/varrer')).toBe(true) // a função da Vercel (agendamento diário)
     expect(fora('/health')).toBe(true)
+    expect(fora('/api/saude')).toBe(true) // a checagem do servidor (tela A1)
     expect(fora('/vitrine')).toBe(false)
     expect(fora('/loja/1/avisos')).toBe(false)
   })

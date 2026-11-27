@@ -33,5 +33,5 @@ export const MANIFESTO: Partial<ManifestOptions> = {
  */
 export const ARQUIVOS_DO_APP = ['**/*.{js,css,html,svg,png,woff2}']
 
-/** Rotas que o service worker NÃO responde com o index.html (a API e o /health). */
+/** Rotas que o service worker NÃO responde com o index.html (a API, inclusive /api/saude, e o /health). */
 export const FORA_DO_APP = [/^\/api\//, /^\/health/, /^\/tarefas\//]

@@ -24,7 +24,10 @@ from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('health', views.health, name='health'),
+    path('health', views.health, name='health'),            # Health Check do Render
+    # Mesma checagem para o frontend: bloqueadores de anúncio (uBlock Origin) barram
+    # qualquer endereço terminado em /health, e o app ficava "esperando o servidor".
+    path('api/saude', views.health, name='saude'),
     path('tarefas/varrer', ofertas_views.varrer, name='varrer'),
     path('api/', include('contas.urls')),          # grupo A do contrato (acesso)
     path('api/', include('ofertas.urls')),         # grupos B a G do contrato

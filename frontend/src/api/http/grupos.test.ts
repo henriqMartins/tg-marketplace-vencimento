@@ -179,9 +179,9 @@ describe('clientes http (A–G, I e J): rotas, métodos e corpos do contrato', (
     await expect(api.pedidos.cancelar(12)).rejects.toMatchObject({ status: 409, codigo: 'nada_ativo' })
   })
 
-  it('/health também vai à API real', async () => {
+  it('a checagem do servidor vai à API real em /api/saude (o /health é barrado por bloqueador de anúncio)', async () => {
     const { api, chamadas } = servidorFalso(() => ({ status: 200, corpo: { status: 'ok' } }))
     await api.servidor.saude()
-    expect(chamadas[0].url).toBe('/health')
+    expect(chamadas[0].url).toBe('/api/saude')
   })
 })

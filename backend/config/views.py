@@ -4,8 +4,9 @@ from django.http import JsonResponse
 
 def health(request):
     """
-    "A API está de pé E fala com o banco?" — usado pelo Render e pelo frontend
-    (que mostra "carregando" enquanto a API acorda). Consulta o banco de verdade:
+    "A API está de pé E fala com o banco?" — GET /health (Render) e GET /api/saude
+    (frontend, que mostra "carregando" enquanto a API acorda; o /health é barrado por
+    bloqueadores de anúncio). Sem login nas duas. Consulta o banco de verdade:
     um "ok" fixo diria só que o programa ligou, não que o sistema funciona.
     """
     try:

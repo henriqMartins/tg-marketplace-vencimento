@@ -9,11 +9,13 @@ Eles **não substituem** os testes automáticos (`manage.py test`): concorrênci
 da varredura e a conta da Tabela 5 só são provadas de verdade lá. Aqui se confere que a tela
 mostra o que o backend decidiu.
 
-> **Situação em 14/11/2026:** todas as telas existem no front (F0–F9) e **todos os grupos (A–G)
-> têm implementação http** (`frontend/src/api/http/`). Com `VITE_API=http` o front fala com a
-> API real; sem ela, usa o mock, onde várias regras são **fingidas** (`mock/regras-fingidas.ts`).
-> Os itens marcados **🔌** só valem com a API real. O roteiro inteiro já rodou contra a API real
-> (ver o registro abaixo).
+> **Situação em 25/11/2026:** todas as telas existem no front (até F11) e **todos os grupos
+> (A–G, I · Parceria e J · Pedido) têm implementação http** (`frontend/src/api/http/`). Com
+> `VITE_API=http` o front fala com a API real; sem ela, usa o mock, onde várias regras são
+> **fingidas** (`mock/regras-fingidas.ts`). Os itens marcados **🔌** só valem com a API real.
+> A–G já rodaram inteiros contra a API real (14/11). **As seções de pedido (J) e parceria (I)
+> ainda não rodaram** pelo roteiro: o caminho feliz do pedido (confirmar → código → balcão)
+> nunca foi visto em tela contra o servidor.
 
 ---
 
@@ -29,7 +31,7 @@ cd backend
 ..\.venv\Scripts\python manage.py popular_demo
 ..\.venv\Scripts\python manage.py runserver
 
-# terminal 3 — frontend (worktree Codigo-frontend), apontando para a API real
+# terminal 3 — frontend (pasta frontend/ da main ou worktree Codigo-frontend), API real
 #   .env.local:  VITE_API=http   (ou só as letras já integradas, ex.: A,B)
 #                VITE_API_URL=http://localhost:8000
 npm run dev                                              # http://localhost:5173
@@ -42,11 +44,13 @@ bloqueia todas as chamadas).
 
 | Conta | Papel | Para testar |
 |---|---|---|
-| `ana@example.com` | consumidora | C1–C9 (tem reserva ativa e uma parcial) |
+| `ana@example.com` | consumidora | C1–C10 (tem um **pedido de 2 itens** — iogurte + leite, um código só — e uma reserva parcial de requeijão) |
 | `bruno@example.com` | consumidor | segunda pessoa disputando estoque |
 | `juliana@example.com` | funcionária do Mercadinho Vila Nova | L1–L13 (não vê painel) |
 | `carlos@example.com` | responsável do Mercadinho Vila Nova | L14, G1–G6 |
 | `rosa@example.com` | responsável do Empório São Jorge | isolamento entre lojas |
+| `equipe@example.com` | equipe da plataforma (`is_staff`) | P1–P3 (interessados, lojas, convites) |
+| `marcos@example.com` | pediu parceria ("Mercearia São Jorge", estado `novo`); sem loja | A6, A7 (aceitar o convite) |
 
 Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo tempo.
 
@@ -71,12 +75,15 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 | B-2 | C2 | Ver a vitrine perto do Vila Nova | Ofertas ordenadas por distância; Empório a ~3 km depois das do Vila Nova 🔌 | Haversine em SQL |
 | B-3 | C2/C3 | Filtrar por categoria; filtrar algo sem resultado | Lista filtrada; estado "vazio" amigável | — |
 | B-4 | C4 | Abrir o iogurte | Mostra "Retire até HH:MM" = agora + janela, **nunca depois do fim da oferta** 🔌 | Janela nunca passa do fim (`prazo_de_retirada`, domínio) |
-| B-5 | C4→C5 | Ana pede **mais do que o livre** | Resultado "parcial": leva `min(pedido, livre)` | Reserva parcial automática |
-| B-6 | C5 | Bruno tenta reservar o **pão** (esgotado) | Resultado "recusada"; nada é reservado | livre = 0 → recusa |
-| B-7 | C6 | Abrir a reserva confirmada | Código de **6 dígitos** grande + "retire até" | Código estilo MFA |
-| B-8 | C7/C8 | Cancelar uma reserva ativa; abrir "minhas reservas" | Estado `cancelada`; o livre da oferta **sobe** a mesma quantidade (conferir na L10) 🔌 | Cancelamento devolve ao livre exatamente uma vez |
-| B-9 | C8 | Ver o requeijão do Bruno | Aparece `expirada` sem ninguém ter mexido 🔌 | Expiração sem worker (varredura preguiçosa) |
-| B-10 | C8 | Logado como Bruno, tentar abrir a URL de uma reserva da Ana | `404`/sem acesso 🔌 | Consumidor vê só as próprias reservas |
+| B-5 | C4→C10 | Ana põe 2 itens da mesma loja no carrinho; fecha e reabre o app | O carrinho continua lá (fica no aparelho); na L10 o livre **não mudou** | Nada é reservado antes de confirmar |
+| B-6 | C10→C5 | Confirmar com um item pedindo **mais do que o livre** | Pedido criado; esse item volta "parcial" com `min(pedido, livre)`, o outro "confirmada" 🔌 | Reserva parcial automática, **por item** |
+| B-7 | C4/C10 | Bruno tenta pôr o **pão** (esgotado) no carrinho | Aparece esgotado e não entra no pedido; nada é reservado | livre = 0 → recusa |
+| B-8 | C10→C5 | Ana e Bruno põem a **última unidade** de algo no carrinho (duas janelas); Bruno confirma, depois Ana | Bruno: confirmado. Ana: "tudo esgotado", **sem código**; o item fica marcado no carrinho 🔌 | `409 tudo_esgotado`; recusa gravada (conta nos bloqueados do G1) |
+| B-9 | C6 | Abrir o pedido confirmado | **Um** código de 6 dígitos grande para o pedido inteiro, a lista dos itens e o "retire até" | Um código por pedido (grupo J), estilo MFA |
+| B-10 | C7 | Cancelar **um item** do pedido | Só esse item vira `cancelada`; o código vale para os outros; o livre daquela oferta sobe (L10) 🔌 | Cancelamento devolve ao livre exatamente uma vez |
+| B-11 | C7/C8 | Cancelar o pedido inteiro; abrir "minhas reservas" | Todos os itens ativos `cancelada`; o cartão do pedido sai dos ativos 🔌 | Cancelar o pedido = cancelar cada item ativo |
+| B-12 | C8 | Ver o requeijão do Bruno | Aparece `expirada` sem ninguém ter mexido 🔌 | Expiração sem worker (varredura preguiçosa) |
+| B-13 | C8 | Logado como Bruno, abrir a URL de um pedido da Ana (`/pedidos/{id}`) | `404`/sem acesso 🔌 | Consumidor vê só os próprios pedidos |
 
 ## 3 · Operação da loja (grupo C) — como `juliana`
 
@@ -86,10 +93,12 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 | C-2 | L9/L10 | Abrir a oferta do iogurte | Separado, livre, reservado, retirado; **a soma fecha** | Invariante `separado = livre + reservado + retirado + ajustado + perda` |
 | C-3 | L10 | Ver a lista de reservas | Código **mascarado** (a loja não vê o código inteiro) | Código só a cliente mostra |
 | C-4 | L11 | Ajustar −2 com motivo "avaria" | Livre cai 2, "ajustado" sobe 2; tentar ajustar mais que o livre → recusa | Ajuste só reduz o livre; unidade reservada não é ajustada |
-| C-5 | L12→L13 | Digitar o código da Ana (ver na C6 dela) | Prévia com produto, quantidade e **validade com a fita**; confirmar → `retirada` | Retirada tudo ou nada, com código |
-| C-6 | L12 | Digitar o mesmo código de novo | "Não encontrada" (já não está ativa) | Código vale para reserva **ativa** |
+| C-5 | L12→L13 | Digitar o código do **pedido de 2 itens** da Ana (ver na C6 dela) | Prévia com **os 2 itens** (produto, quantidade, **validade com a fita**) e a **soma a cobrar**; confirmar → os dois `retirada`; L10 de cada oferta: retirado sobe 🔌 | Retirada tudo ou nada **do pedido**, com um código |
+| C-6 | L12 | Digitar o mesmo código de novo | "Não encontrado" (o pedido já não tem item ativo) | Código vale para pedido **ativo** |
 | C-7 | L12 | Logada como `rosa` (Empório), digitar um código do Vila Nova | Não encontra 🔌 | Código procurado só **naquela loja** |
 | C-8 | L1 | Funcionária tenta abrir G1 pela URL | Bloqueado (`403`) 🔌 | Painel só do responsável |
+| C-9 | L12→L13 | Pedido com um item já vencido e outro ativo (o iogurte da Ana vence antes do leite: esperar, ou janela curta) | A prévia mostra **só o ativo**; o vencido virou `expirada` e não é cobrado 🔌 | Cada item tem o próprio prazo |
+| C-10 | L12 | Código de um pedido cujos itens **todos** venceram há pouco | "Venceu" (não "não encontrado") 🔌 | `409 venceu` (últimas 24 h) |
 
 ## 4 · Lote, fita e aviso (grupo D) — **tem de aparecer no vídeo**
 
@@ -106,6 +115,25 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 | D-9 | L7 | Abrir "publicar" de outro produto que já teve oferta | Preço normal **sugerido** = o da última oferta | Preço sugerido |
 | D-10 | L5 | "Não vai para oferta" (descartar) | Grupo encerrado; **não** aparece como perda no G1 | Descarte não conta como perda |
 | D-11 | L3 | Lote novo de um produto cujo grupo **já virou oferta** | Abre grupo novo (mesma cor e ano) | Grupo em oferta não recebe lote |
+
+## 4b · Parceria (grupo I) — entrada de mercados por convite
+
+Cena da demonstração: **Marcos pede → equipe cadastra a loja → Marcos aceita o convite**.
+O CNPJ é conferido na Receita (BrasilAPI) **pelo backend**: use o CNPJ real de um mercado
+(consulta pública). Sem internet, a loja é criada com "CNPJ não verificado".
+
+| # | Tela | Passos | Esperado | Regra que prova |
+|---|---|---|---|---|
+| I-1 | A6 | Como `marcos`, abrir "quero ser parceiro" | Mostra o pedido já feito ("Mercearia São Jorge", `novo`); não deixa pedir outro 🔌 | Um interesse em aberto por pessoa (`409 interesse_em_aberto`) |
+| I-2 | P1 | Como `equipe`, ver os interessados; mudar o do Marcos para "em conversa"; tentar **descartar sem motivo** | Lista com o Marcos; "em conversa" aceito; descartar sem motivo → erro no campo 🔌 | Só `novo → em_conversa` e `→ descartado` com motivo |
+| I-3 | P3 | Cadastrar a loja do Marcos: CNPJ com **dígito errado** | Erro "CNPJ inválido" **sem** consultar a Receita | Dígito verificador conferido antes |
+| I-4 | P3 | CNPJ válido de um mercado | A tela mostra razão social, situação e se é comércio de alimentos (só alerta, não bloqueia) 🔌 | Consulta pelo backend, limite de 5 s |
+| I-5 | P3→P2 | Concluir com o e-mail `marcos@example.com` | Loja criada **e** convite gerado juntos; o link `/convite/{codigo}` aparece para copiar; o interesse vira `virou_loja` (P1) 🔌 | Loja + convite + interesse numa transação |
+| I-6 | P3 | Cadastrar de novo o mesmo CNPJ | `409 cnpj_ja_cadastrado` 🔌 | CNPJ único |
+| I-7 | P2 | Gerar **novo convite** para a loja; abrir o link **antigo** | Link antigo → "convite vencido" 🔌 | Novo convite invalida o anterior (`410`) |
+| I-8 | A7 | Abrir o link novo logado como `ana` | "Este convite é para m…@example.com" (e-mail mascarado); não aceita 🔌 | Aceite só com o mesmo e-mail (`403 email_diferente`) |
+| I-9 | A7→A4 | Abrir o link como `marcos` e aceitar; abrir o link de novo | Marcos vira **responsável** da loja nova (aparece na escolha de papel); segunda vez → "convite já usado" 🔌 | Convite de uso único; vínculo `responsavel` |
+| I-10 | P1 | Como `ana` (sem `is_staff`), abrir `/plataforma/...` pela URL | Bloqueado (`403`) 🔌 | Rotas da plataforma só para a equipe |
 
 ## 5 · Configuração e equipe (grupo E) — como `carlos`
 
@@ -139,10 +167,13 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 |---|---|---|
 | X-1 | Juliana ajusta o livre de uma oferta até **1**. Ana e Bruno (duas janelas) clicam "reservar" quase juntos | Um recebe "confirmada", o outro "recusada"; L10 mostra livre 0 e a soma fechando 🔌 |
 | X-2 | Carlos põe janela de 1 h; Ana reserva; espera 1 h; abre L10 ou G1 | Reserva vira `expirada`, o livre volta **uma vez só** 🔌 |
+| X-3 | Juliana e Carlos (duas janelas, a mesma loja) digitam o **mesmo código** de pedido na L12 e confirmam quase juntos | Um vê "retirado"; o outro, "não encontrado"; retirado na L10 sobe **uma vez só** 🔌 |
 
-> Na tela, o X-1 depende de reflexo (os cliques raramente caem no mesmo milissegundo). A
-> **prova** é o teste automático `test_concorrencia` (20 clientes × 5 rodadas → 1 sucesso).
-> Na banca: "a tela mostra o efeito; o teste prova a garantia".
+> Na tela, o X-1 e o X-3 dependem de reflexo (os cliques raramente caem no mesmo
+> milissegundo). A **prova** está nos testes automáticos: `test_concorrencia` (20 clientes ×
+> 5 rodadas → 1 sucesso) e `test_concorrencia_pedidos` (Ana pede iogurte + leite e Bruno
+> leite + iogurte ao mesmo tempo → sem deadlock, nada vendido a mais; 5 balcões com o mesmo
+> código → 1 retirada). Na banca: "a tela mostra o efeito; o teste prova a garantia".
 
 ---
 
@@ -154,7 +185,7 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 
 ---
 
-## Próximos passos e melhorias (14/11/2026)
+## Próximos passos e melhorias (atualizado em 25/11/2026)
 
 ### Para a v1 (antes de gravar o vídeo) — em ordem
 
@@ -164,13 +195,19 @@ Use **duas janelas** (normal + anônima) para ter duas pessoas logadas ao mesmo 
 2. ~~**Rodar este roteiro inteiro**~~ com `VITE_API=http` — feito em 14/11/2026 (registro acima).
    Divergência entre tela e contrato → pedido em `pedidos-do-front.md` (se for do backend) ou
    correção no front.
-3. **Ensaio do vídeo**: `flush` + `popular_demo` no dia da gravação (as datas são relativas a
-   hoje), roteiro curto cobrindo C2→C4→C6→L12→L13, a fita (D-1 a D-5), G1 e G2.
+3. **Rodar as seções novas** com `VITE_API=http`: pedido (B-5 a B-13, C-5 a C-10, X-3) e
+   parceria (I-1 a I-10), depois de `flush` + `popular_demo` (as ofertas da demonstração
+   vencem com o tempo). Registrar acima.
+4. **Ensaio do vídeo**: `flush` + `popular_demo` no dia da gravação (as datas são relativas a
+   hoje), roteiro curto cobrindo C2→C4→**C10**→C5→C6→L12→L13 (o **pedido de 2 itens** da Ana:
+   um código, dois itens), a fita (D-1 a D-5), G1 e G2; se couber, a cena da parceria
+   (I-5 → I-9).
 
 ### Depois da v1 (já decidido que fica para depois)
 
-- **Dockerfile de produção + deploy** (Render + Neon + Vercel), só se sobrar tempo. Conferir que a
-  imagem leva `backend/ofertas/dados/projecao_resumo.json` (o CSV não vai).
+- ~~**Dockerfile de produção + deploy**~~ — o front está na Vercel (publicado a cada push na
+  `main`); o backend vai pela imagem de `backend/Dockerfile` no Render. Para testar em
+  produção, o Neon precisa de ofertas ativas (`popular_demo`; ver "Dia da gravação" no README).
 - **Web Push** (VAPID) na publicação de oferta.
 - **"Esqueci minha senha"** (exige envio de e-mail).
 

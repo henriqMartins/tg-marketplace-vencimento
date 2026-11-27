@@ -132,6 +132,7 @@ PWA em React + TypeScript + Vite. Construído na worktree `Codigo-frontend` (bra
 | 24/11/2026 | C10 confere o `livre` de cada item ao abrir e a cada 30 s (mesma consulta da C4); item esgotado fica apagado, fora da confirmação e do total. O total por loja é **prévia** (`somarDinheiro`); o oficial vem no `Pedido` |
 | 24/11/2026 | C6: "(o primeiro item vence às HH:MM)" e "Cancelar um item" só com 2+ itens ativos. Item expirado ou cancelado sai da lista com uma nota. C7 "Expirado" se algum item venceu; senão "Cancelado". O `Pedido` não traz `economia`: a C7 de retirado mostra só o valor pago |
 | 24/11/2026 | Testes no Windows: rodar o Vitest com o caminho em `C:` maiúsculo (PowerShell). Pelo Git Bash (`/c/...` vira `c:`) o Vitest carrega duas cópias de si e todo arquivo falha com "failed to find the current suite" |
+| 26/11/2026 | Ícones na **versão clara** (fundo branco, toldo verde e laranja do desconto), a mesma do selo da A1: `apple-touch-icon`, `icon-192/512`, maskable 192/512, `favicon.svg` e `favicon.ico`. A versão de fundo verde com toldo branco e amarelo saiu de tudo (ícones e protótipos); o amarelo `#F4C430` continua só como cor da fita (mar–abr). No `index.html`, `?v=2` nos ícones para o iPhone buscar o novo |
 | 11/11/2026 | A4: "Lembrar minha escolha" começa **desmarcado** (a prancha mostra marcado), porque trocar a escolha (C9, L1) só existe a partir da F5/F6 |
 
 ## Comandos
@@ -278,7 +279,7 @@ Cena do vídeo no mock: o Marcos vê "Pedido de parceria recebido" na A4 → a e
 | `protecao.tsx` | `ExigeLogin` (→ `/entrar?voltar=…`), `ExigeVinculo` (loja e papel) e `ExigePlataforma` (`eu.plataforma`). Conforto, não segurança: quem barra é o backend (401/403) |
 | `layouts/` | consumidor e loja com navegação inferior; gestor (responsável, ≥ 1024 px) com menu lateral — mesma rota, troca o layout; plataforma (P1–P3) com menu lateral no computador e navegação inferior no celular |
 | `parceria.ts` | regras de exibição da parceria: interesse em aberto, link do convite (`${origem}/convite/${codigo}`) e a mensagem do WhatsApp |
-| `telas/A1Abertura` | `/health` → `/entrar`, `/escolher` ou `/vitrine`; 90 s → Tentar de novo |
+| `telas/A1Abertura` | `/api/saude` → `/entrar`, `/escolher` ou `/vitrine`; 90 s → Tentar de novo (não usa `/health`: bloqueadores de anúncio barram esse endereço) |
 
 ### Para onde cada um vai depois de entrar (`app/destino.ts`)
 
@@ -367,4 +368,4 @@ frontend/
     └── test/setup.ts     # comparadores do jest-dom + limpeza entre testes
 ```
 
-O nome do app é **Pé de Preço** (`NOME_DO_APP` em `src/app/marca.ts`). Os ícones (toldo + broto + sorriso) estão em `public/icons/`, com o `favicon.ico` na raiz de `public/`.
+O nome do app é **Pé de Preço** (`NOME_DO_APP` em `src/app/marca.ts`). Os ícones (toldo + broto + sorriso, **versão clara**: fundo branco, toldo verde e laranja) estão em `public/icons/`, com o `favicon.ico` na raiz de `public/`.

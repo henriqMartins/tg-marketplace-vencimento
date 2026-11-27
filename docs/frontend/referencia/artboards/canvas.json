@@ -375,6 +375,14 @@
       "title": "P3 · Cadastrar loja e gerar convite",
       "expand": "fill",
       "is_interactive": true
+    },
+    "Marca.dc.html": {
+      "page": "base",
+      "x": 2920,
+      "y": 0,
+      "w": 1200,
+      "h": 760,
+      "title": "Marca · Pé de Preço (nome e símbolo do app)"
     }
   },
   "createdOnFiles": {
@@ -491,7 +499,7 @@
     },
     "tid": {
       "kind": "title1",
-      "maxW": 2400,
+      "maxW": 4120,
       "page": "base",
       "text": "Identidade do produto",
       "w": 240,
@@ -550,7 +558,7 @@
       "w": 360,
       "fill": "green",
       "size": 24,
-      "text": "Paleta oficial: original verde (Plus Jakarta Sans, verde #1E6A48, desconto #C2410C).\n\nAs 7 telas do artigo ainda têm o ajuste \"identidade\" (Tweaks), já em Original (verde). As telas novas usam a paleta verde fixa."
+      "text": "Marca: Pé de Preço (nome definido em 23/11). Símbolo: toldo de mercadinho com broto e sorriso; arquivos em frontend/public/icons/.\n\nPaleta oficial: original verde (Plus Jakarta Sans, verde #1E6A48, desconto #C2410C).\n\nAs 7 telas do artigo ainda têm o ajuste \"identidade\" (Tweaks), já em Original (verde)."
     },
     "tacesso2": {
       "page": "acesso",
@@ -638,7 +646,8 @@
     "Convite.dc.html",
     "PlataformaInteressados.dc.html",
     "PlataformaLojas.dc.html",
-    "PlataformaCadastro.dc.html"
+    "PlataformaCadastro.dc.html",
+    "Marca.dc.html"
   ],
   "pages": [
     {
