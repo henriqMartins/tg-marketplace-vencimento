@@ -118,30 +118,23 @@ function FormPublicar(props: {
         <span className={styles.destaqueNumero}>{separado === 1 ? '1 separada' : `${separado} separadas`}</span>
       </section>
 
-      <div className={styles.duasColunas}>
-        <Campo
-          rotulo="Preço normal"
-          inputMode="decimal"
-          placeholder="0,00"
-          value={precoTexto}
-          erro={precoTexto && !preco ? 'Use um valor como 6,99.' : null}
-          onChange={(e) => {
-            publicar.reset()
-            setPrecoTexto(e.target.value)
-          }}
-        />
-        <div className={styles.precoOferta}>
-          <span className={styles.rotulo}>Preço na oferta</span>
-          <strong className={styles.valorOferta}>{preco ? formatarDinheiro(previaDesconto(preco, desconto)) : '—'}</strong>
-          <span className={styles.seloDesconto}>−{desconto}%</span>
-        </div>
-      </div>
+      <Campo
+        rotulo="Preço normal"
+        inputMode="decimal"
+        placeholder="0,00"
+        value={precoTexto}
+        erro={precoTexto && !preco ? 'Use um valor como 6,99.' : null}
+        onChange={(e) => {
+          publicar.reset()
+          setPrecoTexto(e.target.value)
+        }}
+      />
 
       <div className={styles.campo}>
         <span id="rotulo-desconto" className={styles.rotulo}>
           Desconto
         </span>
-        <div role="group" aria-labelledby="rotulo-desconto" className={styles.gradeOpcoes}>
+        <div role="group" aria-labelledby="rotulo-desconto" className={styles.gradeDescontos}>
           {DESCONTOS.map((d) => (
             <button
               key={d}
@@ -154,13 +147,28 @@ function FormPublicar(props: {
             </button>
           ))}
         </div>
-        {preco && (
-          <p className={styles.ajuda}>
-            De <s>{formatarDinheiro(preco)}</s> por <strong>{formatarDinheiro(previaDesconto(preco, desconto))}</strong>. O valor
-            final é o que o sistema grava ao publicar.
-          </p>
-        )}
       </div>
+
+      {/* Resultado logo abaixo da escolha do desconto: preço normal + desconto → preço na oferta. */}
+      <section className={styles.precoOferta} aria-label="Preço na oferta">
+        <div className={styles.linhaPrecoOferta}>
+          <span className={styles.rotulo}>Preço na oferta</span>
+          <span className={styles.valorComSelo}>
+            <span className={styles.seloDesconto}>−{desconto}%</span>
+            <strong className={styles.valorOferta}>{preco ? formatarDinheiro(previaDesconto(preco, desconto)) : '—'}</strong>
+          </span>
+        </div>
+        <p className={styles.ajuda}>
+          {preco ? (
+            <>
+              De <s>{formatarDinheiro(preco)}</s> por <strong>{formatarDinheiro(previaDesconto(preco, desconto))}</strong>. O
+              valor final é o que o sistema grava ao publicar.
+            </>
+          ) : (
+            'Informe o preço normal para ver o preço na oferta.'
+          )}
+        </p>
+      </section>
 
       <div className={styles.campo}>
         <span id="rotulo-janela" className={styles.rotulo}>

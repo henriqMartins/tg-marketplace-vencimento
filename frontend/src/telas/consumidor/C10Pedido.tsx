@@ -180,18 +180,24 @@ function LinhaItem({ item, oferta }: { item: ItemCarrinho; oferta: OfertaPublica
 
   return (
     <div className={classes(styles.itemPedido, acabou && styles.itemEsgotado)}>
+      {/* Nome na largura toda: ao lado do contador ele ficava espremido em 3 linhas. */}
+      <div className={styles.nomeItem}>
+        <strong>{item.produto}</strong>
+        {acabou ? (
+          <span className={styles.avisoEsgotou}>Esgotou depois que você adicionou</span>
+        ) : (
+          <span className={styles.texto}>
+            {formatarDinheiro(preco)} cada
+            {livre !== undefined && ` · ${livre} ${livre === 1 ? 'disponível' : 'disponíveis'}`}
+          </span>
+        )}
+      </div>
+      {!acabou && livre !== undefined && item.pedido > livre && (
+        <span className={styles.texto}>
+          Agora {livre === 1 ? 'resta 1' : `restam ${livre}`}. Ao confirmar, reservamos o que tiver.
+        </span>
+      )}
       <div className={styles.linhaItem}>
-        <div className={styles.nomeItem}>
-          <strong>{item.produto}</strong>
-          {acabou ? (
-            <span className={styles.avisoEsgotou}>Esgotou depois que você adicionou</span>
-          ) : (
-            <span className={styles.texto}>
-              {formatarDinheiro(preco)} cada
-              {livre !== undefined && ` · ${livre} ${livre === 1 ? 'disponível' : 'disponíveis'}`}
-            </span>
-          )}
-        </div>
         {!acabou && (
           <Contador
             valor={item.pedido}
@@ -201,20 +207,15 @@ function LinhaItem({ item, oferta }: { item: ItemCarrinho; oferta: OfertaPublica
             rotulo={`Quantidade de ${item.produto}`}
           />
         )}
+        <button
+          type="button"
+          className={styles.botaoRemover}
+          aria-label={`Remover ${item.produto}`}
+          onClick={() => carrinho.tirar(item.ofertaId)}
+        >
+          Remover
+        </button>
       </div>
-      {!acabou && livre !== undefined && item.pedido > livre && (
-        <span className={styles.texto}>
-          Agora {livre === 1 ? 'resta 1' : `restam ${livre}`}. Ao confirmar, reservamos o que tiver.
-        </span>
-      )}
-      <button
-        type="button"
-        className={styles.botaoRemover}
-        aria-label={`Remover ${item.produto}`}
-        onClick={() => carrinho.tirar(item.ofertaId)}
-      >
-        Remover
-      </button>
     </div>
   )
 }

@@ -235,6 +235,11 @@ a.cartao:hover {
   gap: 10px;
 }
 
+/* Título sozinho (L2, L3): centralizado com o botão de voltar, como na L6/L7. */
+.cabecalhoDetalhe > h1 {
+  align-self: center;
+}
+
 .textosCabecalho {
   flex: 1;
   display: flex;

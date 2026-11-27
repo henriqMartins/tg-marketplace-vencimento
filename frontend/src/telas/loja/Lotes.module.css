@@ -257,6 +257,13 @@ a.cartaoGrupo:hover {
   gap: 8px;
 }
 
+/* L7: os 4 descontos numa linha só (cabem até em 320 px). */
+.gradeDescontos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .gradeJanelas {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -292,30 +299,36 @@ a.cartaoGrupo:hover {
   border: none;
 }
 
-.duasColunas {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items: start;
-}
-
 .precoOferta {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-radius: var(--raio-campo);
   background: var(--primary-soft);
+}
+
+.linhaPrecoOferta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.valorComSelo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .valorOferta {
   color: var(--primary-dark);
   font-size: 24px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .seloDesconto {
-  align-self: flex-start;
   padding: 2px 8px;
   border-radius: var(--raio-pilula);
   background: var(--discount);

@@ -144,18 +144,15 @@
   font-size: 16px;
 }
 
-/* Linha rolável de chips, sem barra visível. */
+/*
+ * Chips quebram linha: numa linha rolável sem barra, o último chip aparecia cortado na borda
+ * e não dava para saber que havia mais (no celular e, pior, no navegador do computador).
+ */
 .chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  margin: 0 calc(-1 * var(--margem-lateral));
-  padding: 4px var(--margem-lateral);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.chips::-webkit-scrollbar {
-  display: none;
+  padding: 4px 0;
 }
 
 .contagem {
@@ -538,20 +535,23 @@
 .itemPedido {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  gap: 8px;
 }
 
-.itemPedido:last-of-type {
-  border-bottom: none;
-  padding-bottom: 0;
+/*
+ * Divisória só ENTRE itens. (O :last-of-type de antes olhava o tipo da tag: o total também é
+ * <div>, então o último item ficava com borda e somava com a do total — linha dupla.)
+ */
+.itemPedido + .itemPedido {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
 }
 
 .itemEsgotado {
   opacity: 0.6;
 }
 
+/* Segunda linha do item: contador à esquerda, "Remover" à direita. O nome fica sozinho em cima. */
 .linhaItem {
   display: flex;
   align-items: center;
@@ -573,7 +573,8 @@
 }
 
 .botaoRemover {
-  align-self: flex-start;
+  flex: none;
+  margin-left: auto;
   min-height: var(--toque-minimo);
   padding: 0 4px;
   border: none;
